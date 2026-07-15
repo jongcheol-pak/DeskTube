@@ -131,7 +131,7 @@
 
 ### D8. 플레이어 ↔ C# 통신
 - **Options**: A) 앱 내장 `player.html`(IFrame API 로드) + `window.chrome.webview.postMessage` 브리지 / B) youtube.com 페이지 직접 탐색 + JS 주입
-- **Chosen**: A — 명령(JSON): load/play/pause/setVolume/mute/seek/quality-scale, 이벤트: ready/stateChange/error/time
+- **Chosen**: A — 명령(JSON): load/play/pause/volume/mute/seek/scale, 이벤트: ready/state/error/time (명칭은 구현 확정 — T6)
 - **Rationale**: 공식 IFrame API가 제어 계약을 보장, JS 주입은 유튜브 DOM 변경에 취약.
 - **Source**: IFrame API 공식 문서 (Investigation Log)
 
@@ -253,7 +253,7 @@
     - 네트워크 끊김 → IFrame 로드 실패 시 30초 후 재시도(최대 3회), 이벤트로 상태 노출
     - WebView2 런타임 부재 → Win11은 기본 탑재이나 방어적으로 감지 후 안내 메시지 (Known Workarounds)
     - 자동재생 플래그 미작동 환경 → JS에서 muted 재생 시작 후 unmute 시도 (Risks 완화책)
-    - 프로세스 크래시(CoreWebView2 ProcessFailed) → 플레이어 재생성 1회 시도
+    - 프로세스 크래시(CoreWebView2 ProcessFailed) → 렌더러 크래시는 Reload 1회 복구, 그 외(브라우저·GPU)는 오류 코드 -2로 코디네이터에 재생성 위임 (T6 구현 확정)
   - **Halt Forecast**:
     - (i) "autoplay 정책?" → D9 확정 (환경 인자)
     - (i) "화질 스케일 구현?" → player.html에서 iframe width/height를 스케일 값으로 설정 + CSS transform 확대 (D8 계약에 scale 명령 포함)

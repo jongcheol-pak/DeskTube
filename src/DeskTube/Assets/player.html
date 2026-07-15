@@ -73,6 +73,7 @@ function execute(cmd) {
       armAutoplayWatchdog();
       break;
     case 'pause':
+      clearTimeout(autoplayWatchdog); // load/play가 예약한 워치독이 일시정지 의도를 뒤집지 않게 취소
       player.pauseVideo();
       break;
     case 'volume':
@@ -130,7 +131,7 @@ window.onYouTubeIframeAPIReady = function () {
         // 재생 중 1초 주기 시각 보고 — 다중 모니터 동기 보정용 (plan D4)
         setInterval(() => {
           if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-            post({ type: 'time', current: player.getCurrentTime(), duration: player.getDuration() });
+            post({ type: 'time', current: player.getCurrentTime() });
           }
         }, 1000);
       },

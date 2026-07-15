@@ -22,6 +22,7 @@ public sealed class PlayerHost : IPlayerHost
 
     private readonly WallpaperWindow _window;
     private WebView2? _webView;
+    private Microsoft.UI.Dispatching.DispatcherQueueTimer? _retryTimer;
     private int _apiLoadRetries;
     private bool _renderProcessRecovered;
 
@@ -67,8 +68,15 @@ public sealed class PlayerHost : IPlayerHost
         }
         catch (Exception ex)
         {
-            AppLog.Write($"플레이어 초기화 실패: {ex.GetType().Name} {ex.Message}");
-            return Result.Fail(ErrorCode.EnvironmentFailure, "동영상 플레이어를 준비하지 못했습니다.");
+            // WebView2 런타임 부재는 별도 안내 (Win11은 기본 탑재라 드묾 — plan Known Workarounds).
+            // 전용 예외 타입이 WinRT 프로젝션에 없어 HResult(ERROR_FILE_NOT_FOUND)로 판별한다.
+            var runtimeMissing = ex is DllNotFoundException || ex.HResult == unchecked((int)0x80070002);
+            AppLog.Write($"플레이어 초기화 실패: {ex.GetType().Name} 0x{ex.HResult:X8} {ex.Message}");
+            return Result.Fail(
+                ErrorCode.EnvironmentFailure,
+                runtimeMissing
+                    ? "동영상 표시 구성 요소(WebView2)를 사용할 수 없습니다. Windows 업데이트 후 다시 시도해 주세요."
+                    : "동영상 플레이어를 준비하지 못했습니다.");
         }
     }
 
@@ -88,6 +96,9 @@ public sealed class PlayerHost : IPlayerHost
 
     public void Dispose()
     {
+        _retryTimer?.Stop();
+        _retryTimer = null;
+
         if (_webView?.CoreWebView2 is { } core)
         {
             core.WebMessageReceived -= OnWebMessageReceived;
@@ -148,15 +159,19 @@ public sealed class PlayerHost : IPlayerHost
             _apiLoadRetries++;
             AppLog.Write($"유튜브 API 로드 실패 — {ApiRetryDelay.TotalSeconds}초 후 재시도 ({_apiLoadRetries}/{MaxApiLoadRetries})");
 
-            var timer = _window.DispatcherQueue.CreateTimer();
-            timer.Interval = ApiRetryDelay;
-            timer.IsRepeating = false;
-            timer.Tick += (_, _) => _webView?.CoreWebView2?.Reload();
-            timer.Start();
+            _retryTimer?.Stop();
+            _retryTimer = _window.DispatcherQueue.CreateTimer();
+            _retryTimer.Interval = ApiRetryDelay;
+            _retryTimer.IsRepeating = false;
+            _retryTimer.Tick += (_, _) => _webView?.CoreWebView2?.Reload();
+            _retryTimer.Start();
             return;
         }
 
-        ErrorOccurred?.Invoke(this, new PlayerError(code));
+        var error = new PlayerError(code);
+        // acceptance: 임베드 금지(101/150) 등 오류 수신은 로그로 확인 가능해야 한다 (T6)
+        AppLog.Write($"플레이어 오류 수신: 코드 {code}{(error.IsEmbedForbidden ? " (임베드 금지 영상)" : "")}");
+        ErrorOccurred?.Invoke(this, error);
     }
 
     private void OnProcessFailed(CoreWebView2 sender, CoreWebView2ProcessFailedEventArgs e)
@@ -164,7 +179,7 @@ public sealed class PlayerHost : IPlayerHost
         AppLog.Write($"WebView2 프로세스 실패: {e.ProcessFailedKind}");
 
         // 렌더러 프로세스 크래시는 1회 Reload로 복구 시도 (plan T6 Edge Case),
-        // 브라우저 프로세스 종료는 컨트롤 재생성이 필요하므로 코디네이터에 위임(-2)
+        // 렌더러 외 모든 실패(브라우저·GPU 프로세스 등)는 컨트롤 재생성이 필요하므로 코디네이터에 위임(-2)
         if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited && !_renderProcessRecovered)
         {
             _renderProcessRecovered = true;
