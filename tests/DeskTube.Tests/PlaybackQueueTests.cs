@@ -142,6 +142,32 @@ public sealed class PlaybackQueueTests
     }
 
     [Fact]
+    public void 셔플_모드에서_현재_곡이_삭제돼도_같은_곡_연속과_곡_누락이_없다()
+    {
+        var items = MakeItems(5);
+        var queue = new PlaybackQueue(items, PlaybackMode.Shuffle, seed: 13);
+        queue.Start();
+        var deleted = queue.Current!;
+
+        var remaining = items.Where(i => i.Id != deleted.Id).ToList();
+        queue.UpdateItems(remaining);
+        var corrected = queue.Current!; // 보정된 현재 곡 (사이클 0번 앵커)
+
+        // 이후 Next() 3회 = 사이클 나머지 전곡 — 보정 곡과 중복 없이 잔여 곡 전부를 커버해야 한다
+        var played = new List<Guid>();
+        for (var i = 0; i < remaining.Count - 1; i++)
+        {
+            played.Add(queue.Next()!.Id);
+        }
+
+        Assert.DoesNotContain(corrected.Id, played); // 같은 곡 연속/재등장 없음 (사이클 내)
+        Assert.Equal(remaining.Count - 1, played.Distinct().Count()); // 곡 누락 없음
+        Assert.Equal(
+            remaining.Select(i => i.Id).Where(id => id != corrected.Id).OrderBy(g => g),
+            played.OrderBy(g => g));
+    }
+
+    [Fact]
     public void 목록_갱신_시_현재_곡이_삭제됐으면_다음_곡으로_이어간다()
     {
         var items = MakeItems(3);

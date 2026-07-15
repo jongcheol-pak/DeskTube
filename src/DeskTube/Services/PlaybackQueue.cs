@@ -153,12 +153,15 @@ public sealed class PlaybackQueue
 
         if (_mode == PlaybackMode.Shuffle)
         {
-            // 인덱스 순열이 무효화되므로 사이클 재구성 (현재 곡을 시작점으로)
+            // 인덱스 순열이 무효화되므로 사이클 재구성.
+            // 현재 곡(생존 시) 또는 보정된 위치의 곡을 사이클 시작점(0번)에 고정해
+            // Current와 셔플 진행 상태를 항상 일치시킨다 — 불일치 시 같은 곡 연속 재생·곡 누락 발생.
             BuildShuffleCycle(avoidFirst: null);
-            if (newIndex >= 0)
+            var anchor = newIndex >= 0 ? newIndex : _currentIndex;
+            if (anchor >= 0 && anchor < _items.Count)
             {
-                _shuffleOrder.Remove(newIndex);
-                _shuffleOrder.Insert(0, newIndex);
+                _shuffleOrder.Remove(anchor);
+                _shuffleOrder.Insert(0, anchor);
             }
             _shufflePosition = 0;
         }
