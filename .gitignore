@@ -1,0 +1,22 @@
+# 빌드 산출물
+bin/
+obj/
+AppPackages/
+publish/
+BundleArtifacts/
+
+# 사용자별 설정
+*.user
+*.suo
+.vs/
+
+# 테스트/커버리지 산출물
+TestResults/
+*.trx
+
+# 패키징 서명 (실제 인증서 커밋 금지)
+*.pfx
+*.cer
+
+# 로컬 환경
+.env

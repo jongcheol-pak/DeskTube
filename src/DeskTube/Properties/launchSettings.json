@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "DeskTube (Package)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
