@@ -242,7 +242,7 @@
     - (i) "SetParent 원복 방법?" → D3에서 확정(SetParent 해제 + SPI_SETDESKWALLPAPER)
   - **Depends on**: T1, T4
 
-- [ ] T6. WebView2 플레이어 (FR-1 재생·FR-5 적용·FR-13 스케일)
+- [x] T6. WebView2 플레이어 (FR-1 재생·FR-5 적용·FR-13 스케일)
   - **Type**: D
   - **Design**: ① `Assets/player.html`(IFrame API 로드+브리지 JS, 앱 리소스로 포함) + `Services/IPlayerHost.cs`(인터페이스 — T7 목킹 seam) + `Services/PlayerHost.cs`(구현: WebView2 생성·명령/이벤트 마셜링) + `Services/WebViewEnvironment.cs`(D9 단일 환경) ② `PlayerHost : IPlayerHost` — 창(T5) 안의 WebView2 1개를 소유, load/play/pause/setVolume(0~100)/mute/seek/scale 명령과 ready/stateChange/error/time 이벤트 제공 ③ WallpaperWindow에 부착, PlaybackCoordinator(T7)는 `IPlayerHost`만 참조 ④ 이번에 안 함: 유튜브 공식 playlist 파라미터 사용(앱 큐가 정본), 캐스트·자막 UI
   - **Acceptance**: Given videoId, When load+play 명령, Then 소리 포함 자동 재생 시작(HUMAN-VERIFY: 음소거 아님) + 임베드 금지 영상에서 error 이벤트(101/150) 수신이 로그로 확인됨; 화질 스케일 720p 설정 시 iframe 내부 해상도가 720 기준으로 축소됨(HUMAN-VERIFY)
@@ -322,6 +322,10 @@
 ## Retry Ledger
 
 ## Progress Log
+- T5-T6 완료 (커밋 7a720cb, +T6 완료 커밋): WorkerW 배경창(24H2 이중 경로, EnsureHealthy 재부착, IWallpaperHost seam) + WebView2 플레이어(player.html 브리지, 가상 호스트 https://player.desktube.local, autoplay 워치독, 화질 스케일, IPlayerHost seam). 리뷰 BLOCKER 1(오류 로그)·MAJOR 2(pause 워치독·타이머 Dispose) 수정 후 재검증 OK.
+  - 결정: 명령/이벤트 명칭 최종 — load/play/pause/volume/mute/seek/scale, ready/state/error/time (D8 동기화).
+  - 함정 (재발 방지): 존재하지 않는 타입을 소스에 참조하면 XAML 컴파일러가 CS 오류 대신 WMC9999(내부 NRE)로 죽는다 — WebView2 예외는 WinRT 프로젝션에 전용 타입 없음, HResult 0x80070002로 런타임 부재 판별.
+  - HUMAN-VERIFY 누적: 아이콘 뒤 렌더링·종료 복구(T5), 소리 자동재생·화질 스케일·임베드 금지 로그(T6).
 - T3-T4 완료 (커밋 f0eebce, +T4 완료 커밋): URL 파서(5형식+스킴 생략) + PlaybackQueue(5모드, 셔플 사이클·UpdateItems 앵커 정합 — 리뷰 MAJOR 수정) + MonitorService(EnumDisplayMonitors, WM_DISPLAYCHANGE 메시지 창, UnregisterClassW 해제 — 리뷰 MAJOR 수정, ResolveTargets/ResolveAudioTarget 폴백 로직). 테스트 53/53.
   - 결정: 모니터 ID = `{device}@{x},{y}` 가독 조합 문자열 (해시 대신 — plan Design 동기화 완료). 이벤트명 MonitorsChanged.
   - 결정: 셔플 = 사이클 내 전곡 1회 소진 → 소진 후 재셔플(직전 곡 연속 회피). RepeatOne/RepeatAll/Random 표준 동작.
