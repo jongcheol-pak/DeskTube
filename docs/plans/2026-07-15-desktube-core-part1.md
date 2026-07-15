@@ -225,7 +225,7 @@
     - (i) "모니터 안정 ID 규칙?" → Design ②에서 확정(디바이스명 기반)
   - **Depends on**: T1
 
-- [ ] T5. WorkerW 배경창 호스트 (FR-2)
+- [x] T5. WorkerW 배경창 호스트 (FR-2)
   - **Type**: D
   - **Design**: ① `Interop/WallpaperInterop.cs`(FindWindowEx·SendMessageTimeout(0x052C)·SetParent·EnumWindows P/Invoke) + `Services/IWallpaperHost.cs`(인터페이스 — T7 목킹 seam) + `Services/WallpaperHost.cs`(구현) ② `WallpaperHost : IWallpaperHost` — 모니터별 배경 창(WinUIEx 없이 순수 Win32 스타일 차용한 WinUI `Window`) 생성→WorkerW에 SetParent→모니터 rect로 배치·복구·해제 담당. 24H2 이중 경로는 D3 ③ PlaybackCoordinator(T7)는 `IWallpaperHost`만 참조해 생성/파괴 지시, 창 내부 콘텐츠는 T6의 PlayerView를 받음 ④ 이번에 안 함: 창 전환 애니메이션, 아이콘 숨김 대응(24H2 "아이콘 표시 필요" 제약은 Known Workarounds로 문서화만)
   - **Acceptance**: Given Windows 11(24H2 포함), When 배경창 생성, Then 임의 색 콘텐츠가 바탕화면 아이콘 뒤·창 뒤에 표시되고(HUMAN-VERIFY) 앱 종료 시 원래 배경화면 복구; 빌드·기존 테스트 통과
@@ -270,6 +270,7 @@
   - **Edge Cases**:
     - 영상 종료 이벤트 중복 수신 → 큐 진행 멱등 처리(현재 곡 세대 토큰 비교)
     - 재생 시작 실패(WorkerW 실패·빈 리스트) → Result 실패 전파, 부분 생성된 창 정리(원자적 시작)
+    - 주기 점검에서 `IWallpaperHost.EnsureHealthy()` 실패 시 백오프 재시도 최대 3회 후 정지+상태 노출 (T5 Edge Case의 재시도 정책 — T5 리뷰 확인대로 호출자인 T7이 구현)
     - 동시 명령(트레이 재생 연타) → 코디네이터 내부 직렬화(DispatcherQueue 단일 스레드 처리)
     - 마지막 곡 종료 + 반복 없음 → 정지 상태 전환·창 유지 정책: 창 닫고 배경 복구
   - **Halt Forecast**:
