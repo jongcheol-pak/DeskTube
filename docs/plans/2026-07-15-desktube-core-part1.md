@@ -212,7 +212,7 @@
 
 - [ ] T4. 모니터 서비스 (FR-3 열거·식별)
   - **Type**: C
-  - **Design**: ① `Interop/MonitorInterop.cs`(EnumDisplayMonitors·GetMonitorInfo P/Invoke) + `Services/MonitorService.cs` ② `IMonitorService` — 모니터 목록(안정 ID=디바이스명+위치 해시, 이름, 좌표, 주 모니터 여부), `Changed` 이벤트(WM_DISPLAYCHANGE 수신 — 메시지 전용 창) ③ WallpaperHost(T5)·PlaybackCoordinator(T7)·설정 UI(part2)가 참조 ④ 이번에 안 함: DPI별 스케일 보정 로직(T5의 창 배치에서 물리 좌표 사용으로 충분), HDR 감지
+  - **Design**: ① `Interop/MonitorInterop.cs`(EnumDisplayMonitors·GetMonitorInfo P/Invoke) + `Services/MonitorService.cs` ② `IMonitorService` — 모니터 목록(안정 ID=디바이스명+위치 가독 조합 문자열 `{device}@{x},{y}` — 해시 대신 판독성 선택, 결정성 동일, 구현 시 확정), `MonitorsChanged` 이벤트(WM_DISPLAYCHANGE 수신 — 메시지 전용 창) ③ WallpaperHost(T5)·PlaybackCoordinator(T7)·설정 UI(part2)가 참조 ④ 이번에 안 함: DPI별 스케일 보정 로직(T5의 창 배치에서 물리 좌표 사용으로 충분), HDR 감지
   - **Acceptance**: Given 현재 시스템, When 모니터 열거, Then 연결된 모니터 수와 주 모니터 플래그가 실제와 일치(수동 1회 확인) + ID 생성·선택 상태 직렬화 로직은 xUnit(가짜 모니터 데이터)으로 검증
   - **Files**:
     - 주: `src/DeskTube/Services/MonitorService.cs`, `src/DeskTube/Interop/MonitorInterop.cs`

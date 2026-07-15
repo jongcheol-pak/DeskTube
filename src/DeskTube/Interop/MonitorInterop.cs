@@ -101,6 +101,10 @@ internal static class MonitorInterop
     private static extern bool DestroyWindow(IntPtr hwnd);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnregisterClassW(string className, IntPtr instance);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern IntPtr DefWindowProcW(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
@@ -114,6 +118,8 @@ internal static class MonitorInterop
     {
         private readonly WndProc _wndProc;
         private readonly Action _onDisplayChange;
+        private readonly string _className;
+        private readonly IntPtr _instance;
         private IntPtr _hwnd;
 
         internal DisplayChangeWindow(Action onDisplayChange)
@@ -134,9 +140,13 @@ internal static class MonitorInterop
                 throw new InvalidOperationException($"메시지 창 클래스 등록 실패 (Win32 오류 {Marshal.GetLastWin32Error()})");
             }
 
+            _className = className;
+            _instance = wndClass.hInstance;
+
             _hwnd = CreateWindowExW(0, className, null, 0, 0, 0, 0, 0, HwndMessage, IntPtr.Zero, wndClass.hInstance, IntPtr.Zero);
             if (_hwnd == IntPtr.Zero)
             {
+                UnregisterClassW(_className, _instance); // 창 생성 실패 시에도 등록 잔재를 남기지 않음
                 throw new InvalidOperationException($"메시지 창 생성 실패 (Win32 오류 {Marshal.GetLastWin32Error()})");
             }
         }
@@ -145,7 +155,15 @@ internal static class MonitorInterop
         {
             if (msg == WmDisplayChange)
             {
-                _onDisplayChange();
+                try
+                {
+                    _onDisplayChange();
+                }
+                catch (Exception ex)
+                {
+                    // reverse P/Invoke 콜백에서 예외가 새면 프로세스가 FailFast로 죽는다 — 로그만 남기고 삼킴
+                    Services.AppLog.Write($"모니터 변경 콜백 오류: {ex.GetType().Name} {ex.Message}");
+                }
             }
 
             return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -157,6 +175,8 @@ internal static class MonitorInterop
             {
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
+                // RegisterClassW 대응 해제 — 반복 생성/폐기 시 아톰 테이블 누적 방지
+                UnregisterClassW(_className, _instance);
             }
         }
     }
