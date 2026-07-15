@@ -18,12 +18,30 @@ public partial class App : Application
         InitializeComponent();
     }
 
+    /// <summary>서비스 그래프 (컴포지션 루트 — OnLaunched에서 비동기 초기화, UI는 null 확인 후 사용).</summary>
+    public static AppServices? Services { get; private set; }
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
 
         _window = new MainWindow();
         _window.Activate();
+
+        // async void 회피 — 실패는 로그로 남기고 앱은 뜬다 (UI가 Services null로 미준비 안내)
+        _ = InitializeServicesAsync();
+    }
+
+    private async Task InitializeServicesAsync()
+    {
+        try
+        {
+            Services = await AppServices.CreateAsync(_window!.DispatcherQueue);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"서비스 초기화 실패: {ex.GetType().Name} {ex.Message}");
+        }
     }
 
     /// <summary>

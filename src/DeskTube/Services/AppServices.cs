@@ -1,0 +1,92 @@
+using DeskTube.Models;
+using Microsoft.UI.Dispatching;
+
+namespace DeskTube.Services;
+
+/// <summary>
+/// 컴포지션 루트 — 서비스 수동 배선 (plan T7 Design ③).
+/// DI 컨테이너(Microsoft.Extensions.DependencyInjection)는 사전 승인 의존성 목록에 없어
+/// part1에서는 도입하지 않는다 (part2 ViewModel 배선 시 재검토 — plan Deferred).
+/// </summary>
+public sealed class AppServices : IDisposable
+{
+    private AppServices(
+        AppSettings settings,
+        IStateStore store,
+        PlaylistLibrary library,
+        IMonitorService monitors,
+        WallpaperHost wallpaperHost,
+        PlaybackCoordinator coordinator)
+    {
+        Settings = settings;
+        Store = store;
+        Library = library;
+        Monitors = monitors;
+        WallpaperHost = wallpaperHost;
+        Coordinator = coordinator;
+    }
+
+    public AppSettings Settings { get; }
+
+    public IStateStore Store { get; }
+
+    public PlaylistLibrary Library { get; }
+
+    public IMonitorService Monitors { get; }
+
+    public WallpaperHost WallpaperHost { get; }
+
+    public PlaybackCoordinator Coordinator { get; }
+
+    /// <summary>UI 스레드에서 호출 — 상태 로드 후 서비스 그래프를 조립한다.</summary>
+    public static async Task<AppServices> CreateAsync(DispatcherQueue dispatcherQueue)
+    {
+        var dataDir = Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+        IStateStore store = new JsonStateStore(dataDir);
+        var settings = await store.LoadSettingsAsync();
+
+        var library = new PlaylistLibrary(store);
+        await library.InitializeAsync();
+
+        IMonitorService monitors = new MonitorService();
+        var wallpaperHost = new WallpaperHost();
+
+        // 플레이어 팩토리 — 배경창(UI 타입) 접근은 이 배선에서만 (plan T7 Design ②)
+        async Task<Result<IPlayerHost>> CreatePlayerAsync(MonitorInfo monitor)
+        {
+            var window = wallpaperHost.GetWindow(monitor.Id);
+            if (window is null)
+            {
+                return Result<IPlayerHost>.Fail(ErrorCode.EnvironmentFailure, "배경창이 준비되지 않았습니다.");
+            }
+
+            var player = new PlayerHost(window);
+            var initialized = await player.InitializeAsync();
+            if (!initialized.IsSuccess)
+            {
+                player.Dispose();
+                return Result<IPlayerHost>.Fail(initialized.Code, initialized.Message);
+            }
+
+            return Result<IPlayerHost>.Ok(player);
+        }
+
+        var coordinator = new PlaybackCoordinator(
+            monitors,
+            wallpaperHost,
+            CreatePlayerAsync,
+            library,
+            store,
+            settings,
+            action => dispatcherQueue.TryEnqueue(() => action()));
+
+        return new AppServices(settings, store, library, monitors, wallpaperHost, coordinator);
+    }
+
+    public void Dispose()
+    {
+        Coordinator.Dispose();
+        WallpaperHost.Dispose();
+        Monitors.Dispose();
+    }
+}
