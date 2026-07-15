@@ -314,7 +314,7 @@
 - 단위 테스트: `dotnet test tests/DeskTube.Tests/DeskTube.Tests.csproj -c Debug -p:Platform=x64` (전체 통과 — 플랫폼 플래그 필수, T1 확인)
 - 포맷: `dotnet format --verify-no-changes` (T1에서 편집구성 확정 후)
 - 테스트 격리: `IStateStore` 경로 주입(임시 폴더), `IPlayerHost`/신호 인터페이스 목킹 — WinUI·interop 타입은 테스트 대상 제외
-- 수동 검증(HUMAN-VERIFY 누적 목록): 아이콘 뒤 렌더링(T5), 소리 포함 자동 재생·화질 스케일(T6), 2모니터 동기+단일 오디오(T7), 전체화면/잠금/세이버 일시정지(T8) — 각 task 완료 보고에 명시
+- 수동 검증(HUMAN-VERIFY 누적 목록): 아이콘 뒤 렌더링(T5), 소리 포함 자동 재생·화질 스케일(T6), 2모니터 동기+단일 오디오(T7), 전체화면/잠금/세이버 일시정지(T8), **클린 설치 후 최초 실행**(T2 — WinAppSDK 자동 초기화를 App 생성자 명시 호출로 대체해 초기화 시점이 원본보다 늦음, 프레임워크 패키지 최초 설치/복구 경로 실기 확인 필요) — 각 task 완료 보고에 명시
 
 ## Phase Ledger
 

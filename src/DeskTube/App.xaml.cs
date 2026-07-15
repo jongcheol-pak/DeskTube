@@ -13,22 +13,26 @@ public partial class App : Application
 
     public App()
     {
+        // 배포 초기화를 XAML 초기화(InitializeComponent)보다 먼저 수행 — 아래 메서드 주석 참조
+        InitializeWindowsAppRuntime();
         InitializeComponent();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
-        InitializeWindowsAppRuntime();
 
         _window = new MainWindow();
         _window.Activate();
     }
 
     /// <summary>
-    /// Windows App Runtime 배포 초기화.
-    /// csproj에서 모듈 자동 초기화를 껐으므로(테스트 호스트 호환 — csproj 주석 참조)
-    /// SDK의 DeploymentManagerAutoInitializer와 동일한 동작을 여기서 명시 수행한다.
+    /// Windows App Runtime 배포 초기화 (실패 처리·옵션은 SDK 원본 AutoInitializer와 동일:
+    /// OnErrorShowUI + 실패 시 HResult로 종료).
+    /// 단 실행 시점은 원본(module initializer — 어셈블리 타입 최초 접근 전)보다 늦은 App 생성자다
+    /// — 테스트 호스트가 앱 어셈블리를 로드할 때 초기화가 실행돼 죽는 문제(0x80040154) 때문에
+    /// csproj에서 자동 초기화를 끄고 여기서 호출한다. 프레임워크 패키지의 최초 설치/복구
+    /// 시나리오(클린 설치 후 첫 실행)는 실기 HUMAN-VERIFY 대상 (plan Verification Strategy).
     /// </summary>
     private static void InitializeWindowsAppRuntime()
     {
@@ -36,7 +40,6 @@ public partial class App : Application
         if (result.Status != DeploymentStatus.Ok)
         {
             var hr = result.ExtendedError.HResult;
-            AppLog.Write($"Windows App Runtime 초기화 실패: 0x{hr:X8}");
             Environment.Exit(hr);
         }
     }

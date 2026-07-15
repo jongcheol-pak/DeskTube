@@ -166,9 +166,9 @@ public sealed class PlaylistLibraryTests
             {
                 Directory.Delete(tempDir, recursive: true);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // 정리 실패 무시
+                // 정리 실패 무시 (프로덕션 코드와 동일 예외 집합)
             }
         }
     }

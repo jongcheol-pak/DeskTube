@@ -23,9 +23,9 @@ public sealed class JsonStateStoreTests : IDisposable
         {
             Directory.Delete(_tempDir, recursive: true);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // 임시 폴더 정리 실패는 테스트 결과에 영향 없음
+            // 임시 폴더 정리 실패는 테스트 결과에 영향 없음 (프로덕션 코드와 동일 예외 집합)
         }
     }
 
