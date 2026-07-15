@@ -267,7 +267,7 @@
     - (i) "화질 스케일 구현?" → player.html에서 iframe width/height를 스케일 값으로 설정 + CSS transform 확대 (D8 계약에 scale 명령 포함)
   - **Depends on**: T1, T5
 
-- [ ] T7. 재생 오케스트레이터 (FR-3 다중 동기·FR-4 오디오·FR-5)
+- [x] T7. 재생 오케스트레이터 (FR-3 다중 동기·FR-4 오디오·FR-5)
   - **Type**: D
   - **Design**: ① `Services/PlaybackCoordinator.cs`(싱글톤, DI) ② 책임 — 선택 모니터별 host 수명 관리(T5 `IWallpaperHost`·T6 `IPlayerHost` 인터페이스에만 의존, 생성은 팩토리 델리게이트 주입 — 테스트에서 가짜 구현 주입), PlaybackQueue로 곡 진행, 마스터-미러 동기(D4), 오디오 대상 적용(대상만 unmute·볼륨, 나머지 mute — FR-4), 재생/정지/볼륨 공개 API(트레이·UI가 part2에서 호출), 상태 저장(T2) ③ MonitorService·PowerPolicy(T8) 이벤트 소비, Models/Services 참조 ④ 이번에 안 함: 크로스페이드 등 전환 효과, 모니터별 개별 콘텐츠(Out of Scope)
   - **Acceptance**: Given 모니터 2개 선택+오디오 대상 지정(가짜 `IPlayerHost`/`IWallpaperHost` 주입), When 재생 시작·다음 곡·볼륨 변경·대상 모니터 분리, Then 명령 시퀀스가 기대와 일치(마스터 지정·미러 명령·mute 규칙·주 모니터 폴백·부분 실패 시 창 정리) — xUnit(T5·T6에서 정의한 두 인터페이스 목킹); 실기 2모니터 동기 재생은 HUMAN-VERIFY
