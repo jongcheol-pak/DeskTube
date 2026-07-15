@@ -195,7 +195,7 @@
     - (i) "테스트에서 ApplicationData 접근 불가?" → IStateStore에 경로 주입 가능하게 설계(테스트는 임시 폴더) — Verification Strategy 참조
   - **Depends on**: T1
 
-- [ ] T3. 유튜브 URL 파서 + 재생 큐 (FR-1 파싱·FR-7)
+- [x] T3. 유튜브 URL 파서 + 재생 큐 (FR-1 파싱·FR-7)
   - **Type**: C
   - **Design**: ① `Services/YouTubeUrlParser.cs`(static) — watch?v=/youtu.be//shorts//embed/ → 11자 videoId 추출, 실패 시 Result 실패 ② `Services/PlaybackQueue.cs` — 현재 리스트+모드로 다음/이전 항목 결정(셔플=Fisher-Yates 1회 순회, 랜덤=중복 허용, RepeatOne=현재 유지, RepeatAll=끝→처음) ③ PlaybackCoordinator(T7)가 소비, 외부 의존 없음(순수 로직) ④ 이번에 안 함: 재생 이력 통계, URL 리다이렉트 해석(네트워크 접근 없음 — 형식 파싱만)
   - **Acceptance**: Given 대표 URL 형식 6종(+비유튜브·빈 문자열·11자 아님), When 파싱, Then 정상 6종 videoId 일치·비정상 3종 실패 Result; Given 3곡 리스트, When 각 모드로 next 5회, Then 모드별 기대 순서(셔플은 "전곡 1회 소진" 속성 검증) — xUnit
