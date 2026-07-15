@@ -10,6 +10,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <!-- 테스트 호스트는 비패키지 exe라 Windows App Runtime 배포 초기화가 불가(0x80040154).
+         순수 로직만 테스트하므로 WinAppSDK 모듈 초기화를 끈다 (Foundation.targets의 스위치). -->
+    <WindowsAppSdkAutoInitialize>false</WindowsAppSdkAutoInitialize>
   </PropertyGroup>
 
   <ItemGroup>

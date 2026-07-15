@@ -16,6 +16,10 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <!-- 개발 중 서명 생략 (Store 제출 시 Store가 서명) -->
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <!-- WinAppSDK 모듈 자동 초기화 비활성 — 테스트 호스트가 앱 어셈블리를 로드할 때
+         WinRT 배포 초기화가 실행돼 0x80040154로 죽는 문제 방지.
+         동일 동작은 App.OnLaunched의 InitializeWindowsAppRuntime()이 명시 수행한다. -->
+    <WindowsAppSdkAutoInitialize>false</WindowsAppSdkAutoInitialize>
   </PropertyGroup>
 
   <ItemGroup>
