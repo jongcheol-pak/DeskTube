@@ -177,13 +177,13 @@
     - (ii-a) NuGet 의존성 추가(WindowsAppSDK 2.2, CommunityToolkit.Mvvm, xUnit 계열) + git init·로컬 커밋 → `## 사전 승인 항목`
   - **Depends on**: -
 
-- [ ] T2. 모델 + JSON 영속화 서비스 (FR-5·6·14 로직)
+- [x] T2. 모델 + JSON 영속화 서비스 (FR-5·6·14 로직)
   - **Type**: C
   - **Design**: ① `Models/`: `Playlist`, `PlaylistItem`, `AppSettings`, `PlaybackMode`(enum: Sequential/Shuffle/Random/RepeatOne/RepeatAll) ② `Services/`: `IStateStore` + `JsonStateStore` — 로드/저장(원자적 교체)·기본값 생성, `PlaylistLibrary` — CRUD + 상한(100/1000) 검증(Result 반환) ③ ViewModel(part2)·PlaybackCoordinator(T7)가 참조, 이들은 System.Text.Json에만 의존 ④ 이번에 안 함: 스키마 마이그레이터(schemaVersion 필드만 예약), 백업/복원 기능
   - **Acceptance**: Given 임의 플레이리스트 상태, When 저장 후 재로드, Then 왕복 일치; When 101번째 리스트/1001번째 항목 추가, Then Result 실패(상한 코드) 반환 — xUnit 테스트로 검증
   - **Files**:
     - 주: `src/DeskTube/Models/Playlist.cs`, `src/DeskTube/Models/AppSettings.cs`, `src/DeskTube/Services/JsonStateStore.cs`, `src/DeskTube/Services/PlaylistLibrary.cs`
-    - 동반: `src/DeskTube/Models/PlaybackMode.cs`
+    - 동반: `src/DeskTube/Models/PlaybackMode.cs`, `src/DeskTube/Models/Result.cs`(AGENTS Result 컨벤션 공용 타입), `src/DeskTube/Services/AppLog.cs`(D11 구현), `src/DeskTube/Services/IStateStore.cs`(DI 인터페이스 분리), `src/DeskTube/App.xaml.cs`+양쪽 csproj(WinAppSDK 자동 초기화 비활성 — 테스트 호스트 0x80040154 근본 해결, 구현 중 추가·리뷰 확인)
     - 테스트: `tests/DeskTube.Tests/JsonStateStoreTests.cs`, `tests/DeskTube.Tests/PlaylistLibraryTests.cs`
   - **Edge Cases**:
     - 손상된 JSON(파싱 실패) → 손상 파일을 `.bak`로 옮기고 기본값으로 시작 (조용한 데이터 소실 금지, 로그 기록)
@@ -321,6 +321,9 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 2be4513, +T2 완료 커밋): WinUI3 패키지형 스캐폴딩(WinAppSDK 2.2, slnx, xUnit x64) + Models/영속화(JsonStateStore 원자적 쓰기·손상 .bak 복구, PlaylistLibrary 상한 100×1000, Result/ErrorCode, AppLog). 빌드 경고 0, 테스트 16/16.
+  - 결정: 테스트 명령에 `-p:Platform=x64` 필수 (AnyCPU 시 MSIX 타깃 오류 — AGENTS 갱신은 Deferred).
+  - 결정: WinAppSDK 모듈 자동 초기화 비활성(`WindowsAppSdkAutoInitialize=false`) + App() 생성자에서 DeploymentManager.Initialize 명시 호출 — 테스트 호스트가 앱 어셈블리 로드 시 0x80040154로 죽는 문제의 근본 해결. 클린 설치 최초 실행은 HUMAN-VERIFY 목록에 등재.
 
 ## Next Steps
 - 권장 다음 액션: 사용자 승인 후 `pjc:implement-task`를 이 파일 경로로 호출 (분할 plan이므로 경로 명시)
