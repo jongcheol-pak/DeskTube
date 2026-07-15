@@ -210,7 +210,7 @@
     - (i) "셔플과 랜덤의 차이 정의?" → PRD FR-7에 명시 완료
   - **Depends on**: T1
 
-- [ ] T4. 모니터 서비스 (FR-3 열거·식별)
+- [x] T4. 모니터 서비스 (FR-3 열거·식별)
   - **Type**: C
   - **Design**: ① `Interop/MonitorInterop.cs`(EnumDisplayMonitors·GetMonitorInfo P/Invoke) + `Services/MonitorService.cs` ② `IMonitorService` — 모니터 목록(안정 ID=디바이스명+위치 가독 조합 문자열 `{device}@{x},{y}` — 해시 대신 판독성 선택, 결정성 동일, 구현 시 확정), `MonitorsChanged` 이벤트(WM_DISPLAYCHANGE 수신 — 메시지 전용 창) ③ WallpaperHost(T5)·PlaybackCoordinator(T7)·설정 UI(part2)가 참조 ④ 이번에 안 함: DPI별 스케일 보정 로직(T5의 창 배치에서 물리 좌표 사용으로 충분), HDR 감지
   - **Acceptance**: Given 현재 시스템, When 모니터 열거, Then 연결된 모니터 수와 주 모니터 플래그가 실제와 일치(수동 1회 확인) + ID 생성·선택 상태 직렬화 로직은 xUnit(가짜 모니터 데이터)으로 검증
@@ -321,6 +321,9 @@
 ## Retry Ledger
 
 ## Progress Log
+- T3-T4 완료 (커밋 f0eebce, +T4 완료 커밋): URL 파서(5형식+스킴 생략) + PlaybackQueue(5모드, 셔플 사이클·UpdateItems 앵커 정합 — 리뷰 MAJOR 수정) + MonitorService(EnumDisplayMonitors, WM_DISPLAYCHANGE 메시지 창, UnregisterClassW 해제 — 리뷰 MAJOR 수정, ResolveTargets/ResolveAudioTarget 폴백 로직). 테스트 53/53.
+  - 결정: 모니터 ID = `{device}@{x},{y}` 가독 조합 문자열 (해시 대신 — plan Design 동기화 완료). 이벤트명 MonitorsChanged.
+  - 결정: 셔플 = 사이클 내 전곡 1회 소진 → 소진 후 재셔플(직전 곡 연속 회피). RepeatOne/RepeatAll/Random 표준 동작.
 - T1-T2 완료 (커밋 2be4513, +T2 완료 커밋): WinUI3 패키지형 스캐폴딩(WinAppSDK 2.2, slnx, xUnit x64) + Models/영속화(JsonStateStore 원자적 쓰기·손상 .bak 복구, PlaylistLibrary 상한 100×1000, Result/ErrorCode, AppLog). 빌드 경고 0, 테스트 16/16.
   - 결정: 테스트 명령에 `-p:Platform=x64` 필수 (AnyCPU 시 MSIX 타깃 오류 — AGENTS 갱신은 Deferred).
   - 결정: WinAppSDK 모듈 자동 초기화 비활성(`WindowsAppSdkAutoInitialize=false`) + App() 생성자에서 DeploymentManager.Initialize 명시 호출 — 테스트 호스트가 앱 어셈블리 로드 시 0x80040154로 죽는 문제의 근본 해결. 클린 설치 최초 실행은 HUMAN-VERIFY 목록에 등재.
