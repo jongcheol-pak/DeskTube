@@ -45,6 +45,8 @@ public sealed class PlaybackCoordinator : IDisposable
 
     private int _timeTicks;
     private int _healthFailures;
+    private bool _handlingMonitorChange;
+    private bool _monitorChangePending;
 
     public PlaybackCoordinator(
         IMonitorService monitors,
@@ -192,9 +194,14 @@ public sealed class PlaybackCoordinator : IDisposable
         }
     }
 
-    /// <summary>정책 해제 — 사용자가 직접 정지한 상태면 재생하지 않는다.</summary>
+    /// <summary>정책 해제 — 정책이 걸어둔 일시정지만 풀며, 사용자가 직접 정지한 상태면 재생하지 않는다.</summary>
     public void PolicyResume()
     {
+        if (!_policyPaused)
+        {
+            return; // 정책 일시정지 중이 아니면 무시 (사용자 정지 상태를 임의로 풀지 않음)
+        }
+
         _policyPaused = false;
         if (Status == PlaybackStatus.Paused && !_userPaused)
         {
@@ -280,7 +287,7 @@ public sealed class PlaybackCoordinator : IDisposable
         else if (state == PlayerState.Ended && !_suppressEnded && Status == PlaybackStatus.Playing)
         {
             _suppressEnded = true; // 늦게 도착하는 중복 Ended 무시 (다음 곡 Playing까지)
-            _ = AdvanceAsync();
+            FireAndForget(AdvanceAsync, "다음 곡 진행");
         }
     }
 
@@ -297,7 +304,7 @@ public sealed class PlaybackCoordinator : IDisposable
             var entry = _players.Values.FirstOrDefault(e => ReferenceEquals(e.Player, sender));
             if (entry is not null)
             {
-                _ = RecreatePlayerAsync(entry.Monitor.Id);
+                FireAndForget(() => RecreatePlayerAsync(entry.Monitor.Id), "플레이어 재생성");
             }
 
             return;
@@ -307,7 +314,7 @@ public sealed class PlaybackCoordinator : IDisposable
         if (IsMaster(sender) && !_suppressEnded)
         {
             _suppressEnded = true;
-            _ = AdvanceAsync();
+            FireAndForget(AdvanceAsync, "재생 불가 곡 스킵");
         }
     }
 
@@ -410,7 +417,7 @@ public sealed class PlaybackCoordinator : IDisposable
         if (_healthFailures >= MaxHealthFailures)
         {
             // 백오프 재시도 소진 — 정지 (plan T7 Edge Case, T5 재시도 정책)
-            _ = StopAsync();
+            FireAndForget(StopAsync, "배경창 소실 정지");
         }
     }
 
@@ -438,25 +445,39 @@ public sealed class PlaybackCoordinator : IDisposable
         player.SetQualityScale(_settings.QualityScaleHeight);
         _players[monitorId] = old with { Player = player };
 
-        // 현재 곡을 마스터 시각으로 이어서 재생
-        var current = _queue?.Current;
-        if (current is not null && Status != PlaybackStatus.Stopped)
-        {
-            player.Load(current.VideoId);
-            var masterTime = MasterTime();
-            if (masterTime > 0)
-            {
-                player.Seek(masterTime);
-            }
-        }
-
+        ResumeCurrentTrack(player);
         ApplyAudioRouting();
     }
 
     private void OnMonitorsChanged(object? sender, EventArgs e) =>
-        _dispatch(() => _ = HandleMonitorsChangedAsync());
+        _dispatch(() => FireAndForget(HandleMonitorsChangedAsync, "모니터 구성 변경 처리"));
 
     private async Task HandleMonitorsChangedAsync()
+    {
+        // WM_DISPLAYCHANGE는 한 토폴로지 변경에 여러 번 올 수 있다 — await 중 겹침 방지 (재진입 가드)
+        if (_handlingMonitorChange)
+        {
+            _monitorChangePending = true;
+            return;
+        }
+
+        _handlingMonitorChange = true;
+        try
+        {
+            do
+            {
+                _monitorChangePending = false;
+                await HandleMonitorsChangedCoreAsync();
+            }
+            while (_monitorChangePending);
+        }
+        finally
+        {
+            _handlingMonitorChange = false;
+        }
+    }
+
+    private async Task HandleMonitorsChangedCoreAsync()
     {
         if (Status == PlaybackStatus.Stopped)
         {
@@ -507,20 +528,49 @@ public sealed class PlaybackCoordinator : IDisposable
             Subscribe(player);
             player.SetQualityScale(_settings.QualityScaleHeight);
             _players[target.Id] = new PlayerEntry(target, player);
-
-            var current = _queue?.Current;
-            if (current is not null)
-            {
-                player.Load(current.VideoId);
-                var masterTime = MasterTime();
-                if (masterTime > 0)
-                {
-                    player.Seek(masterTime);
-                }
-            }
+            ResumeCurrentTrack(player);
         }
 
         RefreshAudioTargetAfterRemoval();
+    }
+
+    /// <summary>새로 합류한 플레이어가 현재 곡을 마스터 시각으로 이어서 재생하게 한다 (재생성·모니터 추가 공통).</summary>
+    private void ResumeCurrentTrack(IPlayerHost player)
+    {
+        var current = _queue?.Current;
+        if (current is null || Status == PlaybackStatus.Stopped)
+        {
+            return;
+        }
+
+        player.Load(current.VideoId);
+        var masterTime = MasterTime();
+        if (masterTime > 0)
+        {
+            player.Seek(masterTime);
+        }
+    }
+
+    /// <summary>
+    /// 백그라운드 작업 공통 진입점 (plan D11 — 관찰되지 않는 Task의 예외 유실 방지).
+    /// 실패는 로그만 남긴다 — 상시 실행 앱은 백그라운드 예외 1회로 죽으면 안 된다.
+    /// (async void 대신 discard로 처리 — AGENTS 비동기 컨벤션)
+    /// </summary>
+    private static void FireAndForget(Func<Task> operation, string context)
+    {
+        _ = RunAsync();
+
+        async Task RunAsync()
+        {
+            try
+            {
+                await operation();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"{context} 중 오류: {ex.GetType().Name} {ex.Message}");
+            }
+        }
     }
 
     /// <summary>오디오 대상이 사라졌으면 주 모니터 우선으로 재결정 후 라우팅 재적용 (PRD FR-4 폴백).</summary>

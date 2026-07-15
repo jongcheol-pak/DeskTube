@@ -42,6 +42,7 @@
 - **다음 분할 plan**: docs/plans/2026-07-15-desktube-ui-part2.md — T1~T8 (전체의 후반부: 트레이·설정 UI·플레이리스트 UI·자동 시작·로그인·정보 화면·다국어·최종 검증, 미실행)
 - Microsoft Store 실제 제출(계정·심사)은 앱 완성 후 사용자가 진행 (plan 범위 밖)
 - AGENTS.md Test 명령에 `-p:Platform=x64` 추가 제안 — T1에서 확인: 플래그 없으면 앱 의존성이 AnyCPU로 빌드돼 MSIX 타깃 오류 (record-project-fact로 사용자 승인 후 갱신; 이 plan의 Verification Strategy에는 반영 완료)
+- DI 컨테이너(Microsoft.Extensions.DependencyInjection) 도입 여부 — part2 T2에서 재검토 (T7은 수동 컴포지션 루트로 배선, D13 참조 — 의존성 추가는 사용자 승인 필요)
 
 ## Investigation Log
 - 폴더 상태: Glob `*` → docs/prd.md, AGENTS.md, docs/plans/만 존재. 기존 코드·기존 plan·git 저장소 없음 (신규 프로젝트 확정)
@@ -152,6 +153,13 @@
 - **Chosen**: B
 - **Rationale**: 상시 실행 앱은 백그라운드 예외 1회로 죽으면 안 됨. AGENTS 컨벤션(Result 권장).
 - **Source**: AGENTS.md Conventions
+
+### D13. 서비스 배선 방식 (T7 구현 중 확정 — 컨벤션 편차 기록)
+- **Options**: A) Microsoft.Extensions.DependencyInjection 컨테이너 (AGENTS 컨벤션 명시) / B) 수동 컴포지션 루트 (`AppServices.cs`)
+- **Chosen**: B (part1 한정)
+- **Rationale**: A는 NuGet 의존성 추가가 필요한데 plan `## 사전 승인 항목`의 승인 목록에 없어 자율 루프가 추가할 수 없음(규칙 10). 서비스 6개 수동 배선은 명시적·직접적 코드 원칙에도 부합하며 가역적 — part2 T2(ViewModel 배선)에서 컨테이너 도입을 재검토한다.
+- **Source**: implement-task 규칙 10(미승인 의존성), AGENTS.md Conventions(DI — 편차 발생, 사용자 확인 대상)
+- **⚠️ 사용자 확인 필요**: AGENTS DI 컨벤션(Microsoft.Extensions.DependencyInjection)과 다름 — part1 최종 보고에서 확인 요청, part2에서 도입 여부 결정.
 
 ### D12. 테스트 전략
 - **Options**: A) UI 자동화 포함 / B) 로직만 xUnit (파서·큐·상한·오디오 대상 결정·일시정지 정책·저장 왕복), interop·UI·재생은 HUMAN-VERIFY
@@ -265,7 +273,7 @@
   - **Acceptance**: Given 모니터 2개 선택+오디오 대상 지정(가짜 `IPlayerHost`/`IWallpaperHost` 주입), When 재생 시작·다음 곡·볼륨 변경·대상 모니터 분리, Then 명령 시퀀스가 기대와 일치(마스터 지정·미러 명령·mute 규칙·주 모니터 폴백·부분 실패 시 창 정리) — xUnit(T5·T6에서 정의한 두 인터페이스 목킹); 실기 2모니터 동기 재생은 HUMAN-VERIFY
   - **Files**:
     - 주: `src/DeskTube/Services/PlaybackCoordinator.cs`
-    - 동반: `src/DeskTube/App.xaml.cs`(DI 등록·host 팩토리 배선)
+    - 동반: `src/DeskTube/App.xaml.cs`(Services 프로퍼티·비동기 초기화), `src/DeskTube/Services/AppServices.cs`(컴포지션 루트 — 구현 중 추가, D13 참조)
     - 테스트: `tests/DeskTube.Tests/PlaybackCoordinatorTests.cs`
   - **Edge Cases**:
     - 영상 종료 이벤트 중복 수신 → 큐 진행 멱등 처리(현재 곡 세대 토큰 비교)
