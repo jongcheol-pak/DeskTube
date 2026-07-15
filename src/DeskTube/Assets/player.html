@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>DeskTube Player</title>
+<style>
+  /* 배경창의 바닥색 — 영상 로드 전 검정 유지 (WallpaperWindow XAML 주석 참조) */
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+  #stage { position: absolute; top: 0; left: 0; transform-origin: top left; }
+  #stage.fill { width: 100%; height: 100%; transform: none; }
+  #stage iframe { width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<div id="stage" class="fill"><div id="player"></div></div>
+<script>
+'use strict';
+
+// ============================================================================
+// DeskTube 플레이어 브리지 (plan D8)
+//   C# -> JS 명령: load / play / pause / volume / mute / seek / scale
+//   JS -> C# 이벤트: ready / state / error / time
+// setPlaybackQuality는 no-op이므로(PRD 제약) 화질은 렌더 해상도 스케일로 간접 제어한다.
+// ============================================================================
+
+let player = null;
+let playerReady = false;
+let pending = [];          // ready 전에 도착한 명령 큐
+let scaleHeight = 0;       // 0 = 원본 (창 크기 그대로)
+let desiredMuted = false;  // 코디네이터가 지정한 음소거 상태 (워치독 복원 기준)
+let desiredVolume = 100;
+let autoplayWatchdog = null;
+
+function post(obj) {
+  try { window.chrome.webview.postMessage(obj); } catch (e) { /* 호스트 없음 - 무시 */ }
+}
+
+// ---- 화질 간접 제어 (FR-13): 스테이지를 목표 해상도로 줄이고 CSS로 확대 ----
+function applyScale() {
+  const stage = document.getElementById('stage');
+  const w = window.innerWidth, h = window.innerHeight;
+  if (!scaleHeight || scaleHeight <= 0 || scaleHeight >= h) {
+    stage.className = 'fill';
+    stage.style.width = '';
+    stage.style.height = '';
+    stage.style.transform = '';
+  } else {
+    const factor = h / scaleHeight;
+    stage.className = '';
+    stage.style.width = Math.round(w / factor) + 'px';
+    stage.style.height = scaleHeight + 'px';
+    stage.style.transform = 'scale(' + factor + ')';
+  }
+}
+window.addEventListener('resize', applyScale);
+
+// ---- C# 명령 수신 ----
+window.chrome.webview.addEventListener('message', (e) => {
+  const cmd = e.data;
+  if (cmd.Type === 'scale') { scaleHeight = cmd.Height || 0; applyScale(); return; }
+  if (!playerReady) { pending.push(cmd); return; }
+  execute(cmd);
+});
+
+function execute(cmd) {
+  switch (cmd.Type) {
+    case 'load':
+      player.loadVideoById(cmd.VideoId);
+      armAutoplayWatchdog();
+      break;
+    case 'play':
+      player.playVideo();
+      armAutoplayWatchdog();
+      break;
+    case 'pause':
+      player.pauseVideo();
+      break;
+    case 'volume':
+      desiredVolume = cmd.Volume;
+      player.setVolume(cmd.Volume);
+      break;
+    case 'mute':
+      desiredMuted = !!cmd.Muted;
+      if (desiredMuted) { player.mute(); } else { player.unMute(); player.setVolume(desiredVolume); }
+      break;
+    case 'seek':
+      player.seekTo(cmd.Seconds, true);
+      break;
+  }
+}
+
+// 자동재생 인자가 안 먹는 환경 대비 (plan Risks): 2초 내 재생이 시작되지 않으면
+// 음소거로 강제 시작(muted autoplay는 항상 허용) 후 onStateChange에서 원복한다.
+function armAutoplayWatchdog() {
+  clearTimeout(autoplayWatchdog);
+  autoplayWatchdog = setTimeout(() => {
+    if (player && player.getPlayerState && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+      player.mute();
+      player.playVideo();
+    }
+  }, 2000);
+}
+
+// ---- IFrame API 로드 ----
+const tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+tag.onerror = () => post({ type: 'error', code: -1 }); // 네트워크 실패 — C#이 재시도 (plan Edge Case)
+document.head.appendChild(tag);
+
+window.onYouTubeIframeAPIReady = function () {
+  player = new YT.Player('player', {
+    width: '100%',
+    height: '100%',
+    playerVars: {
+      autoplay: 0,       // 재생은 항상 명령으로 시작 (코디네이터 소유)
+      controls: 0,       // 배경화면 — 컨트롤 UI 제거
+      disablekb: 1,
+      fs: 0,
+      iv_load_policy: 3, // 오버레이 주석 숨김
+      rel: 0,
+      playsinline: 1
+    },
+    events: {
+      onReady: () => {
+        playerReady = true;
+        post({ type: 'ready' });
+        const queued = pending;
+        pending = [];
+        queued.forEach(execute);
+        // 재생 중 1초 주기 시각 보고 — 다중 모니터 동기 보정용 (plan D4)
+        setInterval(() => {
+          if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            post({ type: 'time', current: player.getCurrentTime(), duration: player.getDuration() });
+          }
+        }, 1000);
+      },
+      onStateChange: (e) => {
+        // 워치독이 음소거로 시작시킨 경우, 재생 확인 후 지정 상태로 복원
+        if (e.data === YT.PlayerState.PLAYING && !desiredMuted && player.isMuted()) {
+          player.unMute();
+          player.setVolume(desiredVolume);
+        }
+        post({ type: 'state', state: e.data });
+      },
+      onError: (e) => post({ type: 'error', code: e.data }) // 101/150 = 임베드 금지 (코디네이터가 스킵)
+    }
+  });
+};
+</script>
+</body>
+</html>

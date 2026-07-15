@@ -24,6 +24,10 @@
 
   <ItemGroup>
     <Content Include="Assets\**\*.png" />
+    <!-- 플레이어 브리지 HTML — 가상 호스트 매핑으로 서빙 (PlayerHost) -->
+    <Content Include="Assets\player.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
