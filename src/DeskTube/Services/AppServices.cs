@@ -16,7 +16,8 @@ public sealed class AppServices : IDisposable
         PlaylistLibrary library,
         IMonitorService monitors,
         WallpaperHost wallpaperHost,
-        PlaybackCoordinator coordinator)
+        PlaybackCoordinator coordinator,
+        PowerPolicyService powerPolicy)
     {
         Settings = settings;
         Store = store;
@@ -24,6 +25,7 @@ public sealed class AppServices : IDisposable
         Monitors = monitors;
         WallpaperHost = wallpaperHost;
         Coordinator = coordinator;
+        PowerPolicy = powerPolicy;
     }
 
     public AppSettings Settings { get; }
@@ -37,6 +39,8 @@ public sealed class AppServices : IDisposable
     public WallpaperHost WallpaperHost { get; }
 
     public PlaybackCoordinator Coordinator { get; }
+
+    public PowerPolicyService PowerPolicy { get; }
 
     /// <summary>UI 스레드에서 호출 — 상태 로드 후 서비스 그래프를 조립한다.</summary>
     public static async Task<AppServices> CreateAsync(DispatcherQueue dispatcherQueue)
@@ -80,11 +84,18 @@ public sealed class AppServices : IDisposable
             settings,
             action => dispatcherQueue.TryEnqueue(() => action()));
 
-        return new AppServices(settings, store, library, monitors, wallpaperHost, coordinator);
+        // 자동 일시정지 정책 연동 (NFR-1 — T8): 신호 합성 → 코디네이터 정책 일시정지/재개
+        var powerPolicy = new PowerPolicyService(settings);
+        powerPolicy.PauseRequested += (_, _) => coordinator.PolicyPause();
+        powerPolicy.ResumeRequested += (_, _) => coordinator.PolicyResume();
+        powerPolicy.StartMonitoring(dispatcherQueue);
+
+        return new AppServices(settings, store, library, monitors, wallpaperHost, coordinator, powerPolicy);
     }
 
     public void Dispose()
     {
+        PowerPolicy.Dispose();
         Coordinator.Dispose();
         WallpaperHost.Dispose();
         Monitors.Dispose();
