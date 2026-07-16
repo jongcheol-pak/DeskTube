@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DeskTube.Models;
 using DeskTube.Services;
 
@@ -50,6 +51,8 @@ public partial class SettingsViewModel : ObservableObject
 {
     private AppServices? _services;
     private readonly StartupService _startup = new();
+    private YouTubeSessionService? _session;
+    private bool _signedIn;
 
     /// <summary>초기값 채우는 중 — 변경 적용(저장·서비스 호출) 억제.</summary>
     private bool _loading;
@@ -137,6 +140,19 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool AutoStartStatusVisible { get; set; }
 
+    [ObservableProperty]
+    public partial string? AccountStatusText { get; set; }
+
+    [ObservableProperty]
+    public partial string? AccountButtonText { get; set; }
+
+    /// <summary>세션 확인/전환 진행 중 — 버튼 중복 조작 방지.</summary>
+    [ObservableProperty]
+    public partial bool AccountActionAvailable { get; set; }
+
+    /// <summary>로그인 창 열기 요청 — 창 생성은 View(SettingsPage)가 담당 (MVVM 경계).</summary>
+    public event EventHandler? SignInRequested;
+
     /// <summary>페이지 진입 시 호출. 서비스 준비 전이면 준비 완료 이벤트를 1회 대기한다.</summary>
     public void Load()
     {
@@ -217,8 +233,64 @@ public partial class SettingsViewModel : ObservableObject
             _loading = false;
         }
 
-        // StartupTask 상태는 비동기 조회 — 로드 플래그 밖에서 실제 상태로 채움
+        // StartupTask·로그인 세션 상태는 비동기 조회 — 로드 플래그 밖에서 실제 상태로 채움
         _ = RefreshAutoStartAsync();
+        _session = new YouTubeSessionService(App.MainWindowHandle);
+        _ = RefreshSessionAsync();
+    }
+
+    /// <summary>로그인 상태 갱신 — 페이지 로드·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>
+    public async Task RefreshSessionAsync()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        AccountActionAvailable = false;
+        AccountStatusText = Loc.Get("Settings_AccountChecking");
+        try
+        {
+            _signedIn = await _session.IsSignedInAsync();
+            AccountStatusText = Loc.Get(_signedIn ? "Settings_AccountSignedIn" : "Settings_AccountSignedOut");
+            AccountButtonText = Loc.Get(_signedIn ? "Settings_SignOut" : "Settings_SignIn");
+            AccountActionAvailable = true;
+        }
+        catch (Exception ex)
+        {
+            // 확인 실패(WebView2 런타임 문제 등) — 버튼 비활성으로 방어
+            AppLog.Write($"로그인 상태 확인 실패: {ex.GetType().Name} {ex.Message}");
+            AccountStatusText = Loc.Get("Settings_AccountUnknown");
+            AccountActionAvailable = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task AccountActionAsync()
+    {
+        if (_session is null || _services is null)
+        {
+            return;
+        }
+
+        if (!_signedIn)
+        {
+            SignInRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        AccountActionAvailable = false;
+        try
+        {
+            await _session.SignOutAsync();
+            _services.Coordinator.ReloadCurrentTrack(); // 재생 중이면 비로그인 세션으로 다시 로드 (plan D4)
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"로그아웃 실패: {ex.GetType().Name} {ex.Message}");
+        }
+
+        await RefreshSessionAsync();
     }
 
     private async Task RefreshAutoStartAsync()

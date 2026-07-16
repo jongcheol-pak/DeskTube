@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="DeskTube.Views.LoginWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- 구글 차단 가능성 상시 안내 (plan T5 Edge — 외부 페이지 상태는 감지 불가) -->
+        <InfoBar
+            x:Uid="LoginNotice"
+            Grid.Row="0"
+            IsOpen="True"
+            IsClosable="False"
+            Severity="Informational" />
+        <WebView2 x:Name="LoginWebView" Grid.Row="1" />
+    </Grid>
+</Window>

@@ -243,4 +243,34 @@
   <data name="Settings_AutoStartByPolicy" xml:space="preserve">
     <value>This setting is managed by your organization and cannot be changed here.</value>
   </data>
+  <data name="AccountCard.Header" xml:space="preserve">
+    <value>YouTube account</value>
+  </data>
+  <data name="AccountCard.Description" xml:space="preserve">
+    <value>Sign in to apply your YouTube Premium benefits to background playback</value>
+  </data>
+  <data name="Settings_AccountChecking" xml:space="preserve">
+    <value>Checking...</value>
+  </data>
+  <data name="Settings_AccountSignedIn" xml:space="preserve">
+    <value>Signed in</value>
+  </data>
+  <data name="Settings_AccountSignedOut" xml:space="preserve">
+    <value>Not signed in</value>
+  </data>
+  <data name="Settings_AccountUnknown" xml:space="preserve">
+    <value>Could not check the sign-in status.</value>
+  </data>
+  <data name="Settings_SignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Settings_SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Sign in to YouTube</value>
+  </data>
+  <data name="LoginNotice.Message" xml:space="preserve">
+    <value>Sign in on the Google page. This window closes automatically when you finish. If sign-in does not work, it may be blocked by Google policy.</value>
+  </data>
 </root>

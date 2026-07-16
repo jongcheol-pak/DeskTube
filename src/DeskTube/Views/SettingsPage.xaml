@@ -85,6 +85,20 @@
                     IsClosable="False"
                     Severity="Warning" />
 
+                <!-- 유튜브 계정 (FR-15 — T5) -->
+                <controls:SettingsCard x:Uid="AccountCard">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock
+                            Text="{x:Bind ViewModel.AccountStatusText, Mode=OneWay}"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource BodyTextBlockStyle}" />
+                        <Button
+                            Content="{x:Bind ViewModel.AccountButtonText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.AccountActionCommand}"
+                            IsEnabled="{x:Bind ViewModel.AccountActionAvailable, Mode=OneWay}" />
+                    </StackPanel>
+                </controls:SettingsCard>
+
                 <!-- 자동 일시정지 정책 (NFR-1) -->
                 <controls:SettingsExpander x:Uid="PauseExpander" IsExpanded="True">
                     <controls:SettingsExpander.Items>

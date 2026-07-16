@@ -273,6 +273,21 @@ public sealed class PlaybackCoordinator : IDisposable
         }
     }
 
+    /// <summary>
+    /// 로그아웃 등 세션 변경 후 현재 곡을 전 플레이어에서 다시 로드한다 (part2 T5 — additive).
+    /// 정지 상태면 아무것도 하지 않는다.
+    /// </summary>
+    public void ReloadCurrentTrack()
+    {
+        var current = _queue?.Current;
+        if (current is null || Status == PlaybackStatus.Stopped)
+        {
+            return;
+        }
+
+        LoadAll(current);
+    }
+
     public async Task SetQualityScaleAsync(int height)
     {
         _settings.QualityScaleHeight = Math.Max(0, height);

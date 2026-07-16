@@ -34,6 +34,12 @@ public partial class App : Application
     /// </summary>
     public static event EventHandler? ServicesInitialized;
 
+    /// <summary>세션 프로브 컨트롤러의 부모 창 핸들 (T5 — 화면 표시 없음, 창 미생성 시 Zero).</summary>
+    internal static IntPtr MainWindowHandle =>
+        Current is App { _window: not null } app
+            ? WinRT.Interop.WindowNative.GetWindowHandle(app._window)
+            : IntPtr.Zero;
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
