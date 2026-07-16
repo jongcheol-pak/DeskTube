@@ -377,9 +377,9 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
     - (ii-a) MonitorChoice 클래스 파일 분리(구조 변경·계획된 공개 심볼 이동, 호출부 2곳 grep 확정) → `## 사전 승인 항목`
   - **Depends on**: T2
 
-- [ ] T5. 홈 화면 재설계
+- [x] T5. 홈 화면 재설계
   - **Type**: D
-  - **Design**: ① `Views/HomePage.xaml(.cs)`·`ViewModels/HomeViewModel.cs` 확장 ② 신규 심볼 = HomeViewModel 멤버: `MonitorPanel`(MonitorPanelViewModel 소유), `IsPlaying`·`PlayingLabel`(StatusChanged 구독), `StopCommand`(Coordinator 정지 재사용), `QuickChips`(ObservableCollection — Library.Playlists 투영), `OpenPlaylistCommand(Guid)`(MainWindow.NavigateToPlaylists 호출) ③ HomeViewModel→Coordinator/Library/MonitorPanelViewModel 참조, HomePage→MainWindow.NavigateToPlaylists(T3 신설) 호출 ④ 비추상화: 칩·pill을 별도 컨트롤로 뽑지 않음(홈 전용)
+  - **Design**: ① `Views/HomePage.xaml(.cs)`·`ViewModels/HomeViewModel.cs` 확장 ② 신규 심볼 = HomeViewModel 멤버: `MonitorPanel`(MonitorPanelViewModel 소유), `IsPlaying`·`PlayingLabel`(StatusChanged 구독), `StopCommand`(Coordinator 정지 재사용), `QuickChips`(ObservableCollection — Library.Playlists 투영), 칩 클릭은 HomePage 코드비하인드 `OnChipClick`이 MainWindow.NavigateToPlaylists 호출(당초 `OpenPlaylistCommand` 계획을 순수 화면 이동이라 View 담당으로 대체 — spec 리뷰 MINOR 소급 정정) ③ HomeViewModel→Coordinator/Library/MonitorPanelViewModel 참조, HomePage→MainWindow.NavigateToPlaylists(T3 신설) 호출 ④ 비추상화: 칩·pill을 별도 컨트롤로 뽑지 않음(홈 전용)
   - **Acceptance**: Given 홈, When URL 입력·재생/정지·모니터 토글·칩 클릭, Then — 재생 시작(기존 PlayAsync 계약 불변), pill이 재생 중에만 표시되고 라벨 "디스플레이 N에서 재생 중"·정지 동작, 모니터 카드 선택이 설정과 동일 상태 공유, 칩 클릭 시 플레이리스트 페이지로 이동+해당 리스트 선택 (기계 검증: 빌드+테스트 / 시각·이동 동작 ⏳ HUMAN-VERIFY). 시안 홈 스펙(분해 표) 전 항목 반영
   - **Files**:
     - 주: `src/DeskTube/Views/HomePage.xaml(.cs)`, `src/DeskTube/ViewModels/HomeViewModel.cs`
