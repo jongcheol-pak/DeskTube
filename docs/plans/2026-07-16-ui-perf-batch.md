@@ -202,6 +202,9 @@
 ## Retry Ledger
 
 ## Progress Log
+- T3·T5 완료 (커밋 9f796ad, 3f4da69): FitMode 3종(player.html applyLayout 통합·IPlayerHost.SetFitMode·Coordinator 3지점 초기 적용·설정 콤보·테스트 83/83) + WinUIEx 2.9.2(WindowManager 창 상태 복원·Mica·타이틀바·라이선스 인벤토리).
+  - 결정: WindowEx 상속 대신 WindowManager.Get(this) — XamlTypeInfo 생성 코드 CS0618(obsolete Icon) 억제 불가로 경고 0 원칙과 양립하는 동등 API 채택(WinUIEx 문서 검증). D4 기능 a~d 전부 충족.
+  - 결정: WinUIEx 추가 시 라이선스 게이트(LicenseInventoryTests)가 실패 — Assets/licenses/WinUIEx.txt(MIT)+index.json 동반 갱신이 의존성 추가의 필수 절차임을 확인.
 - T1-T2 완료 (커밋 2bb2a31, 6ce02ae): 4페이지 NavigationCacheMode.Required + SettingsViewModel Load 분리(최초 1회 프로브/재진입 RefreshMonitors), 음소거 토글 UI+resw. 빌드 경고 0·테스트 81/81·리뷰 spec/quality 둘 다 첫 판 OK.
   - 결정: SettingsPage SignInRequested 구독 ctor→Loaded 이동(캐시 재진입 핸들러 소실 방지). 재진입 시 IsMuted 재동기화 추가(트레이 변경 stale 방지 — T2 acceptance 충족 목적, D7 "모니터만"의 예외).
 
