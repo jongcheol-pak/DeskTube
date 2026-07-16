@@ -345,7 +345,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 
 - [ ] T3. 셸 재설계 — 타이틀바·사이드바·콘텐츠 카드
   - **Type**: D
-  - **Design**: ① `MainWindow.xaml(.cs)` 내 재구성 (신규 파일 없음) ② 신규 심볼 — `OnNavSelectionChanged` switch에 "settings" Tag 분기 추가, `NavigateToPlaylists(Guid)` internal 메서드 신설(T5의 칩 이동 진입점 — 책임: Nav 선택 + Frame.Navigate(파라미터)), `App`에 `internal MainWindow? Main => _window as MainWindow;` 접근자 신설(HomePage의 MainWindow 참조 획득 수단 — 사전 승인 항목 등록) ③ App.ShowMainWindow·ShowNotice 시그니처 보존, HomePage가 `((App)Application.Current).Main?.NavigateToPlaylists(...)`로 호출(의존 방향: View→App→MainWindow) ④ 비추상화: 내비게이션 서비스/메시징 도입 안 함 — 창 1개·페이지 4개 규모에 과함
+  - **Design**: ① `MainWindow.xaml(.cs)` 내 재구성 (신규 파일 없음) ② 신규 심볼 — `OnNavSelectionChanged` switch에 "settings" Tag 분기 추가, `NavigateToPlaylists(Guid)` internal 메서드 신설(T5의 칩 이동 진입점 — 책임: Nav 선택 + Frame.Navigate(파라미터)), `App`에 `internal MainWindow? Main => _window as MainWindow;` 접근자 신설(HomePage의 MainWindow 참조 획득 수단 — 사전 승인 항목 등록), `ApplyCaptionButtonColors`/`GetTokenColor` private 헬퍼(시스템 캡션 버튼 색을 토큰과 정합 — 자체 버튼 구현이 아니라 색만 지정, Q3 범위 내. 구현 중 추가분 소급 기재 — spec 리뷰 MINOR 반영) ③ App.ShowMainWindow·ShowNotice 시그니처 보존, HomePage가 `((App)Application.Current).Main?.NavigateToPlaylists(...)`로 호출(의존 방향: View→App→MainWindow) ④ 비추상화: 내비게이션 서비스/메시징 도입 안 함 — 창 1개·페이지 4개 규모에 과함
   - **Acceptance**: Given 앱 실행, When 각 내비 항목 클릭, Then 4페이지 전환 동작 유지(설정 포함) + 시안 셸 스펙 충족 — 타이틀바 44px·아이콘 18px·앱명 13px, 사이드바 220px(토글 버튼 없음), 정보가 footer, 활성 항목 코럴 인디케이터, 콘텐츠 좌상단 라운드 카드, Mica 제거·불투명 배경 (기계 검증: 빌드 + 기존 테스트 100 통과 / 시각은 ⏳ HUMAN-VERIFY). 트레이 "설정 열기"·창 닫기→숨김 동작 불변
   - **Files**:
     - 주: `src/DeskTube/MainWindow.xaml`, `src/DeskTube/MainWindow.xaml.cs`

@@ -14,7 +14,7 @@
         <Grid x:Name="AppTitleBar" Grid.Row="0" Height="{StaticResource AppTitleBarHeight}">
             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="16,0,0,0">
                 <!-- Border+ImageBrush — Image는 CornerRadius 클리핑이 안 돼 배경 브러시로 라운드 처리 -->
-                <Border Width="18" Height="18" CornerRadius="5">
+                <Border Width="18" Height="18" CornerRadius="{StaticResource AppIconCornerRadius}">
                     <Border.Background>
                         <ImageBrush ImageSource="ms-appx:///Assets/Square44x44Logo.png" Stretch="UniformToFill" />
                     </Border.Background>
