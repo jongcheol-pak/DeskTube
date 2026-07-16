@@ -171,7 +171,7 @@
   - **Halt Forecast**: 없음 — 표준 API, 파괴적 아님
   - **Depends on**: T6
 
-- [ ] T8. 문서 반영 (AGENTS 규칙 3 개정·README)
+- [x] T8. 문서 반영 (AGENTS 규칙 3 개정·README)
   - **Type**: A
   - **Design**: ① AGENTS.md 디자인 규칙 3 개정 — "테마는 시스템에 맡긴다" → "테마 기본은 시스템 추종, 수동 전환(라이트/다크) 지원 — 전환은 루트 RequestedTheme 한 곳만(ThemeHelper)" (사용자 합의 완료, FR-17) ② README 기능 목록에 크기 모드·테마·음소거 토글·창 상태 복원 반영
   - **Acceptance**: AGENTS 규칙 3이 FR-17과 정합, README가 실제 기능과 일치

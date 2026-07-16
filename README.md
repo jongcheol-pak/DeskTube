@@ -15,6 +15,11 @@
 - **유튜브 로그인**: 본인 구글 계정으로 로그인하면 프리미엄 혜택(광고 없음)이 배경 재생에도 적용 — 세션 쿠키는 로컬 WebView2 프로필에만 저장 (FR-15)
 - **자동 일시정지**: 전체 화면 앱 사용 중·배터리 절약 모드·화면 잠금 시 재생을 멈춰 자원 절약 (NFR-1, 토글 3종)
 - **화질 스케일**: 렌더링 세로 해상도 제한(원본/1080/720/480)으로 시스템 부하 조절 (FR-13)
+- **음소거 토글**: 설정 볼륨 카드에서 켬/끔 — 트레이 볼륨 체크와 상태 공유 (FR-5)
+- **동영상 크기 모드**: 채움(16:9로 화면 덮고 크롭, 기본) / 맞춤(영상비 유지 레터박스) / 늘리기(화면에 꽉 차게 왜곡) (FR-16)
+- **앱 테마**: 시스템 설정 사용 / 라이트 / 다크 — 변경 즉시 모든 창에 적용 (FR-17)
+- **부하 절감 옵션**: 소리 없는(미러) 모니터 화질을 720 이하로 하향(opt-in) + 정지·창 숨김 시 메모리 자동 반환 (NFR-2)
+- **창 상태 복원**: 설정 창 크기·위치를 재시작 후 복원(WinUIEx), Mica 배경·커스텀 타이틀바
 - **다국어**: 한국어/English + 시스템 언어 추종 (NFR-4)
 - **정보 화면**: 버전·개인정보 처리방침 요지·오픈소스 라이선스 전문 (FR-11·12)
 
@@ -46,20 +51,21 @@ src/DeskTube/
 ├── App.xaml.cs            # 진입점 — 언어 선적용, 조용 시작 분기, 컴포지션 루트(AppServices) 초기화
 ├── MainWindow.xaml        # NavigationView 셸 (홈/플레이리스트/정보 + 설정)
 ├── Views/                 # HomePage(URL 즉시 재생), PlaylistsPage, SettingsPage, AboutPage,
-│                          # LoginWindow(유튜브 로그인), WallpaperWindow(배경 표면)
+│                          # LoginWindow(유튜브 로그인)
 ├── ViewModels/            # 페이지별 VM — App.Services(수동 컴포지션 루트) 소비
 ├── Services/
-│   ├── PlaybackCoordinator# 재생 상태 단일 소유자 — 큐 진행·다중 모니터 동기·오디오 라우팅
+│   ├── PlaybackCoordinator# 재생 상태 단일 소유자 — 큐 진행·다중 모니터 동기·오디오 라우팅·크기 모드·미러 하향
 │   ├── WallpaperHost      # WorkerW 부착/해제 (24H2 자식·구형 형제 이중 탐색), 배경 복구
-│   ├── PlayerHost         # WebView2 + player.html IFrame 브리지 (가상 호스트 서빙)
+│   ├── PlayerHost         # CoreWebView2Controller + player.html IFrame 브리지 (가상 호스트 서빙)
 │   ├── PlaylistLibrary    # 리스트 CRUD + 상한 (100×1000)
 │   ├── MonitorService     # 모니터 열거·변경 감지(WM_DISPLAYCHANGE)·대상 해석
 │   ├── PowerPolicyService # 자동 일시정지 신호 합성 (전체화면 QUNS·배터리 세이버·세션 잠금)
 │   ├── TrayIconService    # H.NotifyIcon 트레이 (메뉴 5항목)
 │   ├── StartupService     # StartupTask 상태·조용 시작 판별 (-startup 인자 폴백)
 │   ├── YouTubeSessionService # 로그인 세션 (SAPISID 쿠키) 확인·로그아웃
+│   ├── ThemeHelper        # 앱 테마 적용 (창 등록·즉시 전환 — FR-17)
 │   └── JsonStateStore     # settings/playlists JSON 원자적 영속화 (손상 .bak 복구)
-├── Interop/               # WorkerW·모니터·세션 Win32 P/Invoke
+├── Interop/               # WallpaperSurface(Win32 배경창)·WorkerW·모니터·세션·워킹셋 P/Invoke
 └── Strings/               # en-US(폴백)·ko-KR .resw
 ```
 
