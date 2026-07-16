@@ -147,4 +147,85 @@
   <data name="PauseSessionLockCard.Header" xml:space="preserve">
     <value>While the screen is locked</value>
   </data>
+  <data name="NavPlaylists.Content" xml:space="preserve">
+    <value>Playlists</value>
+  </data>
+  <data name="PlaylistsHeader.Text" xml:space="preserve">
+    <value>Playlists</value>
+  </data>
+  <data name="NewPlaylistButton.Content" xml:space="preserve">
+    <value>New playlist</value>
+  </data>
+  <data name="PlaylistsPlayButton.Content" xml:space="preserve">
+    <value>Play this list</value>
+  </data>
+  <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
+    <value>Add a YouTube video URL</value>
+  </data>
+  <data name="AddItemButton.Content" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="NoSelectionText.Text" xml:space="preserve">
+    <value>Select a playlist on the left.</value>
+  </data>
+  <data name="ItemUpButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Move up</value>
+  </data>
+  <data name="ItemDownButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Move down</value>
+  </data>
+  <data name="ItemDeleteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RenameMenuItem.Text" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Playlists_NewDialogTitle" xml:space="preserve">
+    <value>New playlist</value>
+  </data>
+  <data name="Playlists_RenameDialogTitle" xml:space="preserve">
+    <value>Rename playlist</value>
+  </data>
+  <data name="Playlists_NamePlaceholder" xml:space="preserve">
+    <value>Playlist name</value>
+  </data>
+  <data name="Playlists_DeleteConfirmTitle" xml:space="preserve">
+    <value>Delete playlist</value>
+  </data>
+  <data name="Playlists_DeleteConfirm" xml:space="preserve">
+    <value>Delete this playlist? Its videos will be removed from the list.</value>
+  </data>
+  <data name="Playlists_DeletePlayingConfirm" xml:space="preserve">
+    <value>This playlist is currently playing. Stop playback and delete it?</value>
+  </data>
+  <data name="Playlists_InvalidUrl" xml:space="preserve">
+    <value>Could not recognize the YouTube video URL. Please check the address.</value>
+  </data>
+  <data name="Playlists_PlayFailed" xml:space="preserve">
+    <value>Could not start playback.</value>
+  </data>
+  <data name="Playlists_EmptyList" xml:space="preserve">
+    <value>This playlist has no videos to play.</value>
+  </data>
+  <data name="Playlists_ItemLimit" xml:space="preserve">
+    <value>A playlist can hold up to {0} videos.</value>
+  </data>
+  <data name="Playlists_ListLimit" xml:space="preserve">
+    <value>You can create up to {0} playlists.</value>
+  </data>
+  <data name="Playlists_NameEmpty" xml:space="preserve">
+    <value>Please enter a playlist name.</value>
+  </data>
+  <data name="Common_Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

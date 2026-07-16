@@ -246,6 +246,33 @@ public sealed class PlaybackCoordinator : IDisposable
     /// </summary>
     public Task ApplySelectedMonitorsAsync() => HandleMonitorsChangedAsync();
 
+    /// <summary>
+    /// 재생 중 플레이리스트 내용 변경(추가/삭제/순서)을 큐에 반영한다 (part2 T3 Edge — additive).
+    /// 현재 곡이 남아 있으면 유지, 재생 중이던 곡이 삭제됐으면 다음 곡으로 진행,
+    /// 리스트가 삭제·비워졌으면 정지한다.
+    /// </summary>
+    public async Task NotifyPlaylistChangedAsync(Guid playlistId)
+    {
+        if (_queue is null || Status == PlaybackStatus.Stopped || _settings.LastPlaylistId != playlistId)
+        {
+            return;
+        }
+
+        var playlist = _library.Playlists.FirstOrDefault(p => p.Id == playlistId);
+        if (playlist is null || playlist.Items.Count == 0)
+        {
+            await StopAsync();
+            return;
+        }
+
+        var currentId = _queue.Current?.Id;
+        _queue.UpdateItems(playlist.Items);
+        if (currentId is not null && _queue.Current?.Id != currentId)
+        {
+            await AdvanceAsync(); // 재생 중이던 곡이 삭제됨 — 다음 곡으로 (plan T3 Edge)
+        }
+    }
+
     public async Task SetQualityScaleAsync(int height)
     {
         _settings.QualityScaleHeight = Math.Max(0, height);

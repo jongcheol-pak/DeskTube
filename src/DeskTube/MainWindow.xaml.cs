@@ -35,6 +35,7 @@ public sealed partial class MainWindow : Window
             var pageType = tag switch
             {
                 "home" => typeof(HomePage),
+                "playlists" => typeof(PlaylistsPage),
                 _ => null,
             };
             if (pageType is not null)
