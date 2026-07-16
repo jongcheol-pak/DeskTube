@@ -42,6 +42,7 @@ public sealed class JsonStateStoreTests : IDisposable
             QualityScaleHeight = 720,
             FitMode = FitMode.Stretch,
             Theme = AppTheme.Dark,
+            ReduceMirrorQuality = true,
             LastPlaylistId = Guid.NewGuid(),
             PauseOnFullscreen = false,
             Language = "ko",
@@ -59,6 +60,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(settings.QualityScaleHeight, loaded.QualityScaleHeight);
         Assert.Equal(settings.FitMode, loaded.FitMode);
         Assert.Equal(settings.Theme, loaded.Theme);
+        Assert.Equal(settings.ReduceMirrorQuality, loaded.ReduceMirrorQuality);
         Assert.Equal(settings.LastPlaylistId, loaded.LastPlaylistId);
         Assert.Equal(settings.PauseOnFullscreen, loaded.PauseOnFullscreen);
         Assert.Equal(settings.Language, loaded.Language);

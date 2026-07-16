@@ -24,6 +24,9 @@ public sealed class PlaybackCoordinator : IDisposable
     private const double DriftToleranceSeconds = 1.0;
     private const int MaxHealthFailures = 3;
 
+    /// <summary>미러 화질 하향 상한 — 렌더 세로 해상도 (NFR-2, plan D5).</summary>
+    private const int MirrorQualityCapHeight = 720;
+
     private sealed record PlayerEntry(MonitorInfo Monitor, IPlayerHost Player);
 
     private readonly IMonitorService _monitors;
@@ -102,6 +105,9 @@ public sealed class PlaybackCoordinator : IDisposable
             return Result.Fail(ErrorCode.EnvironmentFailure, "재생할 모니터를 찾을 수 없습니다.");
         }
 
+        // 오디오 대상을 플레이어 생성 전에 확정 — 생성 루프의 미러 스케일 판정(EffectiveScaleFor)에 필요 (D5)
+        _audioMonitorId = MonitorService.ResolveAudioTarget(targets, _settings.AudioMonitorId)?.Id;
+
         foreach (var target in targets)
         {
             var attached = _wallpaper.Attach(target);
@@ -120,12 +126,11 @@ public sealed class PlaybackCoordinator : IDisposable
 
             var player = created.Value;
             Subscribe(player);
-            player.SetQualityScale(_settings.QualityScaleHeight);
+            player.SetQualityScale(EffectiveScaleFor(target.Id));
             player.SetFitMode(_settings.FitMode);
             _players[target.Id] = new PlayerEntry(target, player);
         }
 
-        _audioMonitorId = MonitorService.ResolveAudioTarget(targets, _settings.AudioMonitorId)?.Id;
         _queue = new PlaybackQueue(playlist.Items, _settings.Mode);
 
         var first = _queue.Start();
@@ -231,6 +236,7 @@ public sealed class PlaybackCoordinator : IDisposable
         _audioMonitorId = MonitorService.ResolveAudioTarget(
             [.. _players.Values.Select(e => e.Monitor)], monitorId)?.Id;
         ApplyAudioRouting();
+        ApplyEffectiveScales(); // 마스터↔미러가 바뀌면 하향 대상도 바뀐다 (D5 Edge)
         await _store.SaveSettingsAsync(_settings);
     }
 
@@ -292,12 +298,41 @@ public sealed class PlaybackCoordinator : IDisposable
     public async Task SetQualityScaleAsync(int height)
     {
         _settings.QualityScaleHeight = Math.Max(0, height);
-        foreach (var entry in _players.Values)
+        ApplyEffectiveScales();
+        await _store.SaveSettingsAsync(_settings);
+    }
+
+    /// <summary>미러 화질 하향 토글 (NFR-2, plan D5) — 전 플레이어 스케일 재계산 + 저장.</summary>
+    public async Task SetReduceMirrorQualityAsync(bool enabled)
+    {
+        _settings.ReduceMirrorQuality = enabled;
+        ApplyEffectiveScales();
+        await _store.SaveSettingsAsync(_settings);
+    }
+
+    /// <summary>
+    /// 플레이어별 유효 렌더 스케일 (D5 구현 강제 — 모든 SetQualityScale 호출이 이 헬퍼를 경유).
+    /// 미러 하향이 켜져 있으면 오디오 대상이 아닌 모니터를 720 이하로 제한한다
+    /// (설정 화질 0=원본이면 720으로, 그 외엔 min(설정, 720)).
+    /// </summary>
+    private int EffectiveScaleFor(string monitorId)
+    {
+        var height = _settings.QualityScaleHeight;
+        if (_settings.ReduceMirrorQuality && monitorId != _audioMonitorId)
         {
-            entry.Player.SetQualityScale(_settings.QualityScaleHeight);
+            height = height == 0 ? MirrorQualityCapHeight : Math.Min(height, MirrorQualityCapHeight);
         }
 
-        await _store.SaveSettingsAsync(_settings);
+        return height;
+    }
+
+    /// <summary>전 플레이어에 유효 스케일 재적용 (화질·미러 토글·오디오 대상 변경 후).</summary>
+    private void ApplyEffectiveScales()
+    {
+        foreach (var entry in _players.Values)
+        {
+            entry.Player.SetQualityScale(EffectiveScaleFor(entry.Monitor.Id));
+        }
     }
 
     /// <summary>동영상 크기 모드 변경 (PRD FR-16) — 전 플레이어 즉시 적용 + 저장.</summary>
@@ -503,7 +538,7 @@ public sealed class PlaybackCoordinator : IDisposable
 
         var player = created.Value;
         Subscribe(player);
-        player.SetQualityScale(_settings.QualityScaleHeight);
+        player.SetQualityScale(EffectiveScaleFor(monitorId));
         player.SetFitMode(_settings.FitMode);
         _players[monitorId] = old with { Player = player };
 
@@ -588,7 +623,7 @@ public sealed class PlaybackCoordinator : IDisposable
 
             var player = created.Value;
             Subscribe(player);
-            player.SetQualityScale(_settings.QualityScaleHeight);
+            player.SetQualityScale(EffectiveScaleFor(target.Id));
             player.SetFitMode(_settings.FitMode);
             _players[target.Id] = new PlayerEntry(target, player);
             ResumeCurrentTrack(player);
@@ -636,12 +671,13 @@ public sealed class PlaybackCoordinator : IDisposable
         }
     }
 
-    /// <summary>오디오 대상이 사라졌으면 주 모니터 우선으로 재결정 후 라우팅 재적용 (PRD FR-4 폴백).</summary>
+    /// <summary>오디오 대상이 사라졌으면 주 모니터 우선으로 재결정 후 라우팅·스케일 재적용 (PRD FR-4 폴백).</summary>
     private void RefreshAudioTargetAfterRemoval()
     {
         _audioMonitorId = MonitorService.ResolveAudioTarget(
             [.. _players.Values.Select(p => p.Monitor)], _settings.AudioMonitorId)?.Id;
         ApplyAudioRouting();
+        ApplyEffectiveScales(); // 오디오 대상이 바뀌었으면 미러 하향 대상도 재계산 (D5 Edge)
     }
 
     private double MasterTime() =>

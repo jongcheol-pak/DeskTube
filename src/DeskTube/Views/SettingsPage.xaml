@@ -87,6 +87,11 @@
                     IsClosable="False"
                     Severity="Informational" />
 
+                <!-- 미러 모니터 화질 하향 (NFR-2 — 소리 없는 모니터 부하 절감, 기본 꺼짐) -->
+                <controls:SettingsCard x:Uid="ReduceMirrorCard">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.ReduceMirrorQuality, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
                 <!-- 부팅 자동 시작 (FR-8 — T4, T2에서 이연된 카드) -->
                 <controls:SettingsCard x:Uid="AutoStartCard">
                     <ToggleSwitch

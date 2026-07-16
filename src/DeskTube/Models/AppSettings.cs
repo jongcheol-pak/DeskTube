@@ -28,6 +28,9 @@ public sealed class AppSettings
     /// <summary>동영상 크기 모드 (PRD FR-16). 기본 채움(Cover).</summary>
     public FitMode FitMode { get; set; } = FitMode.Cover;
 
+    /// <summary>미러 모니터 화질 하향 (NFR-2 부하 절감 — 기본 꺼짐, 사용자 opt-in).</summary>
+    public bool ReduceMirrorQuality { get; set; }
+
     /// <summary>마지막 재생 플레이리스트 (부팅 자동 재생용 — PRD FR-8).</summary>
     public Guid? LastPlaylistId { get; set; }
 

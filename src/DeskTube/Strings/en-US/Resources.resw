@@ -123,6 +123,12 @@
   <data name="Fit_Stretch" xml:space="preserve">
     <value>Stretch</value>
   </data>
+  <data name="ReduceMirrorCard.Header" xml:space="preserve">
+    <value>Lower quality on silent monitors</value>
+  </data>
+  <data name="ReduceMirrorCard.Description" xml:space="preserve">
+    <value>Reduces video quality on monitors without sound to ease system load</value>
+  </data>
   <data name="ThemeCard.Header" xml:space="preserve">
     <value>Theme</value>
   </data>

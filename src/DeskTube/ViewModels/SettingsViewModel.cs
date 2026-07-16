@@ -148,6 +148,9 @@ public partial class SettingsViewModel : ObservableObject
     public partial int QualityIndex { get; set; }
 
     [ObservableProperty]
+    public partial bool ReduceMirrorQuality { get; set; }
+
+    [ObservableProperty]
     public partial int FitModeIndex { get; set; }
 
     [ObservableProperty]
@@ -261,6 +264,7 @@ public partial class SettingsViewModel : ObservableObject
             var qualityIdx = Array.IndexOf(QualityHeights, settings.QualityScaleHeight);
             QualityIndex = qualityIdx >= 0 ? qualityIdx : 0;
 
+            ReduceMirrorQuality = settings.ReduceMirrorQuality;
             FitModeIndex = (int)settings.FitMode;
             ThemeIndex = (int)settings.Theme;
 
@@ -510,6 +514,10 @@ public partial class SettingsViewModel : ObservableObject
             Apply(() => _services!.Coordinator.SetQualityScaleAsync(QualityHeights[value]), "화질 스케일 적용");
         }
     }
+
+    /// <summary>미러 화질 하향 토글 (NFR-2) — 재생 중이면 미러 스케일 즉시 재계산.</summary>
+    partial void OnReduceMirrorQualityChanged(bool value) =>
+        Apply(() => _services!.Coordinator.SetReduceMirrorQualityAsync(value), "미러 화질 하향 적용");
 
     /// <summary>크기 모드 변경 (FR-16) — 재생 중이면 전 플레이어에 즉시 반영.</summary>
     partial void OnFitModeIndexChanged(int value)

@@ -153,7 +153,7 @@
   - **Halt Forecast**: (ii-a) NuGet 의존성 추가(WinUIEx 2.9.2) → `## 사전 승인 항목`
   - **Depends on**: T1
 
-- [ ] T6. 미러 모니터 부하 절감 옵션 (NFR-2)
+- [x] T6. 미러 모니터 부하 절감 옵션 (NFR-2)
   - **Type**: C
   - **Design**: (D5 참조) `AppSettings.ReduceMirrorQuality`(기본 false) + PlaybackCoordinator — 미러 플레이어 스케일 하향 적용(SetQualityScaleAsync·ApplyAudioRouting·모니터 변경 경로), 설정 토글 카드+resw
   - **Acceptance**: 토글 on 시 미러 플레이어에만 하향 스케일 명령 전송(코드 경로·저장 왕복 테스트) — 부하 절감 실측은 T7 측정과 함께 HUMAN-VERIFY; 빌드·테스트 통과

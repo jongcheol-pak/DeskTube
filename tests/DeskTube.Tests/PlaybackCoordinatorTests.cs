@@ -384,6 +384,34 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 미러_화질_하향을_켜면_소리_없는_모니터만_스케일이_제한된다()
+    {
+        var h = new Harness(monitorCount: 2);
+        h.Settings.QualityScaleHeight = 1080;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        await h.Coordinator.SetReduceMirrorQualityAsync(true);
+
+        // D5: 마스터(오디오 대상)는 설정값 유지, 미러만 min(설정, 720)으로 하향
+        Assert.Contains("scale:1080", h.Players["MON-0"].Commands);
+        Assert.DoesNotContain("scale:720", h.Players["MON-0"].Commands);
+        Assert.Contains("scale:720", h.Players["MON-1"].Commands);
+        Assert.True(h.Settings.ReduceMirrorQuality);
+    }
+
+    [Fact]
+    public async Task 미러_하향이_켜진_채_시작하면_원본_화질_미러는_720으로_제한된다()
+    {
+        var h = new Harness(monitorCount: 2);
+        h.Settings.ReduceMirrorQuality = true; // 화질 0(원본) + 하향 켜짐 — StartAsync 초기 적용 경로
+
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        Assert.Contains("scale:0", h.Players["MON-0"].Commands);   // 마스터는 원본 유지
+        Assert.Contains("scale:720", h.Players["MON-1"].Commands); // 미러는 720 상한
+    }
+
+    [Fact]
     public async Task 크기_모드_변경은_모든_플레이어에_전송되고_설정에_저장된다()
     {
         var h = new Harness(monitorCount: 2);
