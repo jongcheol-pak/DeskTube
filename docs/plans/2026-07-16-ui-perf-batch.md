@@ -202,6 +202,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T4·T6 완료 (커밋 80f8711, dc7de42): 테마 3옵션(AppTheme+ThemeHelper Register/SetTheme/Initialize, 적용 지점 4곳, App 선읽기 확장) + 미러 부하 절감(EffectiveScaleFor 4곳 일원화·SetReduceMirrorQualityAsync·오디오 대상 변경 재계산). 테스트 85/85.
+  - 결정: StartAsync의 _audioMonitorId 결정을 생성 루프 앞으로 이동(미러 판정 선행 필요 — 루프 미사용이라 동작 보존).
 - T3·T5 완료 (커밋 9f796ad, 3f4da69): FitMode 3종(player.html applyLayout 통합·IPlayerHost.SetFitMode·Coordinator 3지점 초기 적용·설정 콤보·테스트 83/83) + WinUIEx 2.9.2(WindowManager 창 상태 복원·Mica·타이틀바·라이선스 인벤토리).
   - 결정: WindowEx 상속 대신 WindowManager.Get(this) — XamlTypeInfo 생성 코드 CS0618(obsolete Icon) 억제 불가로 경고 0 원칙과 양립하는 동등 API 채택(WinUIEx 문서 검증). D4 기능 a~d 전부 충족.
   - 결정: WinUIEx 추가 시 라이선스 게이트(LicenseInventoryTests)가 실패 — Assets/licenses/WinUIEx.txt(MIT)+index.json 동반 갱신이 의존성 추가의 필수 절차임을 확인.
