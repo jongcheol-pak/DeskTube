@@ -85,6 +85,14 @@
                     IsClosable="False"
                     Severity="Warning" />
 
+                <!-- 언어 (NFR-4 — T7, T2 이연 카드. 변경 시 셸 재생성) -->
+                <controls:SettingsCard x:Uid="LanguageCard">
+                    <ComboBox
+                        MinWidth="240"
+                        ItemsSource="{x:Bind ViewModel.LanguageOptions}"
+                        SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
                 <!-- 유튜브 계정 (FR-15 — T5) -->
                 <controls:SettingsCard x:Uid="AccountCard">
                     <StackPanel Orientation="Horizontal" Spacing="12">

@@ -65,12 +65,16 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>화질 콤보 인덱스 ↔ 렌더 세로 해상도 (0 = 원본, part1 FR-13).</summary>
     private static readonly int[] QualityHeights = [0, 1080, 720, 480];
 
+    /// <summary>언어 콤보 인덱스 ↔ 언어 코드 (null = 시스템 추종 — plan T7, AGENTS 다국어 규칙 3).</summary>
+    private static readonly string?[] LanguageCodes = [null, "ko-KR", "en-US"];
+
     public SettingsViewModel()
     {
         // partial property 초기값 (콤보 미선택 = -1, 변경 콜백은 음수 가드로 무시됨)
         ModeIndex = -1;
         QualityIndex = -1;
         AudioIndex = -1;
+        LanguageIndex = -1;
 
         ModeOptions =
         [
@@ -87,6 +91,12 @@ public partial class SettingsViewModel : ObservableObject
             Loc.Get("Quality_720"),
             Loc.Get("Quality_480"),
         ];
+        LanguageOptions =
+        [
+            Loc.Get("Language_System"),
+            Loc.Get("Language_Korean"),
+            Loc.Get("Language_English"),
+        ];
     }
 
     public ObservableCollection<MonitorChoice> Monitors { get; } = [];
@@ -96,6 +106,11 @@ public partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<string> ModeOptions { get; }
 
     public IReadOnlyList<string> QualityOptions { get; }
+
+    public IReadOnlyList<string> LanguageOptions { get; }
+
+    [ObservableProperty]
+    public partial int LanguageIndex { get; set; }
 
     [ObservableProperty]
     public partial bool IsReady { get; set; }
@@ -225,6 +240,9 @@ public partial class SettingsViewModel : ObservableObject
             PauseOnFullscreen = settings.PauseOnFullscreen;
             PauseOnBatterySaver = settings.PauseOnBatterySaver;
             PauseOnSessionLock = settings.PauseOnSessionLock;
+
+            var languageIdx = Array.IndexOf(LanguageCodes, settings.Language);
+            LanguageIndex = languageIdx >= 0 ? languageIdx : 0;
 
             IsReady = true;
         }
@@ -399,6 +417,26 @@ public partial class SettingsViewModel : ObservableObject
         if (value >= 0 && value < QualityHeights.Length)
         {
             Apply(() => _services!.Coordinator.SetQualityScaleAsync(QualityHeights[value]), "화질 스케일 적용");
+        }
+    }
+
+    /// <summary>언어 변경 (plan T7, AGENTS 다국어 규칙 3) — ① 저장 ② 오버라이드 ③~⑤는 App.ApplyLanguageChange.</summary>
+    partial void OnLanguageIndexChanged(int value)
+    {
+        if (_loading || _services is null || value < 0 || value >= LanguageCodes.Length)
+        {
+            return;
+        }
+
+        var code = LanguageCodes[value];
+        _services.Settings.Language = code;
+        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = code ?? string.Empty;
+
+        Apply(() => _services.Store.SaveSettingsAsync(_services.Settings), "언어 설정 저장");
+
+        if (Microsoft.UI.Xaml.Application.Current is App app)
+        {
+            app.ApplyLanguageChange(); // 트레이·셸 재생성 (이 페이지도 새 창에서 다시 만들어짐)
         }
     }
 

@@ -16,7 +16,38 @@ public partial class App : Application
     {
         // 배포 초기화를 XAML 초기화(InitializeComponent)보다 먼저 수행 — 아래 메서드 주석 참조
         InitializeWindowsAppRuntime();
+
+        // 저장된 언어를 XAML 초기화 전에 동기 선적용 — x:Uid 정적 문구의 언어는
+        // 요소 생성 시점에 고정되므로 OnLaunched(비동기 설정 로드)로는 늦다 (plan T7, AGENTS 다국어 규칙 3)
+        ApplySavedLanguageOverride();
+
         InitializeComponent();
+    }
+
+    /// <summary>settings.json의 Language 필드만 동기로 선읽기해 언어 오버라이드를 적용한다 (없으면 시스템 추종).</summary>
+    private static void ApplySavedLanguageOverride()
+    {
+        try
+        {
+            var path = Path.Combine(
+                Windows.Storage.ApplicationData.Current.LocalFolder.Path, "settings.json");
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+            if (doc.RootElement.TryGetProperty("Language", out var language) &&
+                language.ValueKind == System.Text.Json.JsonValueKind.String &&
+                !string.IsNullOrEmpty(language.GetString()))
+            {
+                Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = language.GetString();
+            }
+        }
+        catch (Exception)
+        {
+            // 파손·접근 실패 시 시스템 언어 폴백 (AppLog는 OnLaunched에서 초기화되므로 여기선 기록 생략)
+        }
     }
 
     /// <summary>서비스 그래프 (컴포지션 루트 — OnLaunched에서 비동기 초기화, UI는 null 확인 후 사용).</summary>
@@ -117,6 +148,29 @@ public partial class App : Application
         {
             window.ShowNotice(notice);
         }
+    }
+
+    /// <summary>
+    /// 언어 변경 적용 (plan T7, AGENTS 다국어 규칙 3) — 리소스 캐시 초기화 후 트레이 메뉴와
+    /// 설정 셸(창)을 새로 만든다. x:Uid·Loc 문구는 요소 생성 시점에 고정되므로 재생성이 필요하다.
+    /// 테마는 어디에서도 RequestedTheme를 오버라이드하지 않아(시스템 추종 — AGENTS 규칙 3)
+    /// 재생성 후에도 자동 유지된다 (규칙 3-⑤ 충족).
+    /// </summary>
+    internal void ApplyLanguageChange()
+    {
+        Loc.Reset();
+
+        if (Services is not null && _tray is not null)
+        {
+            _tray.Dispose();
+            _tray = new TrayIconService(Services, ShowMainWindow, ExitApplication);
+            _tray.Initialize();
+        }
+
+        var old = _window as MainWindow;
+        _window = new MainWindow();
+        _window.Activate();
+        old?.ForceClose(); // 닫기→숨김 로직 우회 실제 닫기 (교체 완료 후)
     }
 
     /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>

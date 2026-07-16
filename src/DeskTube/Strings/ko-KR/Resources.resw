@@ -297,4 +297,19 @@
   <data name="LicensesTitle.Text" xml:space="preserve">
     <value>오픈소스 라이선스</value>
   </data>
+  <data name="LanguageCard.Header" xml:space="preserve">
+    <value>언어</value>
+  </data>
+  <data name="LanguageCard.Description" xml:space="preserve">
+    <value>언어를 바꾸면 설정 창이 다시 열립니다</value>
+  </data>
+  <data name="Language_System" xml:space="preserve">
+    <value>시스템 언어 따름</value>
+  </data>
+  <data name="Language_Korean" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
 </root>
