@@ -15,7 +15,8 @@
 - [2026-07-16] "마지막 재생 리스트→StartAsync" 로직 3회째 등장 시 공통 헬퍼 추출 (현재 App·TrayIconService 2곳) (출처: part2 T4 quality SUGGEST)
 - [2026-07-16] 단일 인스턴스 보장 (Named Mutex + 창 전면화 — 위키 single-instance 패턴): 트레이 상주 + 재실행으로 2인스턴스 공존 관찰 (출처: 2026-07-16-wallpaper-win32-host, debug 부수 관찰)
 - [2026-07-16] 전역 예외 훅(UnhandledException 로깅) 상시 탑재 검토 — 위키 global-exception-handling 패턴, AV 조사에서 진단 유효성 확인 (출처: 2026-07-16-wallpaper-win32-host)
-- [2026-07-16] 유휴 워킹셋 ~208MB 관찰 — T8 실측 시 NFR-2 목표(150MB)와 대조 (출처: debug 부수 관찰, 기존 "T8 실측 3건" 항목과 함께 수행)
+- [2026-07-16] [SUGGEST] MainWindow 커스텀 타이틀바 Grid 높이 48px 고정 — DPI/버전별 캡션 버튼 높이 변화 시 시각 미스매치 가능, AppWindow.TitleBar 값 참조 검토 (출처: 2026-07-16-ui-perf-batch T5 quality SUGGEST)
 
 ## 종결
+- [2026-07-16 → 2026-07-16] 유휴 워킹셋 ~208MB 관찰 → NFR-2 대조 — 반영 (2026-07-16-ui-perf-batch T7: 트림 도입 + 자동 실측 2경로, 유휴 약 27MB로 목표 150MB 충족)
 - [2026-07-16 → 2026-07-16] part2 plan 실행 — 트레이·설정 UI·플레이리스트 UI·자동 시작·로그인·정보 화면·다국어·최종 검증 — 반영 (2026-07-15-desktube-ui-part2 T1~T8 완료, 실측 3건은 별도 대기 항목으로 분리)

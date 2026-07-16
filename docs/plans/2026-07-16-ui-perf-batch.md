@@ -28,7 +28,8 @@
 
 ## Deferred / Follow-up
 - 단일 인스턴스 보장·전역 예외 훅 (기존 대장 항목 유지 — 이번 범위 아님)
-- T8 실측 3건(WACK·워킹셋·콜드스타트)은 기존 대장 항목 — 이번 T7 측정과 별개로 계속 대기
+- T8 실측 3건(WACK·워킹셋·콜드스타트)은 기존 대장 항목 — 워킹셋은 이번 T7 실측으로 종결, WACK·콜드스타트 계속 대기
+- [SUGGEST] MainWindow 타이틀바 Grid 높이 48px 고정 — DPI/캡션 버튼 높이 변화 대응 검토 (T5 quality)
 
 ## Investigation Log
 - 전환 지연 원인 (코드 확정): ① `MainWindow.NavigateOnce` → `Frame.Navigate`가 매번 새 페이지 인스턴스 생성(NavigationCacheMode 미설정 — 페이지·VM 전부 재생성) ② `SettingsPage.Loaded → SettingsViewModel.Load()`가 진입마다 StartupTask 조회 + **세션 프로브(임시 CoreWebView2Controller 생성 — YouTubeSessionService.IsSignedInAsync)** 수행. 프로브가 가장 무거움 (이 세션 Read로 확인)
@@ -202,6 +203,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T7·T8 완료 (커밋 44a30d9, 6468fb6): 워킹셋 트림(ProcessInterop, 2지점·정지 가드) + 자동 실측 2경로(숨김 196→27MB·정지 211→27MB, NFR-2 150MB 충족, verification 문서 기록) + AGENTS 규칙 3 개정·README 갱신(WallpaperWindow 잔존 제거 포함). T7 1차 spec MAJOR(정지 경로 실측 누락)는 UIA 재생→영상 종료 자동 정지 실측으로 해소.
+  - 결정: 실측 중 Remove-AppxPackage가 LocalState(테스트 잔재 데이터·WebView2 쿠키) 삭제 — 실사용 데이터 아님, 최종 보고에 명시. loose 배포 검증 시 실행 바이너리 경로 확인 필수(AppX 폴더 stale 함정 — verification 문서 기록).
 - T4·T6 완료 (커밋 80f8711, dc7de42): 테마 3옵션(AppTheme+ThemeHelper Register/SetTheme/Initialize, 적용 지점 4곳, App 선읽기 확장) + 미러 부하 절감(EffectiveScaleFor 4곳 일원화·SetReduceMirrorQualityAsync·오디오 대상 변경 재계산). 테스트 85/85.
   - 결정: StartAsync의 _audioMonitorId 결정을 생성 루프 앞으로 이동(미러 판정 선행 필요 — 루프 미사용이라 동작 보존).
 - T3·T5 완료 (커밋 9f796ad, 3f4da69): FitMode 3종(player.html applyLayout 통합·IPlayerHost.SetFitMode·Coordinator 3지점 초기 적용·설정 콤보·테스트 83/83) + WinUIEx 2.9.2(WindowManager 창 상태 복원·Mica·타이틀바·라이선스 인벤토리).
