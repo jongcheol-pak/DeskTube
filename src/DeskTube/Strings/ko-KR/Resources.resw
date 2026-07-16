@@ -90,6 +90,18 @@
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>설정</value>
   </data>
+  <data name="SettingsGroupDisplay.Text" xml:space="preserve">
+    <value>화면</value>
+  </data>
+  <data name="SettingsGroupSound.Text" xml:space="preserve">
+    <value>소리</value>
+  </data>
+  <data name="SettingsGroupPlayback.Text" xml:space="preserve">
+    <value>재생</value>
+  </data>
+  <data name="SettingsGroupGeneral.Text" xml:space="preserve">
+    <value>일반</value>
+  </data>
   <data name="MonitorsCardTitle.Text" xml:space="preserve">
     <value>재생 모니터</value>
   </data>
@@ -160,10 +172,10 @@
     <value>순서대로</value>
   </data>
   <data name="Mode_Shuffle" xml:space="preserve">
-    <value>셔플 (전곡 한 번씩)</value>
+    <value>셔플 (전곡 1회)</value>
   </data>
   <data name="Mode_Random" xml:space="preserve">
-    <value>무작위 (중복 허용)</value>
+    <value>무작위</value>
   </data>
   <data name="Mode_RepeatOne" xml:space="preserve">
     <value>한 곡 반복</value>
@@ -178,13 +190,13 @@
     <value>원본</value>
   </data>
   <data name="Quality_1080" xml:space="preserve">
-    <value>최대 1080p</value>
+    <value>1080p</value>
   </data>
   <data name="Quality_720" xml:space="preserve">
-    <value>최대 720p</value>
+    <value>720p</value>
   </data>
   <data name="Quality_480" xml:space="preserve">
-    <value>최대 480p</value>
+    <value>480p</value>
   </data>
   <data name="QualityNote.Message" xml:space="preserve">
     <value>실제 스트리밍 화질은 유튜브가 자동으로 결정합니다. 이 설정은 렌더링 해상도를 낮춰 시스템 부하를 줄입니다.</value>

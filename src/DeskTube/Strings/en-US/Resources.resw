@@ -90,6 +90,18 @@
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="SettingsGroupDisplay.Text" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="SettingsGroupSound.Text" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="SettingsGroupPlayback.Text" xml:space="preserve">
+    <value>Playback</value>
+  </data>
+  <data name="SettingsGroupGeneral.Text" xml:space="preserve">
+    <value>General</value>
+  </data>
   <data name="MonitorsCardTitle.Text" xml:space="preserve">
     <value>Playback monitors</value>
   </data>
@@ -163,7 +175,7 @@
     <value>Shuffle (each video once)</value>
   </data>
   <data name="Mode_Random" xml:space="preserve">
-    <value>Random (repeats allowed)</value>
+    <value>Random</value>
   </data>
   <data name="Mode_RepeatOne" xml:space="preserve">
     <value>Repeat one</value>
@@ -178,13 +190,13 @@
     <value>Original</value>
   </data>
   <data name="Quality_1080" xml:space="preserve">
-    <value>Up to 1080p</value>
+    <value>1080p</value>
   </data>
   <data name="Quality_720" xml:space="preserve">
-    <value>Up to 720p</value>
+    <value>720p</value>
   </data>
   <data name="Quality_480" xml:space="preserve">
-    <value>Up to 480p</value>
+    <value>480p</value>
   </data>
   <data name="QualityNote.Message" xml:space="preserve">
     <value>YouTube automatically decides the actual streaming quality. This setting lowers the rendering resolution to reduce system load.</value>

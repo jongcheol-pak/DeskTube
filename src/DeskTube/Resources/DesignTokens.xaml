@@ -117,6 +117,11 @@
             <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource AppHoverBackgroundColor}" />
             <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource AppActiveBackgroundColor}" />
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{StaticResource AppActiveBackgroundColor}" />
+
+            <!-- SettingsCard(CommunityToolkit) lightweight 오버라이드 (시안 설정 카드 — plan T7,
+                 미적용 키는 HUMAN-VERIFY로 검출) -->
+            <SolidColorBrush x:Key="SettingsCardBackground" Color="{StaticResource AppCardBackgroundColor}" />
+            <SolidColorBrush x:Key="SettingsCardBorderBrush" Color="{StaticResource AppCardBorderColor}" />
         </ResourceDictionary>
 
         <!-- 고대비 — 시스템 HC 색으로 매핑 (시각 정합 정밀 조정은 Deferred, plan D11).

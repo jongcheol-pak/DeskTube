@@ -19,6 +19,9 @@ public sealed partial class SettingsPage : Page
 
     public SettingsViewModel ViewModel { get; } = new();
 
+    /// <summary>x:Bind 함수 — 볼륨 값 라벨 (시안: 슬라이더 좌측 정수 표기).</summary>
+    public string FormatVolume(double volume) => ((int)volume).ToString();
+
     // 캐시 페이지는 Loaded/Unloaded가 진입마다 반복되므로 구독·해제를 대칭으로 유지
     // (ctor 구독 + Unloaded 해제면 2번째 진입부터 로그인 버튼이 무반응이 됨)
     private void OnLoaded(object sender, RoutedEventArgs e)

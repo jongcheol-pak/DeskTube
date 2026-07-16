@@ -5,9 +5,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ctrls="using:DeskTube.Controls">
-    <ScrollViewer Padding="36,24,40,24">
-        <StackPanel MaxWidth="1024" Spacing="24" HorizontalAlignment="Stretch">
-            <TextBlock x:Uid="SettingsHeader" Style="{StaticResource TitleTextBlockStyle}" />
+    <!-- 시안 설정: 그룹 헤더(화면/소리/재생/일반) + 카드 순서 재배열. 테마 카드는 없음 (T2 제거, 다크 고정) -->
+    <ScrollViewer Padding="{StaticResource AppPagePadding}">
+        <StackPanel MaxWidth="{StaticResource AppSettingsCardMaxWidth}" Spacing="10" HorizontalAlignment="Left">
+            <TextBlock
+                x:Uid="SettingsHeader"
+                FontSize="30"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource AppTextStrongBrush}"
+                Margin="0,0,0,14" />
 
             <InfoBar
                 IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
@@ -19,8 +25,11 @@
                 IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}"
                 IsTabStop="False"
                 HorizontalContentAlignment="Stretch">
-            <StackPanel Spacing="4">
-                <!-- 재생 모니터 — 시각 카드 클릭 토글, 최소 1개 강제 (restyle T4, 상세 스타일은 T7) -->
+            <StackPanel Spacing="10">
+                <!-- ═ 화면 ═ -->
+                <TextBlock x:Uid="SettingsGroupDisplay" Style="{StaticResource AppGroupHeaderTextStyle}" Margin="4,4,4,2" />
+
+                <!-- 재생 모니터 — 시각 카드 클릭 토글, 최소 1개 강제 (T4 공용 컨트롤) -->
                 <Border Style="{StaticResource AppCardBorderStyle}" Padding="24,20">
                     <StackPanel Spacing="18">
                         <StackPanel Spacing="3">
@@ -38,50 +47,18 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 오디오 출력 모니터 -->
-                <controls:SettingsCard x:Uid="AudioCard">
-                    <ComboBox
-                        MinWidth="240"
-                        ItemsSource="{x:Bind ViewModel.AudioOptions}"
-                        SelectedIndex="{x:Bind ViewModel.AudioIndex, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
-                <!-- 볼륨 -->
-                <controls:SettingsCard x:Uid="VolumeCard">
-                    <Slider
-                        MinWidth="240"
-                        Minimum="0"
-                        Maximum="100"
-                        StepFrequency="1"
-                        Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
-                <!-- 음소거 (FR-5 UI 노출 — plan T2/D3. 카드 하나에 컨트롤 2개를 StackPanel로 넣으면
-                     ToggleSwitch 상태 문구가 스위치와 겹쳐, 모니터 토글과 동일한 단독 카드 구조로 분리) -->
-                <controls:SettingsCard x:Uid="MuteCard">
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsMuted, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
-                <!-- 재생 모드 -->
-                <controls:SettingsCard x:Uid="ModeCard">
-                    <ComboBox
-                        MinWidth="240"
-                        ItemsSource="{x:Bind ViewModel.ModeOptions}"
-                        SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
                 <!-- 동영상 크기 모드 (FR-16 — 채움/맞춤/늘리기) -->
                 <controls:SettingsCard x:Uid="FitModeCard">
                     <ComboBox
-                        MinWidth="240"
+                        MinWidth="150"
                         ItemsSource="{x:Bind ViewModel.FitModeOptions}"
                         SelectedIndex="{x:Bind ViewModel.FitModeIndex, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
-                <!-- 화질 스케일 + 유튜브 자동 결정 안내 -->
+                <!-- 화질 스케일 + 유튜브 자동 결정 안내 (시안 코럴 틴트 배너) -->
                 <controls:SettingsCard x:Uid="QualityCard">
                     <ComboBox
-                        MinWidth="240"
+                        MinWidth="150"
                         ItemsSource="{x:Bind ViewModel.QualityOptions}"
                         SelectedIndex="{x:Bind ViewModel.QualityIndex, Mode=TwoWay}" />
                 </controls:SettingsCard>
@@ -89,14 +66,68 @@
                     x:Uid="QualityNote"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational" />
+                    Severity="Informational"
+                    Background="{ThemeResource AppTintBackgroundBrush}"
+                    BorderBrush="{ThemeResource AppTintBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource AppCardCornerRadius}"
+                    Foreground="{ThemeResource AppTintBodyBrush}" />
 
                 <!-- 미러 모니터 화질 하향 (NFR-2 — 소리 없는 모니터 부하 절감, 기본 꺼짐) -->
                 <controls:SettingsCard x:Uid="ReduceMirrorCard">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.ReduceMirrorQuality, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
-                <!-- 부팅 자동 시작 (FR-8 — T4, T2에서 이연된 카드) -->
+                <!-- ═ 소리 ═ -->
+                <TextBlock x:Uid="SettingsGroupSound" Style="{StaticResource AppGroupHeaderTextStyle}" />
+
+                <!-- 오디오 출력 모니터 -->
+                <controls:SettingsCard x:Uid="AudioCard">
+                    <ComboBox
+                        MinWidth="150"
+                        ItemsSource="{x:Bind ViewModel.AudioOptions}"
+                        SelectedIndex="{x:Bind ViewModel.AudioIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- 볼륨 (시안 — 값 라벨 + 슬라이더 260) -->
+                <controls:SettingsCard x:Uid="VolumeCard">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock
+                            Text="{x:Bind FormatVolume(ViewModel.Volume), Mode=OneWay}"
+                            MinWidth="32"
+                            TextAlignment="Right"
+                            FontSize="13"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                        <Slider
+                            Width="260"
+                            Minimum="0"
+                            Maximum="100"
+                            StepFrequency="1"
+                            Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
+                    </StackPanel>
+                </controls:SettingsCard>
+
+                <!-- 음소거 (FR-5 UI 노출) -->
+                <controls:SettingsCard x:Uid="MuteCard">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsMuted, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- ═ 재생 ═ -->
+                <TextBlock x:Uid="SettingsGroupPlayback" Style="{StaticResource AppGroupHeaderTextStyle}" />
+
+                <!-- 재생 순서 -->
+                <controls:SettingsCard x:Uid="ModeCard">
+                    <ComboBox
+                        MinWidth="150"
+                        ItemsSource="{x:Bind ViewModel.ModeOptions}"
+                        SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- ═ 일반 ═ -->
+                <TextBlock x:Uid="SettingsGroupGeneral" Style="{StaticResource AppGroupHeaderTextStyle}" />
+
+                <!-- 부팅 자동 시작 (FR-8) -->
                 <controls:SettingsCard x:Uid="AutoStartCard">
                     <ToggleSwitch
                         IsOn="{x:Bind ViewModel.AutoStartEnabled, Mode=TwoWay}"
@@ -108,21 +139,22 @@
                     IsClosable="False"
                     Severity="Warning" />
 
-                <!-- 언어 (NFR-4 — T7, T2 이연 카드. 변경 시 셸 재생성) -->
+                <!-- 언어 (NFR-4 — 변경 시 셸 재생성) -->
                 <controls:SettingsCard x:Uid="LanguageCard">
                     <ComboBox
-                        MinWidth="240"
+                        MinWidth="150"
                         ItemsSource="{x:Bind ViewModel.LanguageOptions}"
                         SelectedIndex="{x:Bind ViewModel.LanguageIndex, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
-                <!-- 유튜브 계정 (FR-15 — T5) -->
+                <!-- 유튜브 계정 (FR-15) -->
                 <controls:SettingsCard x:Uid="AccountCard">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
                         <TextBlock
                             Text="{x:Bind ViewModel.AccountStatusText, Mode=OneWay}"
+                            FontSize="13"
                             VerticalAlignment="Center"
-                            Style="{StaticResource BodyTextBlockStyle}" />
+                            Foreground="{ThemeResource AppTextTertiaryBrush}" />
                         <Button
                             Content="{x:Bind ViewModel.AccountButtonText, Mode=OneWay}"
                             Command="{x:Bind ViewModel.AccountActionCommand}"
