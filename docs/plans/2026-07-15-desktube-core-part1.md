@@ -286,7 +286,7 @@
     - (i) "오디오 대상 부재 시?" → T4 Edge Case에서 주 모니터 폴백 확정
   - **Depends on**: T2, T3, T4, T5, T6
 
-- [ ] T8. 자동 일시정지 정책 (NFR-1)
+- [x] T8. 자동 일시정지 정책 (NFR-1)
   - **Type**: C
   - **Design**: ① `Services/PowerPolicyService.cs` + `Interop/SessionInterop.cs`(WTSRegisterSessionNotification, SHQueryUserNotificationState P/Invoke) ② `PowerPolicyService` — 전체화면(D6 폴링)·배터리 세이버(D7)·세션 잠금(D7) 3신호를 합성해 `PauseRequested/ResumeRequested` 이벤트 발행 (재개는 모든 신호 해제 시) ③ PlaybackCoordinator가 구독(수동 정지와 구분되는 "정책 일시정지" 상태) ④ 이번에 안 함: 설정에서 정책별 on/off 토글(part2 T2에서 UI만 추가 — 서비스는 정책별 enable 플래그를 미리 노출)
   - **Acceptance**: Given 신호 조합 시나리오(전체화면 on→off, 세이버 on 중 잠금 on→둘 다 off 등), When 상태 머신에 주입(`SetSignal` 공개 진입점 — 구현 확정), Then Pause/Resume 이벤트가 기대 시퀀스와 일치 — xUnit; 실기 게임 실행·잠금 동작은 HUMAN-VERIFY
@@ -330,6 +330,9 @@
 ## Retry Ledger
 
 ## Progress Log
+- T7-T8 완료 (커밋 c55c612, +T8 완료 커밋): PlaybackCoordinator(마스터-미러 동기·오디오 라우팅·재진입 가드·FireAndForget 예외 포착) + AppServices(수동 컴포지션 루트 — D13, DI 컨테이너는 part2 재검토·사용자 확인 필요) + PowerPolicyService(3신호 합성 상태 머신, QUNS 폴링·PowerManager·WTS 잠금) + SessionInterop. 테스트 75/75.
+  - 결정: 정책 일시정지와 사용자 정지는 독립 상태 — 수동 재개가 정책 상태도 리셋(수동 우선), PolicyResume은 정책 발동 중에만 동작.
+  - 교훈: 경고 확인은 --no-incremental 전체 재빌드로 (증분 빌드가 미변경 프로젝트 경고를 재출력하지 않아 오보고 발생했었음).
 - T5-T6 완료 (커밋 7a720cb, +T6 완료 커밋): WorkerW 배경창(24H2 이중 경로, EnsureHealthy 재부착, IWallpaperHost seam) + WebView2 플레이어(player.html 브리지, 가상 호스트 https://player.desktube.local, autoplay 워치독, 화질 스케일, IPlayerHost seam). 리뷰 BLOCKER 1(오류 로그)·MAJOR 2(pause 워치독·타이머 Dispose) 수정 후 재검증 OK.
   - 결정: 명령/이벤트 명칭 최종 — load/play/pause/volume/mute/seek/scale, ready/state/error/time (D8 동기화).
   - 함정 (재발 방지): 존재하지 않는 타입을 소스에 참조하면 XAML 컴파일러가 CS 오류 대신 WMC9999(내부 NRE)로 죽는다 — WebView2 예외는 WinRT 프로젝션에 전용 타입 없음, HResult 0x80070002로 런타임 부재 판별.
