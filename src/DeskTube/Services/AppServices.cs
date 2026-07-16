@@ -17,7 +17,8 @@ public sealed class AppServices : IDisposable
         IMonitorService monitors,
         WallpaperHost wallpaperHost,
         PlaybackCoordinator coordinator,
-        PowerPolicyService powerPolicy)
+        PowerPolicyService powerPolicy,
+        VideoMetadataService metadata)
     {
         Settings = settings;
         Store = store;
@@ -26,6 +27,7 @@ public sealed class AppServices : IDisposable
         WallpaperHost = wallpaperHost;
         Coordinator = coordinator;
         PowerPolicy = powerPolicy;
+        Metadata = metadata;
     }
 
     public AppSettings Settings { get; }
@@ -41,6 +43,9 @@ public sealed class AppServices : IDisposable
     public PlaybackCoordinator Coordinator { get; }
 
     public PowerPolicyService PowerPolicy { get; }
+
+    /// <summary>유튜브 oEmbed 메타데이터 조회 (FR-18).</summary>
+    public VideoMetadataService Metadata { get; }
 
     /// <summary>UI 스레드에서 호출 — 상태 로드 후 서비스 그래프를 조립한다.</summary>
     public static async Task<AppServices> CreateAsync(DispatcherQueue dispatcherQueue)
@@ -90,7 +95,9 @@ public sealed class AppServices : IDisposable
         powerPolicy.ResumeRequested += (_, _) => coordinator.PolicyResume();
         powerPolicy.StartMonitoring(dispatcherQueue);
 
-        return new AppServices(settings, store, library, monitors, wallpaperHost, coordinator, powerPolicy);
+        var metadata = new VideoMetadataService();
+
+        return new AppServices(settings, store, library, monitors, wallpaperHost, coordinator, powerPolicy, metadata);
     }
 
     public void Dispose()

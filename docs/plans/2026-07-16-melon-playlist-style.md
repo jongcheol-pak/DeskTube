@@ -25,6 +25,8 @@
 
 ## Deferred / Follow-up
 - 홈 화면(HomeViewModel)의 현재 재생 정보에도 제목·썸네일 표시 — 이번엔 플레이리스트 페이지만 (메타데이터 인프라(T1·T2)가 생기므로 후속 작업이 쉬워짐)
+- [MINOR, T2 quality m1] VideoMetadataService 클래스 요약에 "단, 호출측 취소는 예외로 전파" 구절 보강 (주석 정밀화)
+- [MINOR, T2 quality m2] VideoMetadataService의 Result.Fail 메시지를 프로젝트 관례(서술형 한글)로 통일 — 현재 로그 전용·UI 미노출이라 무해, UI 노출 시 필수
 
 ## Investigation Log
 - 위키 참조: vault 미설정 여부 미확인이나 프로젝트 허브 규약은 세션 훅 컨텍스트로 갈음, 본 plan은 코드 1차 출처로 진행
@@ -167,7 +169,7 @@
   - **Halt Forecast**: 없음 (additive 필드, 파괴 없음)
   - **Depends on**: -
 
-- [ ] T2. VideoMetadataService 신설 (oEmbed) + AppServices 배선 (FR-18)
+- [x] T2. VideoMetadataService 신설 (oEmbed) + AppServices 배선 (FR-18)
   - **Type**: D
   - **Design**: ① `src/DeskTube/Services/VideoMetadataService.cs` 단일 파일 ② `VideoMetadataService` — oEmbed GET·타임아웃·`Result<VideoMetadata>` 반환 1책임 + 정적 `TryParse`(JSON→제목·채널) ③ AppServices가 생성·보유, PlaylistsViewModel이 소비. 서비스는 Models(Result)만 참조 ④ 인터페이스(IVideoMetadataService) 추상화·재시도 정책·캐시 계층은 이번에 만들지 않음 (소비자 1곳 — YAGNI, 기존 수동 배선 관례상 구체 타입 직접 보유도 선례 있음: PlaylistLibrary·PlaybackCoordinator)
   - **Acceptance**: Given 정상 oEmbed JSON, When TryParse, Then 제목·채널 추출 / Given 필드 결손·비정상 JSON, When TryParse, Then false(예외 없음) — 단위 테스트. 네트워크 실패·타임아웃 시 Result 실패 반환(예외 전파 없음)은 코드 리뷰로 확인
