@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DeskTube.Views.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:DeskTube.ViewModels">
+    <ScrollViewer Padding="36,24,40,24">
+        <StackPanel MaxWidth="1024" Spacing="24" HorizontalAlignment="Stretch">
+            <TextBlock x:Uid="AboutHeader" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <!-- 앱 정보 (FR-11) -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="DeskTube" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.AppVersion, Mode=OneWay}" Style="{StaticResource BodyTextBlockStyle}" />
+                <TextBlock x:Uid="AboutDeveloper" Style="{StaticResource BodyTextBlockStyle}" />
+            </StackPanel>
+
+            <!-- 개인정보 처리방침 요지 (NFR-6, D7) -->
+            <StackPanel Spacing="8">
+                <TextBlock x:Uid="PrivacyTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Uid="PrivacySummary" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap" />
+                <TextBlock x:Uid="PrivacyDocNote" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- 오픈소스 라이선스 (FR-12, D5) -->
+            <StackPanel Spacing="8">
+                <TextBlock x:Uid="LicensesTitle" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Licenses}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LicenseEntry">
+                            <!-- 접힘 기본 — 긴 전문은 펼칠 때만 렌더 (plan T6 Edge) -->
+                            <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,8">
+                                <Expander.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <TextBlock Text="{x:Bind Id}" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                        <TextBlock Text="{x:Bind License}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Expander.Header>
+                                <TextBlock
+                                    Text="{x:Bind FullText}"
+                                    Style="{StaticResource BodyTextBlockStyle}"
+                                    TextWrapping="Wrap"
+                                    IsTextSelectionEnabled="True" />
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

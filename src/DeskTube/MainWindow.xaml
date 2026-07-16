@@ -13,6 +13,11 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="NavHome" x:Name="NavHomeItem" Tag="home" Icon="Home" />
                 <NavigationViewItem x:Uid="NavPlaylists" Tag="playlists" Icon="List" />
+                <NavigationViewItem x:Uid="NavAbout" Tag="about">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE946;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
             <Frame x:Name="ContentFrame" />
         </NavigationView>

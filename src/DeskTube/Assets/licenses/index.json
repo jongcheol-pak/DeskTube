@@ -1,0 +1,24 @@
+{
+  "packages": [
+    {
+      "id": "CommunityToolkit.Mvvm",
+      "license": "MIT",
+      "file": "CommunityToolkit.Mvvm.txt"
+    },
+    {
+      "id": "CommunityToolkit.WinUI.Controls.SettingsControls",
+      "license": "MIT",
+      "file": "CommunityToolkit.WinUI.Controls.SettingsControls.txt"
+    },
+    {
+      "id": "H.NotifyIcon.WinUI",
+      "license": "MIT",
+      "file": "H.NotifyIcon.WinUI.txt"
+    },
+    {
+      "id": "Microsoft.WindowsAppSDK",
+      "license": "Microsoft Software License Terms",
+      "file": "Microsoft.WindowsAppSDK.txt"
+    }
+  ]
+}

@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
             {
                 "home" => typeof(HomePage),
                 "playlists" => typeof(PlaylistsPage),
+                "about" => typeof(AboutPage),
                 _ => null,
             };
             if (pageType is not null)

@@ -26,6 +26,10 @@
     <Content Include="Assets\**\*.png" />
     <!-- 트레이 아이콘 (ms-appx URI로 로드 — TrayIconService) -->
     <Content Include="Assets\tray.ico" />
+    <!-- 오픈소스 라이선스 전문 + 인덱스 (AboutViewModel이 출력 폴더에서 읽음 — plan D5) -->
+    <Content Include="Assets\licenses\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <!-- 플레이어 브리지 HTML — 가상 호스트 매핑으로 서빙 (PlayerHost) -->
     <Content Include="Assets\player.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
