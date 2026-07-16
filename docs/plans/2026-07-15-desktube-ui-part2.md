@@ -257,13 +257,16 @@
 
 - [ ] T8. 최종 통합 검증 + 문서 (NFR-2·3·5)
   - **Type**: C
-  - **Design**: ① `README.md`(개요·기능·실행·아키텍처), WACK 실행·결과 기록, 메모리·콜드 스타트 실측 기록(`docs/verification-2026-07.md`) ② 검증 절차 — Release x64 빌드 + MSIX 패키징 → WACK 실행 → 실패 항목 수정 루프, 작업 관리자 워킹셋 측정(재생 2모니터/정지 대기) ③ 신규 심볼 없음 — 문서·검증 중심(코드 수정은 WACK 실패 대응 한정) ④ 이번에 안 함: Store 업로드
+  - **Design**: ① `README.md`(개요·기능·실행·아키텍처), WACK 실행·결과 기록, 메모리·콜드 스타트 실측 기록(`docs/verification-2026-07.md`) ② 검증 절차 — Release x64 빌드 + MSIX 패키징 → WACK 실행 → 실패 항목 수정 루프, 작업 관리자 워킹셋 측정(재생 2모니터/정지 대기) ③ 신규 심볼 없음 — 문서·검증 중심(코드 수정은 WACK 실패 대응 한정 — 그 선행 단계인 MSIX 패키징 실패 대응 포함) ④ 이번에 안 함: Store 업로드
   - **Acceptance**: Given Release 패키지, When WACK 실행, Then 통과(실패 0) + 대기 워킹셋 실측치 기록(150MB 이하 목표 — 초과 시 원인 분석 보고) + 콜드 스타트 3초 이내 실측 + README가 실제 기능과 일치
+    - (2026-07-16 구현 세션 상태: 자동 검증·MSIX 패키징·README·검증 문서 완료. WACK·워킹셋·콜드스타트 실측 3건은 자동 세션에서 구조적으로 불가(UAC 관리자 권한·실기 화면 관찰) — Verification Strategy 대안에 따라 `docs/verification-2026-07.md` 체크리스트(정확한 명령·기록 양식)로 **사용자 수행 전환**, 최종 보고에서 명시 요청. 실측 목표치(150MB·3초)는 유지 — 검증 주체만 이관)
   - **Files**:
     - 주: `README.md`, `docs/verification-2026-07.md`
     - 동반: (WACK 실패 시 해당 파일 수정 — 범위는 실패 항목 한정)
   - **Edge Cases**:
     - WACK 도구 부재(SDK 미설치) → 설치 안내 후 사용자 확인 요청 (Verification Strategy 대안)
+    - WACK 도구는 있으나 자동 세션에서 실행 불가(관리자 권한/UAC 필요) → 도구 부재와 동일 대안 적용 (사용자 수행 전환 — T8 리뷰 합의)
+    - 메모리·콜드 스타트 실측은 실기 실행·화면 관찰 의존 → 절차·기록 양식 문서화 후 사용자 수행 (AGENTS XAML 규칙 8의 HUMAN-VERIFY 관례와 동일)
     - 메모리 목표 초과 → 근본 원인 분석(프로세스별 분해) 후 보고 — 무리한 임시방편 금지
   - **Halt Forecast**:
     - (i) "WACK 실행 방법?" → Verification Strategy에 명령 명시
