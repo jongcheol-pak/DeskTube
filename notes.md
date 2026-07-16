@@ -1,6 +1,14 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-16: **재생 시 AccessViolationException 크래시 근본 수정 (배경창 Win32 호스트 전환)** — plan: `docs/plans/2026-07-16-wallpaper-win32-host.md`, 조사: `docs/debug-2026-07-16-av-crash.md`, 브랜치 `task/wallpaper-win32-host`
+  - **무엇을**: 재생 클릭 수 초 후 네이티브 AV로 즉사하던 크래시 수정. WallpaperWindow(WinUI 3 XAML) 삭제 → 순수 Win32 창 `Interop/WallpaperSurface`(WS_POPUP·TOOLWINDOW·NOACTIVATE·검정 브러시·WM_SIZE 콜백) + PlayerHost를 `CoreWebView2Controller`(CreateFromWindowHandle) 호스팅으로 전환. 공개 계약(IWallpaperHost/IPlayerHost) 무변경.
+  - **왜**: WinUI 3 창은 WS_CHILD 전환 + 크로스 프로세스 SetParent(explorer의 WorkerW)를 컴포지션/입력 계층이 지원하지 않음 — 대조 실험으로 확정 (부착 생략 2/2 생존 vs 부착 2/2 사망, H2 보조창·H3 UDF충돌 기각). Lively 등 검증된 배경화면 앱과 동일 구조로 교체.
+  - **어떻게**: 체계적 디버깅 4단계 — 이벤트 로그/WER/Defender 배제 → UIA 자동 재현 확립 → 진단 훅(예외/ProcessExit 훅 전부 미발화 = 네이티브 즉사 판정) → 진단 플래그 대조 실험으로 인과 확정. 진단 코드는 원복.
+  - **검증 결과**: 빌드 경고 0 / 테스트 81/81 / format 0 / **동일 UIA 시나리오 2/2 생존 60초** (수정 전 3/3 사망) + WebView2 기동·영상 종료·정리 경로 통과. spec·quality 리뷰 첫 판 OK.
+  - **주요 함정 (재발 방지)**: ① WinUI 3 창을 타 프로세스 창에 SetParent 금지 (컴포지션 AV — 배경화면류는 순수 Win32 창 + WebView2 컨트롤러 호스팅) ② WER가 덤프 수집하는 동안 크래시 프로세스가 살아 보임 (사망 시각은 이벤트 타임스탬프로) ③ VS 디버거에 잡힌 크래시는 이벤트 로그·WER에 안 남음 ④ 패키지 앱 exe 직접 실행은 WinAppSDK 활성화 실패(0x80040154) — shell:AppsFolder로
+  - **변경 파일**: `Interop/WallpaperSurface.cs`(신규), `Services/WallpaperHost.cs·PlayerHost.cs·AppServices.cs·IWallpaperHost.cs`, `Assets/player.html`(주석), `Views/WallpaperWindow.xaml(.cs)` 삭제, `docs/debug-2026-07-16-av-crash.md`
+  - **미처리 Deferred**: 단일 인스턴스 보장, 유휴 워킹셋 ~208MB 실측 대조, 전역 예외 훅 상시 탑재 검토 (대장 반영)
 - 2026-07-16: **part2 UI·통합 구현 완료 (T1~T8)** — plan: `docs/plans/2026-07-15-desktube-ui-part2.md`, PRD: `docs/prd.md`, 브랜치 `task/desktube-ui-part2`
   - **무엇을**: ① 트레이 아이콘(H.NotifyIcon.WinUI 2.3.2 — 메뉴 재생/정지/볼륨체크/설정/종료, 더블클릭=설정, 닫기=숨김, 종료=배경 복구 후 종료) ② NavigationView 셸 + 홈(URL 즉시 재생 — "빠른 재생" 리스트 방식) + 설정 페이지(모니터 다중 체크 최소1 강제·오디오 콤보·볼륨·재생 모드·화질+안내·자동 일시정지 3토글) ③ 플레이리스트 관리(마스터-디테일, 우클릭 이름변경/삭제+확인 대화상자, 버튼/드래그 정렬, 재생 중 변경 큐 반영) ④ 부팅 자동 시작(uap5 StartupTask 기본 꺼짐, 조용 시작=활성화 종류+`-startup` 폴백, DisabledByUser 상태 안내) ⑤ 유튜브 로그인(SAPISID 쿠키 판별 — 화면 없는 임시 컨트롤러 프로브, LoginWindow 자동 닫기, 로그아웃=쿠키 전체 삭제+ReloadCurrentTrack) ⑥ 정보 화면(버전·개인정보 요지·라이선스 전문 4건 + LicenseInventoryTests 게이트) + docs/privacy-policy.md 한/영 ⑦ 다국어 완성(en/ko 100키 동등, 언어 카드 — 전환 시 트레이·창 재생성, 저장 언어 App 생성자 동기 선적용) ⑧ README + docs/verification-2026-07.md + Release 빌드·MSIX 패키징
   - **왜**: PRD FR-8~13·15, NFR-2~6 (Store 제출 가능 상태)
