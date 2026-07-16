@@ -360,7 +360,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
     - (ii-a) MainWindow 내부 구조 변경(계획된 셸 재구성) → `## 사전 승인 항목`
   - **Depends on**: T2
 
-- [ ] T4. 모니터 카드 공용 컴포넌트 (MonitorPanelViewModel + MonitorCardsControl)
+- [x] T4. 모니터 카드 공용 컴포넌트 (MonitorPanelViewModel + MonitorCardsControl)
   - **Type**: D
   - **Design**: ① `ViewModels/MonitorChoice.cs`(분리·확장: `ResolutionLabel`·`IsPrimary`·`ShowAudioBadge` 추가), `ViewModels/MonitorPanelViewModel.cs`(신규 — 모니터 열거·선택 토글·최소 1개 강제·AppSettings 저장·MonitorsChanged 구독·배지 계산. SettingsViewModel 332·459행 로직 이동), `Controls/MonitorCardsControl.xaml(.cs)`(신규 UserControl — ItemsSource 바인딩, `IsLarge` bool 의존 속성으로 홈 300×188/설정 200×125 변형 — 당초 `CardSize` 명명을 bool로 단순화, spec 리뷰 M2 소급 정정) ② 책임 각 1줄 위와 같음 ③ SettingsViewModel·HomeViewModel(T5)이 MonitorPanelViewModel을 소유, Control은 VM만 바인딩(서비스 직접 참조 금지) ④ 비추상화: 모니터 외 범용 카드 컨트롤로 일반화하지 않음
   - **Acceptance**: Given 설정 화면, When 모니터 카드 클릭 토글, Then 기존과 동일하게 선택 저장·최소 1개 강제·오디오 대상 배지 갱신 (기계 검증: 빌드 + 테스트 100 통과 — 단 이동 대상 로직은 자동 테스트가 없으므로 이는 회귀 바닥선일 뿐이며, 이동 로직의 동작 보존·카드 시각은 ⏳ HUMAN-VERIFY). SettingsPage의 기존 SettingsExpander 토글 목록은 카드 컨트롤로 대체됨
@@ -464,6 +464,10 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 - T1-T2 완료 (커밋 43c70fb, 15cc5ff): T1 AGENTS.md 디자인 규칙 개정(AGENTS.md는 gitignore — 디스크 반영, plan·PRD 변경 동반 커밋). T2 다크 고정 전환 + DesignTokens.xaml 신설(D3 Color 35키+Brush, HC 사전, 공용 Style 5종) + SystemAccentColor 코럴 재정의. 빌드 경고0·테스트 100/100.
   - 결정: DesignTokens는 D3 키명 Color 리소스 + 대응 Brush 이중 구조 (spec 리뷰 B1 — acceptance grep이 D3 키명을 대조). 그라디언트 브러시 키는 AppMonitorSelectedBackgroundBrush·AppThumbPlaceholderBackgroundBrush.
   - 결정: 다크 accent 면(AccentFillColorDefault)은 SystemAccentColorLight2를 소비 → Light2=#F25C54(원색)로 재정의.
+- T3-T4 완료 (커밋 e8fdb5c, 이후 T4 완료 커밋): T3 셸 재설계(타이틀바 44·사이드바 220·설정 일반 항목·정보 footer·콘텐츠 카드·Mica 제거·NavigateToPlaylists/App.Main 신설). T4 모니터 카드 공용화(MonitorChoice 분리·MonitorPanelViewModel·MonitorCardsControl Large/Compact, SettingsViewModel 위임, SettingsExpander→카드 교체). 빌드 0경고·테스트 100/100.
+  - 결정: MonitorPanel 구독은 Attach 멱등(-=/+=) + Detach 대칭 (Loaded/Unloaded 반복에 구독 1개 유지). NoticeCleared 이벤트로 유효 선택 시 안내 자동 닫힘 보존.
+  - 결정: 카드 hover 테두리는 PointerEntered/Exited로 구현 (x:Bind는 IsSelected 변경 때만 재평가).
+  - 결정: 변형 DP는 CardSize 대신 IsLarge(bool) — plan Design 소급 정정.
 
 ## Next Steps
 - plan 승인 후 `pjc:implement-task`로 T1부터 자율 실행
