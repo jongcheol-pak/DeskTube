@@ -91,6 +91,7 @@ internal static class SessionInterop
         private readonly string _className;
         private readonly IntPtr _instance;
         private IntPtr _hwnd;
+        private bool _wtsRegistered;
 
         /// <param name="onLockChanged">true = 잠금, false = 해제.</param>
         internal SessionLockWindow(Action<bool> onLockChanged)
@@ -127,6 +128,8 @@ internal static class SessionInterop
                 Dispose();
                 throw new InvalidOperationException($"세션 알림 등록 실패 (Win32 오류 {error})");
             }
+
+            _wtsRegistered = true;
         }
 
         private IntPtr HandleMessage(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -155,7 +158,13 @@ internal static class SessionInterop
         {
             if (_hwnd != IntPtr.Zero)
             {
-                WTSUnRegisterSessionNotification(_hwnd);
+                if (_wtsRegistered)
+                {
+                    // 등록 성공한 경우에만 해제 (등록 실패 생성자 경로에서 무의미한 호출 방지)
+                    WTSUnRegisterSessionNotification(_hwnd);
+                    _wtsRegistered = false;
+                }
+
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
                 UnregisterClassW(_className, _instance);

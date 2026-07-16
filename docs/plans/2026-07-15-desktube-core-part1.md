@@ -289,10 +289,10 @@
 - [ ] T8. 자동 일시정지 정책 (NFR-1)
   - **Type**: C
   - **Design**: ① `Services/PowerPolicyService.cs` + `Interop/SessionInterop.cs`(WTSRegisterSessionNotification, SHQueryUserNotificationState P/Invoke) ② `PowerPolicyService` — 전체화면(D6 폴링)·배터리 세이버(D7)·세션 잠금(D7) 3신호를 합성해 `PauseRequested/ResumeRequested` 이벤트 발행 (재개는 모든 신호 해제 시) ③ PlaybackCoordinator가 구독(수동 정지와 구분되는 "정책 일시정지" 상태) ④ 이번에 안 함: 설정에서 정책별 on/off 토글(part2 T2에서 UI만 추가 — 서비스는 정책별 enable 플래그를 미리 노출)
-  - **Acceptance**: Given 신호 조합 시나리오(전체화면 on→off, 세이버 on 중 잠금 on→둘 다 off 등), When 상태 머신에 주입, Then Pause/Resume 이벤트가 기대 시퀀스와 일치 — xUnit(신호를 인터페이스로 주입); 실기 게임 실행·잠금 동작은 HUMAN-VERIFY
+  - **Acceptance**: Given 신호 조합 시나리오(전체화면 on→off, 세이버 on 중 잠금 on→둘 다 off 등), When 상태 머신에 주입(`SetSignal` 공개 진입점 — 구현 확정), Then Pause/Resume 이벤트가 기대 시퀀스와 일치 — xUnit; 실기 게임 실행·잠금 동작은 HUMAN-VERIFY
   - **Files**:
     - 주: `src/DeskTube/Services/PowerPolicyService.cs`
-    - 동반: `src/DeskTube/Interop/SessionInterop.cs`, `src/DeskTube/Services/PlaybackCoordinator.cs`(구독 연결)
+    - 동반: `src/DeskTube/Interop/SessionInterop.cs`, `src/DeskTube/Services/AppServices.cs`(구독 배선 — 코디네이터의 PolicyPause/Resume는 T7 기구현이라 무변경, D13 컴포지션 루트가 배선 담당)
     - 테스트: `tests/DeskTube.Tests/PowerPolicyServiceTests.cs`
   - **Edge Cases**:
     - 배경창 자신의 전체화면 오인 없음(확정) — QUNS 판정은 포그라운드 창 기준이고 배경창은 비활성(WorkerW 자식)이라 판정 대상이 아님

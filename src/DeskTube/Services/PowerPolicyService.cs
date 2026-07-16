@@ -34,7 +34,6 @@ public sealed class PowerPolicyService : IDisposable
     // 실신호 소스 (StartMonitoring 이후에만 존재 — 테스트는 사용하지 않음)
     private DispatcherQueueTimer? _fullscreenTimer;
     private SessionInterop.SessionLockWindow? _lockWindow;
-    private bool _energySaverHooked;
 
     public PowerPolicyService(AppSettings settings)
     {
@@ -83,7 +82,6 @@ public sealed class PowerPolicyService : IDisposable
                 dispatcherQueue.TryEnqueue(() => SetSignal(
                     PowerSignal.BatterySaver,
                     Windows.System.Power.PowerManager.EnergySaverStatus == Windows.System.Power.EnergySaverStatus.On));
-            _energySaverHooked = true;
 
             // 시작 시점 상태 반영
             SetSignal(PowerSignal.BatterySaver,
@@ -112,8 +110,8 @@ public sealed class PowerPolicyService : IDisposable
         _fullscreenTimer = null;
         _lockWindow?.Dispose();
         _lockWindow = null;
-        // PowerManager 정적 이벤트는 앱 수명과 같아 해제 생략 (서비스가 싱글톤 — _energySaverHooked는 기록용)
-        _ = _energySaverHooked;
+        // PowerManager 정적 이벤트는 해제하지 않는다 — 이 서비스는 앱 수명과 같은 싱글톤(AppServices 1회 생성).
+        // AppServices가 재생성되는 구조가 생기면 구독 누적이 되므로 그때 해제 로직 필요 (part2 주의).
     }
 
     private bool IsEnabled(PowerSignal signal) => signal switch
