@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-16: **음소거 토글 표시 수정** — 볼륨 카드 안 StackPanel(토글+슬라이더) 조합에서 ToggleSwitch 상태 문구가 스위치와 겹쳐 표시되는 시각 결함(사용자 스크린샷 보고). 음소거를 독립 SettingsCard(MuteCard — Header "음소거"·설명 문구)로 분리해 모니터 토글과 동일한 검증된 구조로 변경, 볼륨 카드는 슬라이더만 원복. resw en/ko 갱신(MuteToggle.* 3키 → MuteCard.* 2키), README 문구 보정. 검증: 빌드 경고 0 + 실기 스크린샷(UIA)으로 겹침 해소 확인. **함정**: loose 배포는 패키지 버전이 같으면 OS가 resources.pri(xbf 포함)를 캐시해 재빌드가 화면에 반영 안 됨 — Remove-AppxPackage 후 재등록으로 캐시 무효화 필요.
 - 2026-07-16: **UI·성능 개선 배치 T1~T8 완료** — plan: `docs/plans/2026-07-16-ui-perf-batch.md`, PRD: FR-16·17 신설분, 브랜치 `task/ui-perf-batch`
   - **무엇을**: ① 페이지 전환 속도(NFR-3) — 4페이지 NavigationCacheMode.Required + SettingsViewModel Load 분리(무거운 StartupTask·세션 프로브는 최초 1회, 재진입은 모니터 목록·음소거만 재동기화) ② 음소거 토글(FR-5) — 볼륨 카드 ToggleSwitch, 트레이와 상태 공유 ③ 동영상 크기 모드 3종(FR-16) — FitMode(Cover/Contain/Stretch), player.html applyScale→applyLayout 통합(크기 모드×화질 스케일 단일 계산), IPlayerHost.SetFitMode(사전 승인 확장), Coordinator 생성 3지점 초기 적용 ④ 앱 테마(FR-17) — AppTheme+ThemeHelper(Register/SetTheme/Initialize), 적용 4지점(창 2종 생성·설정 즉시·언어 전환 재생성), App 동기 선읽기 확장 ⑤ WinUIEx 2.9.2(사전 승인) — WindowManager로 창 상태 저장·복원(PersistenceId)+MinWidth/Height, Mica, 커스텀 타이틀바 ⑥ 미러 화질 하향(NFR-2) — EffectiveScaleFor 헬퍼로 SetQualityScale 4곳 일원화, 미러 min(설정,720) ⑦ 워킹셋 트림(NFR-2) — ProcessInterop, 정지·창 숨김 시(재생·일시정지 중 금지) ⑧ AGENTS 규칙 3 개정+README 갱신(WallpaperWindow 잔존 제거)
   - **왜**: 사용자 요청 7건(전환 느림·음소거·크기 모드·테마·WinUIEx·최적화·Gallery 스타일) — PRD FR-5·10·16·17, NFR-2·3

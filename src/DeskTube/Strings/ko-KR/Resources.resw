@@ -96,14 +96,11 @@
   <data name="VolumeCard.Header" xml:space="preserve">
     <value>볼륨</value>
   </data>
-  <data name="MuteToggle.Header" xml:space="preserve">
+  <data name="MuteCard.Header" xml:space="preserve">
     <value>음소거</value>
   </data>
-  <data name="MuteToggle.OnContent" xml:space="preserve">
-    <value>켬</value>
-  </data>
-  <data name="MuteToggle.OffContent" xml:space="preserve">
-    <value>끔</value>
+  <data name="MuteCard.Description" xml:space="preserve">
+    <value>켜면 모든 모니터의 소리를 끕니다</value>
   </data>
   <data name="ModeCard.Header" xml:space="preserve">
     <value>재생 순서</value>

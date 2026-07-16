@@ -96,14 +96,11 @@
   <data name="VolumeCard.Header" xml:space="preserve">
     <value>Volume</value>
   </data>
-  <data name="MuteToggle.Header" xml:space="preserve">
+  <data name="MuteCard.Header" xml:space="preserve">
     <value>Mute</value>
   </data>
-  <data name="MuteToggle.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="MuteToggle.OffContent" xml:space="preserve">
-    <value>Off</value>
+  <data name="MuteCard.Description" xml:space="preserve">
+    <value>Silences sound on all monitors</value>
   </data>
   <data name="ModeCard.Header" xml:space="preserve">
     <value>Playback order</value>

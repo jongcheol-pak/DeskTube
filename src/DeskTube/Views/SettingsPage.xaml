@@ -42,20 +42,20 @@
                         SelectedIndex="{x:Bind ViewModel.AudioIndex, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
-                <!-- 볼륨 + 음소거 (FR-5 UI 노출 — plan T2/D3) -->
+                <!-- 볼륨 -->
                 <controls:SettingsCard x:Uid="VolumeCard">
-                    <StackPanel Orientation="Horizontal" Spacing="24">
-                        <ToggleSwitch
-                            x:Uid="MuteToggle"
-                            IsOn="{x:Bind ViewModel.IsMuted, Mode=TwoWay}" />
-                        <Slider
-                            MinWidth="240"
-                            Minimum="0"
-                            Maximum="100"
-                            StepFrequency="1"
-                            VerticalAlignment="Bottom"
-                            Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
-                    </StackPanel>
+                    <Slider
+                        MinWidth="240"
+                        Minimum="0"
+                        Maximum="100"
+                        StepFrequency="1"
+                        Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- 음소거 (FR-5 UI 노출 — plan T2/D3. 카드 하나에 컨트롤 2개를 StackPanel로 넣으면
+                     ToggleSwitch 상태 문구가 스위치와 겹쳐, 모니터 토글과 동일한 단독 카드 구조로 분리) -->
+                <controls:SettingsCard x:Uid="MuteCard">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsMuted, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
                 <!-- 재생 모드 -->
