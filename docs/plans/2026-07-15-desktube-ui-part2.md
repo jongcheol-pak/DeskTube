@@ -44,6 +44,10 @@
 ## Deferred / Follow-up
 - Store 심사 피드백 대응·identity 교체 후 재패키징 — 제출 시점에 별도 진행
 - (part1에서 이관되는 미처리 Deferred가 생기면 implement-task가 여기 반영)
+- (part1 이관) AGENTS.md Test 명령 플래그(`-p:Platform=x64`) 갱신 — 사용자 승인 필요
+- (part1 이관) DI 컨테이너 도입 여부 재검토 — part2에서도 수동 컴포지션 루트(AppServices) 유지 중, 사용자 확인 필요
+- T3 MINOR: PlaylistsPage 마스터-디테일 레이아웃이 AGENTS 디자인 규칙 6(폼형 골격)의 예외 — AGENTS.md에 예외 명시 검토 (레이아웃 적정성은 HUMAN-VERIFY 목록에 포함)
+- T3 MINOR: PlaylistsViewModel의 Rename/AddItem 실패 안내가 LimitExceeded 외 코드를 뭉뚱그림 — 오류 원인 늘어나면 ErrorCode별 분기 추가
 
 ## Investigation Log
 - part1 Investigation Log의 검증 사실을 전제로 함 (IFrame API·프리미엄 임베드·WebView2 autoplay·24H2·StartupTask·H.NotifyIcon·WinAppSDK 2.2 — 전부 웹 공식 출처 확인 완료, 2026-07-15)
@@ -168,7 +172,7 @@
     - (ii-a) NuGet 의존성 추가(CommunityToolkit.WinUI.Controls.SettingsControls) → `## 사전 승인 항목`
   - **Depends on**: T1
 
-- [ ] T3. 플레이리스트 관리 페이지 (FR-6 UI)
+- [x] T3. 플레이리스트 관리 페이지 (FR-6 UI)
   - **Type**: D
   - **Design**: ① `Views/PlaylistsPage.xaml(.cs)` + `ViewModels/PlaylistsViewModel.cs` ② 좌측 리스트 목록(생성·이름변경·삭제) + 우측 항목 목록(URL 추가·삭제·위/아래 이동·드래그 정렬) + "이 리스트 재생" 버튼, 상한 도달 시 추가 버튼 비활성+안내 ③ PlaylistLibrary(part1 T2)·PlaybackCoordinator 호출 ④ 이번에 안 함: 항목 메타데이터(제목·썸네일) 자동 조회 — 유튜브 Data API 키가 필요해 Out(URL 텍스트 표시만), 가져오기/내보내기
   - **Acceptance**: Given 플레이리스트 화면, When 리스트 생성→URL 3개 추가→순서 변경→재생, Then 배경 재생이 그 순서로 시작되고 재시작 후 상태 유지 — HUMAN-VERIFY; CRUD·상한은 part1 테스트가 커버
