@@ -220,7 +220,7 @@
   - **Halt Forecast**: 없음 (XAML·리소스 — 파괴·외부·시그니처 없음)
   - **Depends on**: T4
 
-- [ ] T6. 문서 갱신 — README (FR-18)
+- [x] T6. 문서 갱신 — README (FR-18)
   - **Type**: A
   - **Acceptance**: README 핵심 기능에 차트형 플레이리스트(메타데이터 표시·셔플/전체듣기·항목부터 재생, FR-18) 반영 — 존재하는 기능만 기재
   - **Files**:
