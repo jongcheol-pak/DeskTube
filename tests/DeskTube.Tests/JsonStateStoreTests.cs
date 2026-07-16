@@ -70,7 +70,13 @@ public sealed class JsonStateStoreTests : IDisposable
     public async Task 플레이리스트_저장_후_재로드하면_왕복_일치한다()
     {
         var playlist = new Playlist { Name = "출근길" };
-        playlist.Items.Add(new PlaylistItem { Url = "https://youtu.be/abc123def45", VideoId = "abc123def45" });
+        playlist.Items.Add(new PlaylistItem
+        {
+            Url = "https://youtu.be/abc123def45",
+            VideoId = "abc123def45",
+            Title = "테스트 영상 제목",
+            ChannelName = "테스트 채널",
+        });
 
         var saved = await _store.SavePlaylistsAsync([playlist]);
         var loaded = await _store.LoadPlaylistsAsync();
@@ -81,6 +87,34 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(playlist.Name, restored.Name);
         var item = Assert.Single(restored.Items);
         Assert.Equal("abc123def45", item.VideoId);
+        Assert.Equal("테스트 영상 제목", item.Title);
+        Assert.Equal("테스트 채널", item.ChannelName);
+    }
+
+    [Fact]
+    public async Task 메타데이터_필드가_없는_구형_플레이리스트_JSON도_기본값으로_로드된다()
+    {
+        // FR-18 이전 버전이 저장한 파일(Title·ChannelName 없음)과의 하위 호환 (plan T1 acceptance)
+        var path = Path.Combine(_tempDir, "playlists.json");
+        await File.WriteAllTextAsync(path, """
+            [{
+              "Id": "11111111-1111-1111-1111-111111111111",
+              "Name": "구버전 리스트",
+              "Items": [{
+                "Id": "22222222-2222-2222-2222-222222222222",
+                "Url": "https://youtu.be/abc123def45",
+                "VideoId": "abc123def45"
+              }]
+            }]
+            """);
+
+        var loaded = await _store.LoadPlaylistsAsync();
+
+        var restored = Assert.Single(loaded);
+        var item = Assert.Single(restored.Items);
+        Assert.Equal("abc123def45", item.VideoId);
+        Assert.Equal(string.Empty, item.Title);
+        Assert.Equal(string.Empty, item.ChannelName);
     }
 
     [Fact]
