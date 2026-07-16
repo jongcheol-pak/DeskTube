@@ -395,7 +395,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
     - (ii-a) HomeViewModel 공개 멤버 추가(계획된 시그니처 확장) → `## 사전 승인 항목`
   - **Depends on**: T3, T4
 
-- [ ] T6. 플레이리스트 화면 재설계
+- [x] T6. 플레이리스트 화면 재설계
   - **Type**: C
   - **Design**: 해당 없음 — 신규 심볼 없음 (기존 XAML 재구성 + T2 공용 스타일 소비. D6 헤더 행 제거 포함)
   - **Acceptance**: Given 플레이리스트 화면, When 기존 조작(생성·이름변경·삭제·추가·드래그 정렬·셔플듣기·전체듣기·행 재생), Then 기능 전부 불변 + 시안 스펙 반영 — 좌패널 300px·점선 새 리스트 버튼·활성 인디케이터, URL 입력 상단 배치, 컬럼 헤더 행 제거, 썸네일 64×40, 행 hover·재생 버튼 시안 색 (기계 검증: 빌드+테스트, 미사용 키(ColRankLabel·ColInfoLabel·ColListenLabel) resw 제거 및 잔존 참조 0 grep / 시각 ⏳ HUMAN-VERIFY)
@@ -468,6 +468,10 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
   - 결정: MonitorPanel 구독은 Attach 멱등(-=/+=) + Detach 대칭 (Loaded/Unloaded 반복에 구독 1개 유지). NoticeCleared 이벤트로 유효 선택 시 안내 자동 닫힘 보존.
   - 결정: 카드 hover 테두리는 PointerEntered/Exited로 구현 (x:Bind는 IsSelected 변경 때만 재평가).
   - 결정: 변형 DP는 CardSize 대신 IsLarge(bool) — plan Design 소급 정정.
+- T5-T6 완료 (커밋 3d8f3bb, 이후 T6 완료 커밋): T5 홈 재설계(pill·모니터 대형 카드·빠른 재생 칩·하단 정렬 MinHeight 기법·SelectPlaylist pending). T6 플레이리스트 재설계(좌 300px·점선 버튼·활성 인디케이터 IsActive·컬럼 헤더 제거 D6·썸네일 64×40·hover 코럴 3쌍·Col* 3키 제거). 빌드 0경고·테스트 100/100.
+  - 결정: 칩 클릭은 View(OnChipClick)가 App.Main 경유 — VM 커맨드 대신 (순수 화면 이동).
+  - 결정: 활성 표시는 PlaylistEntry.IsActive + x:Bind 정적 함수(ActiveNameBrush/ActiveWeight) — 상하 인셋은 컨테이너 Padding 0,12.
+  - 결정: hover 핸들러는 IsEnabled 가드 필수 (PointerEntered는 비활성에도 발생).
 
 ## Next Steps
 - plan 승인 후 `pjc:implement-task`로 T1부터 자율 실행
