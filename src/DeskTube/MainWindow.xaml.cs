@@ -36,9 +36,6 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
 
-        // 저장 테마 적용 + 변경 재적용 등록 (FR-17 — 언어 전환 창 재생성 후에도 유지)
-        Services.ThemeHelper.Register(this);
-
         AppWindow.Closing += OnAppWindowClosing;
 
         // 초기 선택 = 홈 (SelectedItem 대입이 SelectionChanged를 이미 태울 수 있어 NavigateOnce로 중복 방지)

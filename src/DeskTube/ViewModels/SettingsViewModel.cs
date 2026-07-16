@@ -76,7 +76,6 @@ public partial class SettingsViewModel : ObservableObject
         AudioIndex = -1;
         LanguageIndex = -1;
         FitModeIndex = -1;
-        ThemeIndex = -1;
 
         ModeOptions =
         [
@@ -99,12 +98,6 @@ public partial class SettingsViewModel : ObservableObject
             Loc.Get("Fit_Contain"),
             Loc.Get("Fit_Stretch"),
         ];
-        ThemeOptions =
-        [
-            Loc.Get("Theme_System"),
-            Loc.Get("Theme_Light"),
-            Loc.Get("Theme_Dark"),
-        ];
         LanguageOptions =
         [
             Loc.Get("Language_System"),
@@ -123,9 +116,6 @@ public partial class SettingsViewModel : ObservableObject
 
     /// <summary>크기 모드 콤보 — 인덱스가 FitMode enum 값과 일치 (채움/맞춤/늘리기, FR-16).</summary>
     public IReadOnlyList<string> FitModeOptions { get; }
-
-    /// <summary>테마 콤보 — 인덱스가 AppTheme enum 값과 일치 (시스템/라이트/다크, FR-17).</summary>
-    public IReadOnlyList<string> ThemeOptions { get; }
 
     public IReadOnlyList<string> LanguageOptions { get; }
 
@@ -152,9 +142,6 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int FitModeIndex { get; set; }
-
-    [ObservableProperty]
-    public partial int ThemeIndex { get; set; }
 
     [ObservableProperty]
     public partial int AudioIndex { get; set; }
@@ -266,7 +253,6 @@ public partial class SettingsViewModel : ObservableObject
 
             ReduceMirrorQuality = settings.ReduceMirrorQuality;
             FitModeIndex = (int)settings.FitMode;
-            ThemeIndex = (int)settings.Theme;
 
             PauseOnFullscreen = settings.PauseOnFullscreen;
             PauseOnBatterySaver = settings.PauseOnBatterySaver;
@@ -526,20 +512,6 @@ public partial class SettingsViewModel : ObservableObject
         {
             Apply(() => _services!.Coordinator.SetFitModeAsync((FitMode)value), "크기 모드 적용");
         }
-    }
-
-    /// <summary>테마 변경 (FR-17) — 열린 창 전부 즉시 적용 후 저장.</summary>
-    partial void OnThemeIndexChanged(int value)
-    {
-        if (_loading || _services is null || value < 0 || value >= ThemeOptions.Count)
-        {
-            return;
-        }
-
-        var theme = (AppTheme)value;
-        _services.Settings.Theme = theme;
-        ThemeHelper.SetTheme(theme);
-        Apply(() => _services.Store.SaveSettingsAsync(_services.Settings), "테마 설정 저장");
     }
 
     /// <summary>언어 변경 (plan T7, AGENTS 다국어 규칙 3) — ① 저장 ② 오버라이드 ③~⑤는 App.ApplyLanguageChange.</summary>

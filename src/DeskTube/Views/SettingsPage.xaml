@@ -104,14 +104,6 @@
                     IsClosable="False"
                     Severity="Warning" />
 
-                <!-- 앱 테마 (FR-17 — 시스템/라이트/다크, 열린 창 즉시 적용) -->
-                <controls:SettingsCard x:Uid="ThemeCard">
-                    <ComboBox
-                        MinWidth="240"
-                        ItemsSource="{x:Bind ViewModel.ThemeOptions}"
-                        SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
                 <!-- 언어 (NFR-4 — T7, T2 이연 카드. 변경 시 셸 재생성) -->
                 <controls:SettingsCard x:Uid="LanguageCard">
                     <ComboBox

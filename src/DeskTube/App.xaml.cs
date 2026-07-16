@@ -17,9 +17,8 @@ public partial class App : Application
         // 배포 초기화를 XAML 초기화(InitializeComponent)보다 먼저 수행 — 아래 메서드 주석 참조
         InitializeWindowsAppRuntime();
 
-        // 저장된 언어·테마를 XAML 초기화 전에 동기 선적용 — x:Uid 정적 문구의 언어는
-        // 요소 생성 시점에 고정되고(plan T7, AGENTS 다국어 규칙 3), 테마는 첫 창 생성 전에
-        // 알아야 첫 화면 깜빡임이 없다 (FR-17 — 비동기 설정 로드로는 늦다)
+        // 저장된 언어를 XAML 초기화 전에 동기 선적용 — x:Uid 정적 문구의 언어는
+        // 요소 생성 시점에 고정된다 (plan T7, AGENTS 다국어 규칙 3)
         ApplySavedStartupOverrides();
 
         InitializeComponent();
@@ -43,7 +42,7 @@ public partial class App : Application
         AppLog.Write($"처리되지 않은 도메인 예외: {e.ExceptionObject}");
     }
 
-    /// <summary>settings.json의 Language·Theme만 동기로 선읽기해 적용한다 (없으면 시스템 추종).</summary>
+    /// <summary>settings.json의 Language만 동기로 선읽기해 적용한다 (없으면 시스템 언어).</summary>
     private static void ApplySavedStartupOverrides()
     {
         try
@@ -62,17 +61,10 @@ public partial class App : Application
             {
                 Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = language.GetString();
             }
-
-            if (doc.RootElement.TryGetProperty("Theme", out var theme) &&
-                theme.ValueKind == System.Text.Json.JsonValueKind.Number &&
-                Enum.IsDefined((Models.AppTheme)theme.GetInt32()))
-            {
-                ThemeHelper.Initialize((Models.AppTheme)theme.GetInt32());
-            }
         }
         catch (Exception)
         {
-            // 파손·접근 실패 시 시스템 언어·테마 폴백 (AppLog는 OnLaunched에서 초기화되므로 여기선 기록 생략)
+            // 파손·접근 실패 시 시스템 언어 폴백 (AppLog는 OnLaunched에서 초기화되므로 여기선 기록 생략)
         }
     }
 
@@ -179,8 +171,7 @@ public partial class App : Application
     /// <summary>
     /// 언어 변경 적용 (plan T7, AGENTS 다국어 규칙 3) — 리소스 캐시 초기화 후 트레이 메뉴와
     /// 설정 셸(창)을 새로 만든다. x:Uid·Loc 문구는 요소 생성 시점에 고정되므로 재생성이 필요하다.
-    /// 수동 테마(FR-17)는 새 창의 RequestedTheme가 초기화되므로 재적용이 필요하지만,
-    /// MainWindow 생성자의 ThemeHelper.Register가 이를 수행한다 (규칙 3-⑤ 충족).
+    /// (테마는 Application 수준 다크 고정이라 창 재생성과 무관하게 유지된다.)
     /// </summary>
     internal void ApplyLanguageChange()
     {

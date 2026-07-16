@@ -19,7 +19,6 @@ public sealed partial class LoginWindow : Window
         InitializeComponent();
         Title = Loc.Get("Login_Title");
         SystemBackdrop = new MicaBackdrop(); // MainWindow와 시각 통일 (T5/D4)
-        ThemeHelper.Register(this); // 저장 테마 적용 + 변경 재적용 등록 (FR-17)
         Closed += OnClosed;
         _ = InitializeAsync();
     }

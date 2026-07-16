@@ -126,21 +126,6 @@
   <data name="ReduceMirrorCard.Description" xml:space="preserve">
     <value>Reduces video quality on monitors without sound to ease system load</value>
   </data>
-  <data name="ThemeCard.Header" xml:space="preserve">
-    <value>Theme</value>
-  </data>
-  <data name="ThemeCard.Description" xml:space="preserve">
-    <value>Choose the app's light or dark appearance</value>
-  </data>
-  <data name="Theme_System" xml:space="preserve">
-    <value>Use system setting</value>
-  </data>
-  <data name="Theme_Light" xml:space="preserve">
-    <value>Light</value>
-  </data>
-  <data name="Theme_Dark" xml:space="preserve">
-    <value>Dark</value>
-  </data>
   <data name="Mode_Sequential" xml:space="preserve">
     <value>In order</value>
   </data>

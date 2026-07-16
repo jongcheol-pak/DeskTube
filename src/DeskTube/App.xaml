@@ -1,13 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 테마는 다크 고정 — RequestedTheme는 이 한 곳에서만 지정한다 (AGENTS 디자인 규칙 3, FR-17 REMOVED) -->
 <Application
     x:Class="DeskTube.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    RequestedTheme="Dark">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="ms-appx:///Resources/DesignTokens.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- 시스템 accent를 시안 코럴로 재정의 (plan D2) — 다크 테마의 accent 면
+                 (AccentFillColorDefault 등)은 Light2를 소비하므로 Light2 = 원색 코럴로 둔다.
+                 미전파 컨트롤 발견 시 개별 브러시 키를 DesignTokens에 보충한다. -->
+            <Color x:Key="SystemAccentColor">#F25C54</Color>
+            <Color x:Key="SystemAccentColorLight1">#FF6F66</Color>
+            <Color x:Key="SystemAccentColorLight2">#F25C54</Color>
+            <Color x:Key="SystemAccentColorLight3">#FF8A82</Color>
+            <Color x:Key="SystemAccentColorDark1">#D94E47</Color>
+            <Color x:Key="SystemAccentColorDark2">#C0413B</Color>
+            <Color x:Key="SystemAccentColorDark3">#A6352F</Color>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
