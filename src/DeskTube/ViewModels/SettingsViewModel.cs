@@ -6,46 +6,10 @@ using DeskTube.Services;
 
 namespace DeskTube.ViewModels;
 
-/// <summary>모니터 선택 항목 (재생 대상 다중 체크 — plan T2).</summary>
-public partial class MonitorChoice : ObservableObject
-{
-    private readonly Action<MonitorChoice> _selectionChanged;
-
-    public MonitorChoice(string id, string displayName, bool isSelected, Action<MonitorChoice> selectionChanged)
-    {
-        Id = id;
-        DisplayName = displayName;
-        _selectionChanged = selectionChanged;
-
-        // 초기값 대입이 변경 콜백을 타지 않도록 억제 (partial property는 초기화 식 불가)
-        SuppressCallback = true;
-        IsSelected = isSelected;
-        SuppressCallback = false;
-    }
-
-    public string Id { get; }
-
-    public string DisplayName { get; }
-
-    [ObservableProperty]
-    public partial bool IsSelected { get; set; }
-
-    /// <summary>마지막 체크 해제 차단의 되돌림 중 — 콜백 재진입 억제.</summary>
-    internal bool SuppressCallback { get; set; }
-
-    partial void OnIsSelectedChanged(bool value)
-    {
-        if (!SuppressCallback)
-        {
-            _selectionChanged(this);
-        }
-    }
-}
-
 /// <summary>
 /// 설정 페이지 ViewModel (PRD FR-10·13, plan T2).
 /// 각 항목은 변경 즉시 적용·저장한다 (볼륨·모니터·오디오 대상은 재생 중에도 반영).
-/// 자동 실행 토글은 T4(StartupService), 언어 선택은 T7(전환 절차)에서 추가된다.
+/// 모니터 선택·배지는 공용 MonitorPanelViewModel에 위임한다 (restyle plan T4·D4 — 홈과 공유).
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
@@ -70,6 +34,9 @@ public partial class SettingsViewModel : ObservableObject
 
     public SettingsViewModel()
     {
+        MonitorPanel.MonitorsRefreshed += OnMonitorsRefreshed;
+        MonitorPanel.NoticeRequested += OnPanelNoticeRequested;
+
         // partial property 초기값 (콤보 미선택 = -1, 변경 콜백은 음수 가드로 무시됨)
         ModeIndex = -1;
         QualityIndex = -1;
@@ -106,7 +73,8 @@ public partial class SettingsViewModel : ObservableObject
         ];
     }
 
-    public ObservableCollection<MonitorChoice> Monitors { get; } = [];
+    /// <summary>모니터 카드 패널 (홈과 공유하는 공용 VM — 선택 저장·최소 1개 강제·배지 계산 담당).</summary>
+    public MonitorPanelViewModel MonitorPanel { get; } = new();
 
     public ObservableCollection<string> AudioOptions { get; } = [];
 
@@ -205,7 +173,7 @@ public partial class SettingsViewModel : ObservableObject
 
         if (_initialized)
         {
-            RefreshMonitors();
+            MonitorPanel.Refresh();
 
             // 음소거는 트레이 메뉴에서도 바뀌므로 재진입 때 재동기화 (T2 — 트레이와 상태 일치)
             _loading = true;
@@ -238,11 +206,14 @@ public partial class SettingsViewModel : ObservableObject
     {
         _services = services;
         _initialized = true;
+
+        // 패널 연결이 MonitorsRefreshed → 오디오 콤보 재구성까지 수행 (자체 _loading 가드 있음)
+        MonitorPanel.Attach(services);
+
         _loading = true;
         try
         {
             var settings = services.Settings;
-            RefreshMonitorListCore(settings);
 
             Volume = settings.Volume;
             IsMuted = settings.IsMuted;
@@ -276,8 +247,8 @@ public partial class SettingsViewModel : ObservableObject
         _ = RefreshSessionAsync();
     }
 
-    /// <summary>재진입 시 모니터 구성 변화만 반영 (가벼움 — 목록 재열거).</summary>
-    private void RefreshMonitors()
+    /// <summary>패널 목록 재구성 후 파생 UI 갱신 — 오디오 대상 콤보 재구성 (자체 로드 가드).</summary>
+    private void OnMonitorsRefreshed(object? sender, EventArgs e)
     {
         if (_services is null)
         {
@@ -287,7 +258,18 @@ public partial class SettingsViewModel : ObservableObject
         _loading = true;
         try
         {
-            RefreshMonitorListCore(_services.Settings);
+            AudioOptions.Clear();
+            _audioIds.Clear();
+            AudioOptions.Add(Loc.Get("Settings_AudioAuto"));
+            _audioIds.Add(null);
+            foreach (var monitor in MonitorPanel.Monitors)
+            {
+                AudioOptions.Add(monitor.DisplayName);
+                _audioIds.Add(monitor.Id);
+            }
+
+            var audioIdx = _audioIds.IndexOf(_services.Settings.AudioMonitorId);
+            AudioIndex = audioIdx >= 0 ? audioIdx : 0;
         }
         finally
         {
@@ -295,43 +277,11 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>모니터 체크 목록·오디오 대상 콤보 재구성 (호출측이 _loading 가드를 건다).</summary>
-    private void RefreshMonitorListCore(AppSettings settings)
+    /// <summary>패널의 사용자 안내(최소 1개 차단 등)를 이 페이지 InfoBar로 표시.</summary>
+    private void OnPanelNoticeRequested(object? sender, string message)
     {
-        var monitors = _services!.Monitors.GetMonitors();
-
-        // 저장된 선택을 실제 적용 규칙(주 모니터 폴백)으로 해석해 그대로 표시
-        var effective = MonitorService.ResolveTargets(monitors, settings.SelectedMonitorIds)
-            .Select(m => m.Id)
-            .ToHashSet();
-
-        Monitors.Clear();
-        var index = 1;
-        foreach (var monitor in monitors)
-        {
-            var name = string.Format(Loc.Get("Settings_MonitorNameFormat"), index, monitor.Width, monitor.Height);
-            if (monitor.IsPrimary)
-            {
-                name += Loc.Get("Settings_MonitorPrimarySuffix");
-            }
-
-            Monitors.Add(new MonitorChoice(monitor.Id, name, effective.Contains(monitor.Id), OnMonitorSelectionChanged));
-            index++;
-        }
-
-        // 오디오 대상 — "자동(주 모니터)" + 모니터 목록
-        AudioOptions.Clear();
-        _audioIds.Clear();
-        AudioOptions.Add(Loc.Get("Settings_AudioAuto"));
-        _audioIds.Add(null);
-        for (var i = 0; i < monitors.Count; i++)
-        {
-            AudioOptions.Add(Monitors[i].DisplayName);
-            _audioIds.Add(monitors[i].Id);
-        }
-
-        var audioIdx = _audioIds.IndexOf(settings.AudioMonitorId);
-        AudioIndex = audioIdx >= 0 ? audioIdx : 0;
+        NoticeMessage = message;
+        IsNoticeOpen = true;
     }
 
     /// <summary>로그인 상태 갱신 — 페이지 로드·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>
@@ -442,46 +392,26 @@ public partial class SettingsViewModel : ObservableObject
         }, "자동 실행 설정");
     }
 
-    private void OnMonitorSelectionChanged(MonitorChoice changed)
-    {
-        if (_loading || _services is null)
-        {
-            return;
-        }
-
-        var selected = Monitors.Where(m => m.IsSelected).Select(m => m.Id).ToList();
-        if (selected.Count == 0)
-        {
-            // 마지막 체크 해제 차단 — 최소 1개 강제 (plan T2 Edge)
-            changed.SuppressCallback = true;
-            changed.IsSelected = true;
-            changed.SuppressCallback = false;
-            NoticeMessage = Loc.Get("Settings_MonitorMinOne");
-            IsNoticeOpen = true;
-            return;
-        }
-
-        IsNoticeOpen = false;
-        _services.Settings.SelectedMonitorIds = selected;
-        Apply(async () =>
-        {
-            await _services.Store.SaveSettingsAsync(_services.Settings);
-            await _services.Coordinator.ApplySelectedMonitorsAsync(); // 재생 중이면 즉시 반영
-        }, "모니터 선택 적용");
-    }
-
     partial void OnVolumeChanged(double value) =>
         Apply(() => _services!.Coordinator.SetVolumeAsync((int)value), "볼륨 적용");
 
-    /// <summary>음소거 토글 (FR-5 UI 노출) — 저장·재생 반영은 기구현 SetMutedAsync가 담당.</summary>
+    /// <summary>음소거 토글 (FR-5 UI 노출) — 저장·재생 반영은 기구현 SetMutedAsync가 담당. 배지도 갱신 (시안 식).</summary>
     partial void OnIsMutedChanged(bool value) =>
-        Apply(() => _services!.Coordinator.SetMutedAsync(value), "음소거 적용");
+        Apply(async () =>
+        {
+            await _services!.Coordinator.SetMutedAsync(value);
+            MonitorPanel.UpdateAudioBadges();
+        }, "음소거 적용");
 
     partial void OnAudioIndexChanged(int value)
     {
         if (value >= 0 && value < _audioIds.Count)
         {
-            Apply(() => _services!.Coordinator.SetAudioMonitorAsync(_audioIds[value]), "오디오 대상 적용");
+            Apply(async () =>
+            {
+                await _services!.Coordinator.SetAudioMonitorAsync(_audioIds[value]);
+                MonitorPanel.UpdateAudioBadges(); // 소리 배지 위치 즉시 이동 (시안)
+            }, "오디오 대상 적용");
         }
     }
 

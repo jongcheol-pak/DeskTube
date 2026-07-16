@@ -72,11 +72,20 @@
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="MonitorsExpander.Header" xml:space="preserve">
+  <data name="MonitorsCardTitle.Text" xml:space="preserve">
     <value>Playback monitors</value>
   </data>
-  <data name="MonitorsExpander.Description" xml:space="preserve">
-    <value>Choose which monitors show the background video</value>
+  <data name="MonitorsCardDescription.Text" xml:space="preserve">
+    <value>Click to choose which monitors show the background video</value>
+  </data>
+  <data name="MonitorAudioBadge.Text" xml:space="preserve">
+    <value>🔊 Sound</value>
+  </data>
+  <data name="Monitor_ResolutionFormat" xml:space="preserve">
+    <value>{0}×{1}</value>
+  </data>
+  <data name="Monitor_PrimarySuffix" xml:space="preserve">
+    <value> · Primary</value>
   </data>
   <data name="Settings_MonitorNameFormat" xml:space="preserve">
     <value>Display {0} — {1}×{2}</value>

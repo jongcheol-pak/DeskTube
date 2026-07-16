@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:vm="using:DeskTube.ViewModels">
+    xmlns:ctrls="using:DeskTube.Controls">
     <ScrollViewer Padding="36,24,40,24">
         <StackPanel MaxWidth="1024" Spacing="24" HorizontalAlignment="Stretch">
             <TextBlock x:Uid="SettingsHeader" Style="{StaticResource TitleTextBlockStyle}" />
@@ -20,19 +20,23 @@
                 IsTabStop="False"
                 HorizontalContentAlignment="Stretch">
             <StackPanel Spacing="4">
-                <!-- 재생 모니터 (다중 체크, 최소 1개 강제) -->
-                <controls:SettingsExpander
-                    x:Uid="MonitorsExpander"
-                    IsExpanded="True"
-                    ItemsSource="{x:Bind ViewModel.Monitors}">
-                    <controls:SettingsExpander.ItemTemplate>
-                        <DataTemplate x:DataType="vm:MonitorChoice">
-                            <controls:SettingsCard Header="{x:Bind DisplayName}">
-                                <ToggleSwitch IsOn="{x:Bind IsSelected, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </DataTemplate>
-                    </controls:SettingsExpander.ItemTemplate>
-                </controls:SettingsExpander>
+                <!-- 재생 모니터 — 시각 카드 클릭 토글, 최소 1개 강제 (restyle T4, 상세 스타일은 T7) -->
+                <Border Style="{StaticResource AppCardBorderStyle}" Padding="24,20">
+                    <StackPanel Spacing="18">
+                        <StackPanel Spacing="3">
+                            <TextBlock
+                                x:Uid="MonitorsCardTitle"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AppTextPrimaryBrush}" />
+                            <TextBlock
+                                x:Uid="MonitorsCardDescription"
+                                FontSize="12.5"
+                                Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                        </StackPanel>
+                        <ctrls:MonitorCardsControl Monitors="{x:Bind ViewModel.MonitorPanel.Monitors}" IsLarge="False" />
+                    </StackPanel>
+                </Border>
 
                 <!-- 오디오 출력 모니터 -->
                 <controls:SettingsCard x:Uid="AudioCard">
