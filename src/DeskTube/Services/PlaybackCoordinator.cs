@@ -80,8 +80,9 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>
     /// 플레이리스트 재생 시작 (PRD FR-3). 배경창·플레이어 생성은 원자적 — 하나라도 실패하면
     /// 생성분을 전부 정리하고 실패를 반환한다 (plan T7 Edge Case).
+    /// startItemId 지정 시 그 항목부터 시작한다 (FR-18 행 재생 — 미존재 시 모드별 기본 시작).
     /// </summary>
-    public async Task<Result> StartAsync(Guid playlistId)
+    public async Task<Result> StartAsync(Guid playlistId, Guid? startItemId = null)
     {
         if (Status != PlaybackStatus.Stopped)
         {
@@ -133,7 +134,7 @@ public sealed class PlaybackCoordinator : IDisposable
 
         _queue = new PlaybackQueue(playlist.Items, _settings.Mode);
 
-        var first = _queue.Start();
+        var first = _queue.Start(startItemId);
         if (first is null)
         {
             CleanupAll();

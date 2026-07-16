@@ -183,7 +183,7 @@
     - (i) oEmbed 실제 응답 필드명 확인 → 구현 시 1건 실호출로 확인, 어긋나도 파서만 조정(설계 불변 — Investigation Log 말미)
   - **Depends on**: T1
 
-- [ ] T3. StartAsync·PlaybackQueue 시작 항목 지정 (FR-18)
+- [x] T3. StartAsync·PlaybackQueue 시작 항목 지정 (FR-18)
   - **Type**: D
   - **Design**: 해당 없음 — 신규 심볼 없이 기존 공개 메서드 2개(`PlaybackCoordinator.StartAsync`, `PlaybackQueue.Start`)에 선택 매개변수 `Guid? startItemId = null`만 추가 (구조 변화 없음)
   - **Acceptance**: Given 5곡 리스트, When Start(3번째 Id) — 순차/RepeatAll, Then 3번째부터 시작 / 셔플, Then 첫 곡이 지정 항목이고 사이클이 전곡 1회 순회 / Random, Then 첫 곡이 지정 항목 / Given 존재하지 않는 Id, When Start, Then 기존 동작(모드별 기본 첫 곡) — 전부 단위 테스트 + 기존 PlaybackQueue·Coordinator 테스트 전건 무수정 통과
@@ -243,6 +243,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 153207a, 0895f01): PlaylistItem에 Title·ChannelName additive 필드 + 구형 JSON 하위 호환 테스트 / VideoMetadataService(oEmbed, 정적 HttpClient 5초, TryParse 순수 함수) + AppServices 배선. 빌드 경고 0, 테스트 94/94. quality MINOR 2건(주석 정밀화·Fail 메시지 한글화)은 Deferred 등록.
 
 ## Next Steps
 - 사용자 승인 후 `pjc:implement-task`로 T1부터 자율 실행

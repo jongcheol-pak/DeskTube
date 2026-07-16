@@ -104,6 +104,73 @@ public sealed class PlaybackQueueTests
         }
     }
 
+    // ---- 시작 항목 지정 (FR-18 행 재생, plan T3) ----
+
+    [Fact]
+    public void 순차_모드는_지정_항목부터_순서대로_진행한다()
+    {
+        var items = MakeItems(5);
+        var queue = new PlaybackQueue(items, PlaybackMode.Sequential);
+
+        Assert.Equal(items[2].Id, queue.Start(items[2].Id)!.Id);
+        Assert.Equal(items[3].Id, queue.Next()!.Id);
+    }
+
+    [Fact]
+    public void 전체반복_모드는_지정_항목부터_시작해_끝에서_처음으로_돈다()
+    {
+        var items = MakeItems(3);
+        var queue = new PlaybackQueue(items, PlaybackMode.RepeatAll);
+
+        Assert.Equal(items[2].Id, queue.Start(items[2].Id)!.Id);
+        Assert.Equal(items[0].Id, queue.Next()!.Id);
+    }
+
+    [Fact]
+    public void 한곡반복_모드는_지정_항목을_반복한다()
+    {
+        var items = MakeItems(3);
+        var queue = new PlaybackQueue(items, PlaybackMode.RepeatOne);
+
+        Assert.Equal(items[1].Id, queue.Start(items[1].Id)!.Id);
+        Assert.Equal(items[1].Id, queue.Next()!.Id);
+    }
+
+    [Fact]
+    public void 셔플_모드는_지정_항목이_첫_곡이고_사이클이_전곡을_1회씩_소진한다()
+    {
+        var items = MakeItems(10);
+        var queue = new PlaybackQueue(items, PlaybackMode.Shuffle, seed: 42);
+
+        var played = new List<Guid> { queue.Start(items[7].Id)!.Id };
+        Assert.Equal(items[7].Id, played[0]); // 지정 곡이 첫 곡
+
+        for (var i = 1; i < items.Count; i++)
+        {
+            played.Add(queue.Next()!.Id);
+        }
+
+        Assert.Equal(items.Count, played.Distinct().Count()); // 전곡 1회 순회 유지
+    }
+
+    [Fact]
+    public void 랜덤_모드는_지정_항목이_첫_곡이다()
+    {
+        var items = MakeItems(3);
+        var queue = new PlaybackQueue(items, PlaybackMode.Random, seed: 99);
+
+        Assert.Equal(items[1].Id, queue.Start(items[1].Id)!.Id);
+    }
+
+    [Fact]
+    public void 존재하지_않는_시작_항목은_무시하고_기본_시작한다()
+    {
+        var items = MakeItems(3);
+        var queue = new PlaybackQueue(items, PlaybackMode.Sequential);
+
+        Assert.Equal(items[0].Id, queue.Start(Guid.NewGuid())!.Id); // 삭제된 Id — 첫 곡부터
+    }
+
     [Fact]
     public void 빈_목록은_시작과_다음_모두_null이다()
     {

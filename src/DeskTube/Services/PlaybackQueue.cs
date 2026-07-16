@@ -35,27 +35,39 @@ public sealed class PlaybackQueue
     public PlaylistItem? Current =>
         _currentIndex >= 0 && _currentIndex < _items.Count ? _items[_currentIndex] : null;
 
-    /// <summary>재생을 시작하고 첫 항목을 반환한다. 빈 목록이면 null.</summary>
-    public PlaylistItem? Start()
+    /// <summary>
+    /// 재생을 시작하고 첫 항목을 반환한다. 빈 목록이면 null.
+    /// startItemId 지정 시 그 항목부터 시작한다 (FR-18 행 재생) —
+    /// 목록에 없으면(직전 삭제 등) 무시하고 모드별 기본 시작.
+    /// </summary>
+    public PlaylistItem? Start(Guid? startItemId = null)
     {
         if (_items.Count == 0)
         {
             return null;
         }
 
+        var startIndex = startItemId is null ? -1 : _items.FindIndex(i => i.Id == startItemId);
+
         if (_mode == PlaybackMode.Shuffle)
         {
             BuildShuffleCycle(avoidFirst: null);
+            if (startIndex >= 0)
+            {
+                // 지정 곡을 사이클 첫 자리에 고정 — "전곡 1회 순회" 계약 유지 (SetMode와 동일 기법)
+                _shuffleOrder.Remove(startIndex);
+                _shuffleOrder.Insert(0, startIndex);
+            }
             _shufflePosition = 0;
             _currentIndex = _shuffleOrder[0];
         }
         else if (_mode == PlaybackMode.Random)
         {
-            _currentIndex = _random.Next(_items.Count);
+            _currentIndex = startIndex >= 0 ? startIndex : _random.Next(_items.Count);
         }
         else
         {
-            _currentIndex = 0;
+            _currentIndex = startIndex >= 0 ? startIndex : 0;
         }
 
         return Current;
