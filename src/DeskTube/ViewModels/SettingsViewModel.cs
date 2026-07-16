@@ -36,6 +36,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         MonitorPanel.MonitorsRefreshed += OnMonitorsRefreshed;
         MonitorPanel.NoticeRequested += OnPanelNoticeRequested;
+        MonitorPanel.NoticeCleared += OnPanelNoticeCleared;
 
         // partial property 초기값 (콤보 미선택 = -1, 변경 콜백은 음수 가드로 무시됨)
         ModeIndex = -1;
@@ -173,7 +174,8 @@ public partial class SettingsViewModel : ObservableObject
 
         if (_initialized)
         {
-            MonitorPanel.Refresh();
+            // 재진입 — Unloaded의 Detach로 끊긴 모니터 변경 구독을 되살리고 목록 갱신 (Attach는 멱등)
+            MonitorPanel.Attach(_services!);
 
             // 음소거는 트레이 메뉴에서도 바뀌므로 재진입 때 재동기화 (T2 — 트레이와 상태 일치)
             _loading = true;
@@ -192,8 +194,12 @@ public partial class SettingsViewModel : ObservableObject
         Populate(App.Services);
     }
 
-    /// <summary>페이지 이탈 시 호출 — 대기 중이던 이벤트 구독 해제 (누수 방지).</summary>
-    public void Detach() => App.ServicesInitialized -= OnServicesInitialized;
+    /// <summary>페이지 이탈 시 호출 — 대기 중이던 이벤트 구독 해제 (누수 방지, 패널 구독 포함).</summary>
+    public void Detach()
+    {
+        App.ServicesInitialized -= OnServicesInitialized;
+        MonitorPanel.Detach();
+    }
 
     private void OnServicesInitialized(object? sender, EventArgs e)
     {
@@ -283,6 +289,9 @@ public partial class SettingsViewModel : ObservableObject
         NoticeMessage = message;
         IsNoticeOpen = true;
     }
+
+    /// <summary>유효 선택 처리됨 — 떠 있던 안내 닫기 (구 동작 보존, 리뷰 m1).</summary>
+    private void OnPanelNoticeCleared(object? sender, EventArgs e) => IsNoticeOpen = false;
 
     /// <summary>로그인 상태 갱신 — 페이지 로드·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>
     public async Task RefreshSessionAsync()

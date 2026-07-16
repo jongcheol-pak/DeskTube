@@ -25,23 +25,35 @@ public partial class MonitorPanelViewModel : ObservableObject
     /// <summary>사용자 안내 요청 (최소 1개 차단 등) — 소비 화면의 InfoBar가 표시한다.</summary>
     public event EventHandler<string>? NoticeRequested;
 
+    /// <summary>선택이 유효하게 처리됨 — 떠 있던 안내(최소 1개 차단)를 닫으라는 신호.</summary>
+    public event EventHandler? NoticeCleared;
+
     /// <summary>
-    /// 서비스 연결 + 최초 목록 구성. UI 스레드에서 호출하는 전제 (MonitorsChanged 마셜링용
-    /// DispatcherQueue를 여기서 캡처). 페이지 캐시 재진입의 중복 호출은 무시된다.
+    /// 서비스 연결 + 목록 구성. UI 스레드에서 호출하는 전제 (MonitorsChanged 마셜링용
+    /// DispatcherQueue를 여기서 캡처). 페이지 Loaded마다 호출해도 안전하다 —
+    /// 구독은 해제 후 재구독으로 멱등 (Unloaded의 Detach와 대칭, 리뷰 M1).
     /// </summary>
     public void Attach(AppServices services)
     {
-        if (_services is not null)
+        if (_services is null)
         {
-            return;
+            _services = services;
+            _dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         }
 
-        _services = services;
-        _dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
-
         // 모니터 연결/분리 즉시 반영 (plan T4 Edge) — WndProc 스레드에서 발생하므로 UI로 마셜링
-        services.Monitors.MonitorsChanged += OnMonitorsChanged;
+        _services.Monitors.MonitorsChanged -= OnMonitorsChanged;
+        _services.Monitors.MonitorsChanged += OnMonitorsChanged;
         Refresh();
+    }
+
+    /// <summary>페이지 이탈 시 호출 — 모니터 변경 구독 해제 (Attach와 대칭, 누수 방지).</summary>
+    public void Detach()
+    {
+        if (_services is not null)
+        {
+            _services.Monitors.MonitorsChanged -= OnMonitorsChanged;
+        }
     }
 
     /// <summary>모니터 목록 재열거 + 저장된 선택(주 모니터 폴백 해석) 반영 + 배지 갱신.</summary>
@@ -141,6 +153,7 @@ public partial class MonitorPanelViewModel : ObservableObject
         }
 
         _services.Settings.SelectedMonitorIds = selected;
+        NoticeCleared?.Invoke(this, EventArgs.Empty); // 유효 선택 — 떠 있던 최소 1개 안내 닫기 (구 동작 보존)
         UpdateAudioBadges();
         _ = ApplyAsync();
 
