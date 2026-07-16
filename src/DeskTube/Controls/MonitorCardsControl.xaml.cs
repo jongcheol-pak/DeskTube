@@ -49,6 +49,23 @@ public sealed partial class MonitorCardsControl : UserControl
         }
     }
 
+    /// <summary>hover 테두리 (시안 #FF8A82) — x:Bind는 IsSelected 변경 때만 재평가되므로 포인터 이벤트로 직접 교체.</summary>
+    private void OnCardPointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        if (sender is Button { Content: Grid card })
+        {
+            card.BorderBrush = Lookup("AppAccentSoftHoverBrush");
+        }
+    }
+
+    private void OnCardPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        if (sender is Button { Content: Grid card, DataContext: MonitorChoice choice })
+        {
+            card.BorderBrush = CardBorder(choice.IsSelected); // 선택 상태별 원복
+        }
+    }
+
     // x:Bind 함수 — 선택 상태별 토큰 브러시 (다크 고정이라 Default 사전 값을 조회)
     internal static Brush CardBorder(bool selected) => Lookup(selected ? "AppAccentBrush" : "AppMonitorBorderBrush");
 

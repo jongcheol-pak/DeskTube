@@ -16,6 +16,8 @@
                     BorderThickness="0"
                     CornerRadius="{StaticResource AppMonitorCardCornerRadius}"
                     Click="OnCardClick"
+                    PointerEntered="OnCardPointerEntered"
+                    PointerExited="OnCardPointerExited"
                     AutomationProperties.Name="{x:Bind DisplayName}">
                     <Grid
                         Width="300"
@@ -72,6 +74,8 @@
                     BorderThickness="0"
                     CornerRadius="{StaticResource AppCardCornerRadius}"
                     Click="OnCardClick"
+                    PointerEntered="OnCardPointerEntered"
+                    PointerExited="OnCardPointerExited"
                     AutomationProperties.Name="{x:Bind DisplayName}">
                     <Grid
                         Width="200"
