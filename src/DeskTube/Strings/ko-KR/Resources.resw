@@ -123,6 +123,21 @@
   <data name="Fit_Stretch" xml:space="preserve">
     <value>늘리기</value>
   </data>
+  <data name="ThemeCard.Header" xml:space="preserve">
+    <value>테마</value>
+  </data>
+  <data name="ThemeCard.Description" xml:space="preserve">
+    <value>앱 화면의 밝기 테마를 선택합니다</value>
+  </data>
+  <data name="Theme_System" xml:space="preserve">
+    <value>시스템 설정 사용</value>
+  </data>
+  <data name="Theme_Light" xml:space="preserve">
+    <value>라이트</value>
+  </data>
+  <data name="Theme_Dark" xml:space="preserve">
+    <value>다크</value>
+  </data>
   <data name="Mode_Sequential" xml:space="preserve">
     <value>순서대로</value>
   </data>

@@ -41,6 +41,9 @@ public sealed class AppSettings
     /// <summary>UI 언어 코드 (null = 시스템 추종 — part2 T7).</summary>
     public string? Language { get; set; }
 
+    /// <summary>앱 테마 (PRD FR-17). 기본 시스템 추종.</summary>
+    public AppTheme Theme { get; set; } = AppTheme.System;
+
     /// <summary>로드 직후 범위를 벗어난 값을 안전 범위로 보정한다 (손상·수동 편집 대비).</summary>
     public void Normalize()
     {
@@ -52,6 +55,10 @@ public sealed class AppSettings
         if (!Enum.IsDefined(FitMode))
         {
             FitMode = FitMode.Cover;
+        }
+        if (!Enum.IsDefined(Theme))
+        {
+            Theme = AppTheme.System;
         }
         SelectedMonitorIds ??= [];
     }

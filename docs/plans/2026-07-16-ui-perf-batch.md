@@ -77,7 +77,7 @@
 
 ## Decisions
 ### D1. 테마 적용 방식
-- **Chosen**: `AppSettings.Theme`(enum: System/Light/Dark, 기본 System) + `ThemeHelper.Apply(window)` — 각 창의 루트 Content(FrameworkElement).RequestedTheme 설정. 적용 지점: MainWindow 생성·LoginWindow 생성·테마 설정 변경 시(열린 창 즉시)·언어 전환 창 재생성 시. AGENTS 규칙 3 개정(T8)과 함께 "전환은 루트 RequestedTheme 한 곳만" 원칙 유지.
+- **Chosen**: `AppSettings.Theme`(enum: System/Light/Dark, 기본 System) + `ThemeHelper`(구현 명명: `Register(window)` 생성 시 적용+등록 / `SetTheme` 열린 창 전부 재적용 / `Initialize` 시작 선반영) — 각 창의 루트 Content(FrameworkElement).RequestedTheme 설정. 적용 지점: MainWindow 생성·LoginWindow 생성·테마 설정 변경 시(열린 창 즉시)·언어 전환 창 재생성 시. AGENTS 규칙 3 개정(T8)과 함께 "전환은 루트 RequestedTheme 한 곳만" 원칙 유지.
 - **Source**: AGENTS 규칙 3(원칙 문구), 위키 desktop-localization(재생성 시 테마 초기화 함정)
 
 ### D2. 크기 모드 구현 (FR-16)
@@ -135,7 +135,7 @@
   - **Halt Forecast**: (ii-a) IPlayerHost 공개 계약 확장 → `## 사전 승인 항목`
   - **Depends on**: T2
 
-- [ ] T4. 앱 테마 변경 (FR-17)
+- [x] T4. 앱 테마 변경 (FR-17)
   - **Type**: D
   - **Design**: (D1 참조) ① `AppSettings.Theme`(enum System/Light/Dark — `Models/AppTheme.cs` 신규) ② `Services/ThemeHelper.cs` 신규 — `Apply(Window)`(루트 Content RequestedTheme)·`ApplyToAll()`(열린 창) ③ 설정 카드(콤보 3옵션)+VM ④ 적용 지점: MainWindow 생성·LoginWindow 생성·설정 변경 즉시·ApplyLanguageChange 재생성 시(기존 "테마 재적용 불필요" 주석 갱신 — 이제 필요) ⑤ resw ⑥ 간접화 없음
   - **Acceptance**: 저장·복원 왕복 테스트 + 3옵션 전환 즉시 적용·언어 전환 후 유지 — HUMAN-VERIFY; 빌드·테스트 통과
