@@ -199,6 +199,9 @@
 - 수동 검증 누적: 창 상태 복원, 닫기=트레이, 음소거 토글=트레이 일치
 
 ## Phase Ledger
+- 전 task 완료 (T1~T8, 2026-07-16)
+- Phase F 통과 (HEAD 1fef4c1, F-7 Opus: BLOCKER 0·MAJOR 0·MINOR 1 — AGENTS.md gitignore 상태는 기존 설정, follow-up)
+- Phase G 통과 (Must 100% — F-7 전수 대조 재사용: FR-5·10·16·17 충족, NFR-2 실측 충족, 갭 0·재루프 0회)
 
 ## Retry Ledger
 
@@ -214,7 +217,9 @@
   - 결정: SettingsPage SignInRequested 구독 ctor→Loaded 이동(캐시 재진입 핸들러 소실 방지). 재진입 시 IsMuted 재동기화 추가(트레이 변경 stale 방지 — T2 acceptance 충족 목적, D7 "모니터만"의 예외).
 
 ## Next Steps
-- 승인 시 **새 세션에서** `docs/plans/2026-07-16-ui-perf-batch.md 구현` 으로 실행 권장 (현재 세션 컨텍스트 과밀)
+- 전 task(T1~T8) + Phase F/G 통과 — 구현 완료. 권장 다음 액션: `docs/verification-2026-07.md`의 HUMAN-VERIFY 목록 실기 확인 → 이상 없으면 main 병합(별도 승인)
+- Suggested skills: 공식 /code-review (브랜치 전체 재검토 원하면), pjc:llm-wiki 절차 B (위키 반영 — 사용자 동의 시 별도 세션)
+- AGENTS.md가 gitignore 대상이라 규칙 3 개정이 커밋에 미포함 (F-7 MINOR) — 의도 여부 사용자 확인 필요
 
 ## Open Questions
 - [x] PRD 갱신(FR-16·17 등) — 승인됨 (2026-07-16, PRD 반영 완료)
