@@ -24,6 +24,8 @@
 
   <ItemGroup>
     <Content Include="Assets\**\*.png" />
+    <!-- 트레이 아이콘 (ms-appx URI로 로드 — TrayIconService) -->
+    <Content Include="Assets\tray.ico" />
     <!-- 플레이어 브리지 HTML — 가상 호스트 매핑으로 서빙 (PlayerHost) -->
     <Content Include="Assets\player.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -36,6 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2270" />
   </ItemGroup>

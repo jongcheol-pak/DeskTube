@@ -10,6 +10,7 @@ namespace DeskTube;
 public partial class App : Application
 {
     private Window? _window;
+    private TrayIconService? _tray;
 
     public App()
     {
@@ -20,6 +21,12 @@ public partial class App : Application
 
     /// <summary>서비스 그래프 (컴포지션 루트 — OnLaunched에서 비동기 초기화, UI는 null 확인 후 사용).</summary>
     public static AppServices? Services { get; private set; }
+
+    /// <summary>트레이 상주 여부 — 창 닫기를 숨김으로 바꿀지 판단 (MainWindow가 사용, plan T1).</summary>
+    public static bool IsTrayActive => Current is App app && app._tray is not null;
+
+    /// <summary>트레이 '종료' 진행 중 — 창 닫기 취소(숨김) 로직을 우회한다.</summary>
+    internal static bool IsExiting { get; private set; }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
@@ -41,7 +48,39 @@ public partial class App : Application
         catch (Exception ex)
         {
             AppLog.Write($"서비스 초기화 실패: {ex.GetType().Name} {ex.Message}");
+            return; // 트레이 미생성 — 이 경우 창 닫기는 실제 종료로 동작한다 (MainWindow 참조)
         }
+
+        // await 후에도 UI 스레드 컨텍스트 (WinUI SynchronizationContext) — 트레이는 UI 스레드에서 생성
+        _tray = new TrayIconService(Services, ShowMainWindow, ExitApplication);
+        _tray.Initialize();
+    }
+
+    /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 InfoBar 안내 표시).</summary>
+    internal void ShowMainWindow(string? notice)
+    {
+        if (_window is not MainWindow window)
+        {
+            return;
+        }
+
+        window.AppWindow.Show();
+        window.Activate();
+        if (notice is not null)
+        {
+            window.ShowNotice(notice);
+        }
+    }
+
+    /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>
+    internal void ExitApplication()
+    {
+        IsExiting = true;
+        _tray?.Dispose();
+        _tray = null;
+        Services?.Dispose();
+        Services = null;
+        Exit();
     }
 
     /// <summary>

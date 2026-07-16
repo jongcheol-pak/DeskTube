@@ -5,5 +5,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
         <!-- 설정 셸(NavigationView)은 part2 T2에서 구성 -->
+        <!-- 트레이 진입 안내 (재생할 리스트 없음 등 — plan T1 Edge) -->
+        <InfoBar
+            x:Name="NoticeBar"
+            IsOpen="False"
+            Severity="Informational"
+            VerticalAlignment="Top"
+            Margin="16" />
     </Grid>
 </Window>
