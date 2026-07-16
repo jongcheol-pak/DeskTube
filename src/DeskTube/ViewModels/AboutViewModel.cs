@@ -20,6 +20,7 @@ public partial class AboutViewModel : ObservableObject
         AppVersion = string.Empty;
     }
 
+    /// <summary>앱 카드 정보 한 줄 — "버전 x.x.x.x · 개발자: ..." (시안, restyle T8).</summary>
     [ObservableProperty]
     public partial string AppVersion { get; set; }
 
@@ -28,7 +29,7 @@ public partial class AboutViewModel : ObservableObject
     /// <summary>페이지 진입 시 호출 — 버전·라이선스 목록 채움 (Services 불필요, 독립 동작).</summary>
     public void Load()
     {
-        AppVersion = string.Format(Loc.Get("About_VersionFormat"), ResolveVersion());
+        AppVersion = string.Format(Loc.Get("About_InfoLineFormat"), ResolveVersion());
         LoadLicenses();
     }
 

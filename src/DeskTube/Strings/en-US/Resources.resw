@@ -357,11 +357,8 @@
   <data name="AboutHeader.Text" xml:space="preserve">
     <value>About</value>
   </data>
-  <data name="About_VersionFormat" xml:space="preserve">
-    <value>Version {0}</value>
-  </data>
-  <data name="AboutDeveloper.Text" xml:space="preserve">
-    <value>Developer: DeskTube Dev</value>
+  <data name="About_InfoLineFormat" xml:space="preserve">
+    <value>Version {0} · Developer: DeskTube Dev</value>
   </data>
   <data name="PrivacyTitle.Text" xml:space="preserve">
     <value>Privacy policy</value>
