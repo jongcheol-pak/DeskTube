@@ -127,7 +127,7 @@
                 AllowDrop="True"
                 Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:PlaylistItem">
+                    <DataTemplate x:DataType="vm:PlaylistItemEntry">
                         <Grid ColumnSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -137,7 +137,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
-                                Text="{x:Bind Url}"
+                                Text="{x:Bind DisplayTitle, Mode=OneWay}"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis" />
                             <Button x:Uid="ItemUpButton" Grid.Column="1" Click="OnMoveUpClick">

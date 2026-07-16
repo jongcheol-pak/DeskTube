@@ -160,7 +160,7 @@ public sealed partial class PlaylistsPage : Page
 
     private async Task MoveItemAsync(object sender, int delta)
     {
-        if ((sender as FrameworkElement)?.DataContext is not PlaylistItem item)
+        if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry item)
         {
             return;
         }
@@ -177,7 +177,7 @@ public sealed partial class PlaylistsPage : Page
 
     private async void OnRemoveItemClick(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is not PlaylistItem item)
+        if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry item)
         {
             return;
         }

@@ -27,16 +27,62 @@ public partial class PlaylistEntry : ObservableObject
 }
 
 /// <summary>
-/// 플레이리스트 관리 (PRD FR-6 UI, plan T3).
-/// 좌측 리스트 CRUD + 우측 항목 추가/삭제/이동 + 재생. 변경 즉시 저장하고,
+/// 우측 목록의 항목 1건 — 순위·메타데이터 표시 상태 (FR-18, plan D9).
+/// 비동기 메타 도착 시 행이 갱신되도록 표시 필드만 관찰 가능으로 둔다.
+/// </summary>
+public partial class PlaylistItemEntry : ObservableObject
+{
+    public PlaylistItemEntry(PlaylistItem item, int rank)
+    {
+        Id = item.Id;
+        Url = item.Url;
+        VideoId = item.VideoId;
+        Rank = rank;
+        Title = item.Title;
+        ChannelName = item.ChannelName;
+    }
+
+    public Guid Id { get; }
+
+    public string Url { get; }
+
+    public string VideoId { get; }
+
+    /// <summary>썸네일 URL — 임베드 플레이어와 같은 유튜브 CDN, 영상 ID 외 정보 미전송 (FR-18).</summary>
+    public string ThumbnailUrl => $"https://i.ytimg.com/vi/{VideoId}/mqdefault.jpg";
+
+    [ObservableProperty]
+    public partial int Rank { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayTitle))]
+    public partial string Title { get; set; }
+
+    [ObservableProperty]
+    public partial string ChannelName { get; set; }
+
+    /// <summary>표시 제목 — 메타 미조회·조회 실패 시 URL 폴백 (plan D1).</summary>
+    public string DisplayTitle => string.IsNullOrEmpty(Title) ? Url : Title;
+}
+
+/// <summary>
+/// 플레이리스트 관리 (PRD FR-6 UI, plan T3 + FR-18 개편).
+/// 좌측 리스트 CRUD + 우측 항목 추가/삭제/이동 + 재생(전체/셔플/행 단위). 변경 즉시 저장하고,
 /// 재생 중인 리스트 변경은 Coordinator.NotifyPlaylistChangedAsync로 큐에 반영한다.
+/// 항목 메타데이터(제목·채널)는 oEmbed로 지연 채움(backfill)하고 실패는 URL 표시로 폴백한다.
 /// </summary>
 public partial class PlaylistsViewModel : ObservableObject
 {
+    /// <summary>메타데이터 backfill 동시 요청 상한 — 1000개 리스트에서도 폭주 방지 (plan D10).</summary>
+    private const int MetadataConcurrency = 4;
+
     private AppServices? _services;
 
     /// <summary>드래그 정렬 동기화 중 재진입 억제 (뷰 컬렉션 재구성 시).</summary>
     private bool _syncingItems;
+
+    /// <summary>진행 중 backfill 취소 — 리스트 전환·페이지 이탈 시 늦은 응답이 반영되지 않게 (plan D10).</summary>
+    private CancellationTokenSource? _metadataCts;
 
     public PlaylistsViewModel()
     {
@@ -46,7 +92,7 @@ public partial class PlaylistsViewModel : ObservableObject
     public ObservableCollection<PlaylistEntry> Playlists { get; } = [];
 
     /// <summary>선택된 리스트의 항목 (드래그 정렬을 위해 뷰 전용 컬렉션 — 모델과 순서 동기화).</summary>
-    public ObservableCollection<PlaylistItem> Items { get; } = [];
+    public ObservableCollection<PlaylistItemEntry> Items { get; } = [];
 
     [ObservableProperty]
     public partial bool IsReady { get; set; }
@@ -84,7 +130,11 @@ public partial class PlaylistsViewModel : ObservableObject
         Populate(App.Services);
     }
 
-    public void Detach() => App.ServicesInitialized -= OnServicesInitialized;
+    public void Detach()
+    {
+        App.ServicesInitialized -= OnServicesInitialized;
+        CancelMetadataBackfill(); // 페이지 이탈 — 늦은 응답 반영 방지 (plan D10)
+    }
 
     private void OnServicesInitialized(object? sender, EventArgs e)
     {
@@ -106,19 +156,22 @@ public partial class PlaylistsViewModel : ObservableObject
 
     partial void OnSelectedPlaylistChanged(PlaylistEntry? value) => RefreshItems();
 
-    /// <summary>우측 항목 컬렉션을 모델에서 다시 채운다 (선택 변경·항목 조작 후).</summary>
+    /// <summary>우측 항목 컬렉션을 모델에서 다시 채운다 (선택 변경·항목 조작 후). 메타 누락분은 백그라운드 채움.</summary>
     private void RefreshItems()
     {
+        CancelMetadataBackfill(); // 리스트 전환 — 이전 리스트의 늦은 응답 차단 (plan D10)
+
+        Playlist? playlist;
         _syncingItems = true;
         try
         {
             Items.Clear();
-            var playlist = FindSelected();
+            playlist = FindSelected();
             if (playlist is not null)
             {
-                foreach (var item in playlist.Items)
+                for (var i = 0; i < playlist.Items.Count; i++)
                 {
-                    Items.Add(item);
+                    Items.Add(new PlaylistItemEntry(playlist.Items[i], rank: i + 1));
                 }
             }
 
@@ -134,6 +187,97 @@ public partial class PlaylistsViewModel : ObservableObject
         finally
         {
             _syncingItems = false;
+        }
+
+        if (playlist is not null)
+        {
+            StartMetadataBackfill(playlist);
+        }
+    }
+
+    // ---- 메타데이터 채움 (FR-18, plan D10) ----
+
+    private void CancelMetadataBackfill()
+    {
+        // Dispose는 하지 않는다 — 진행 중 backfill이 disposed 토큰을 만지는 경합 방지
+        // (타이머 없는 CTS는 GC 수거로 충분)
+        _metadataCts?.Cancel();
+        _metadataCts = null;
+    }
+
+    /// <summary>제목 없는 항목만 oEmbed로 채운다 — 신규 추가 직후·기존 데이터 소급 공용 경로.</summary>
+    private void StartMetadataBackfill(Playlist playlist)
+    {
+        if (_services is null)
+        {
+            return;
+        }
+
+        var missing = Items.Where(e => e.Title.Length == 0).ToList();
+        if (missing.Count == 0)
+        {
+            return;
+        }
+
+        _metadataCts = new CancellationTokenSource();
+        var token = _metadataCts.Token;
+        _ = RunMetadataBackfillAsync(playlist, missing, token); // fire-and-forget — 내부에서 예외 흡수
+    }
+
+    /// <summary>
+    /// backfill 본체 — 동시 4개 제한, 전부 끝난 뒤 성공분이 있으면 1회만 저장.
+    /// UI 스레드에서 시작해 await 후속도 UI 컨텍스트로 돌아오므로 Entry 갱신은 스레드 안전.
+    /// </summary>
+    private async Task RunMetadataBackfillAsync(Playlist playlist, List<PlaylistItemEntry> entries, CancellationToken token)
+    {
+        try
+        {
+            using var limiter = new SemaphoreSlim(MetadataConcurrency);
+            var anySuccess = false;
+
+            async Task FillOneAsync(PlaylistItemEntry entry)
+            {
+                await limiter.WaitAsync(token);
+                try
+                {
+                    var fetched = await _services!.Metadata.FetchAsync(entry.VideoId, token);
+                    if (!fetched.IsSuccess || fetched.Value is null)
+                    {
+                        return; // 실패는 조용히 URL 폴백 유지 — 다음 진입 시 자연 재시도 (plan D10)
+                    }
+
+                    // 모델(영속 대상)과 Entry(표시)를 함께 갱신 — 삭제 경합 시 모델에 없으면 표시만 갱신돼도 무해
+                    var model = playlist.Items.FirstOrDefault(i => i.Id == entry.Id);
+                    if (model is not null)
+                    {
+                        model.Title = fetched.Value.Title;
+                        model.ChannelName = fetched.Value.ChannelName;
+                        anySuccess = true;
+                    }
+
+                    entry.Title = fetched.Value.Title;
+                    entry.ChannelName = fetched.Value.ChannelName;
+                }
+                finally
+                {
+                    limiter.Release();
+                }
+            }
+
+            await Task.WhenAll(entries.Select(FillOneAsync));
+
+            if (anySuccess && !token.IsCancellationRequested)
+            {
+                await _services!.Library.SaveAsync(); // 항목당 저장 대신 1회 저장 (plan D10)
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 리스트 전환·페이지 이탈에 의한 정상 취소
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"메타데이터 채움 중 오류: {ex.GetType().Name} {ex.Message}");
         }
     }
 
@@ -257,7 +401,7 @@ public partial class PlaylistsViewModel : ObservableObject
         await PersistItemsChangeAsync(playlist);
     }
 
-    public async Task RemoveItemAsync(PlaylistItem item)
+    public async Task RemoveItemAsync(PlaylistItemEntry item)
     {
         var playlist = FindSelected();
         if (_services is null || playlist is null)
@@ -272,7 +416,7 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
-    public async Task MoveItemAsync(PlaylistItem item, int delta)
+    public async Task MoveItemAsync(PlaylistItemEntry item, int delta)
     {
         var playlist = FindSelected();
         if (_services is null || playlist is null)
@@ -317,6 +461,12 @@ public partial class PlaylistsViewModel : ObservableObject
         playlist.Items.Clear();
         playlist.Items.AddRange(viewOrder.Select(id => byId[id]));
 
+        // 드래그로 순서가 바뀌었으므로 순위 표시 재계산 (plan T4 Edge)
+        for (var i = 0; i < Items.Count; i++)
+        {
+            Items[i].Rank = i + 1;
+        }
+
         await _services.Library.SaveAsync();
         await _services.Coordinator.NotifyPlaylistChangedAsync(playlist.Id);
         SelectedPlaylist!.ItemCount = playlist.Items.Count;
@@ -335,10 +485,20 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
-    // ---- 재생 ----
+    // ---- 재생 (FR-18 — 전체듣기/셔플듣기/행 재생 3진입점이 공통 헬퍼 공유, plan 4-D) ----
 
+    /// <summary>전체듣기 — 현재 재생 모드로 리스트 처음부터.</summary>
     [RelayCommand]
-    private async Task PlayAsync()
+    private Task PlayAsync() => StartPlaybackAsync(startItemId: null, shuffle: false);
+
+    /// <summary>셔플듣기 — 재생 모드를 셔플로 바꿔(설정에 영속, plan D4) 시작.</summary>
+    [RelayCommand]
+    private Task ShuffleAllAsync() => StartPlaybackAsync(startItemId: null, shuffle: true);
+
+    /// <summary>행 재생 — 해당 항목부터 (plan D3, View의 행 버튼 핸들러가 호출).</summary>
+    public Task PlayItemAsync(PlaylistItemEntry entry) => StartPlaybackAsync(entry.Id, shuffle: false);
+
+    private async Task StartPlaybackAsync(Guid? startItemId, bool shuffle)
     {
         var playlist = FindSelected();
         if (_services is null || playlist is null)
@@ -346,7 +506,12 @@ public partial class PlaylistsViewModel : ObservableObject
             return;
         }
 
-        var result = await _services.Coordinator.StartAsync(playlist.Id);
+        if (shuffle)
+        {
+            await _services.Coordinator.SetModeAsync(PlaybackMode.Shuffle);
+        }
+
+        var result = await _services.Coordinator.StartAsync(playlist.Id, startItemId);
         if (!result.IsSuccess)
         {
             AppLog.Write($"플레이리스트 재생 시작 실패: {result.Message}");

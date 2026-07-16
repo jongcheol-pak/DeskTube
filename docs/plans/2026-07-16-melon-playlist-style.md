@@ -202,6 +202,7 @@
   - **Files**:
     - 주: `src/DeskTube/ViewModels/PlaylistsViewModel.cs`
     - 동반: `src/DeskTube/Views/PlaylistsPage.xaml.cs` (DataContext 캐스팅 2곳 `PlaylistItem`→`PlaylistItemEntry`, OnItemsCollectionChanged 유지)
+    - 동반: `src/DeskTube/Views/PlaylistsPage.xaml` (DataTemplate `x:DataType`만 Entry로 최소 갱신 — Items 요소 타입의 소비자라 방치 시 런타임 캐스트 실패, 규칙 3. 멜론 스타일 재구성은 T5) — 구현 중 추가 (4-A 기식별 소비자)
   - **Edge Cases**: backfill 중 리스트 전환·페이지 이탈 → CancellationToken 취소(늦은 응답이 다른 리스트에 반영되지 않게 Entry 참조로 갱신) / 1000개 리스트 → 병렬 4 제한 / 드래그 정렬 후 → Rank 재계산(SyncOrderFromViewAsync 말미) / 메타 도착과 항목 삭제 경합 → 삭제된 Entry 갱신은 무해(컬렉션 밖 객체)
   - **Halt Forecast**:
     - (ii-a) 공개 프로퍼티 `Items` 요소 타입 변경(소비처 View 1쌍뿐, 계획된 변경) → `## 사전 승인 항목` 3 등재
