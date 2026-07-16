@@ -2,6 +2,8 @@
 <!--
   디자인 토큰 (plan 2026-07-16-design-1a-restyle T2, AGENTS 디자인 규칙 2·5).
   값의 정본은 plan의 "시각 요소 분해"·D3 표 — 화면은 이 토큰 키만 참조한다 (하드코딩 금지).
+  구조: D3 표 키명 그대로의 Color 리소스 + 대응 Brush (plan T2 Design ② — acceptance의
+  "D3 전 키 존재" 기계 검증이 이 Color 키들을 대조한다). 화면은 Brush 키를 소비한다.
   앱은 다크 고정(App.xaml RequestedTheme="Dark")이라 Light 사전은 두지 않고,
   시스템 고대비 모드만 HighContrast 사전으로 대응한다 (plan D11).
 -->
@@ -11,63 +13,99 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <!-- 배경·면 -->
-            <SolidColorBrush x:Key="AppRootBackgroundBrush" Color="#1A1A1C" />
-            <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="#202023" />
-            <SolidColorBrush x:Key="AppContentBorderBrush" Color="#2C2C30" />
-            <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="#242427" />
-            <SolidColorBrush x:Key="AppCardBorderBrush" Color="#2F2F34" />
-            <SolidColorBrush x:Key="AppInputBackgroundBrush" Color="#2A2A2E" />
-            <SolidColorBrush x:Key="AppInputBorderBrush" Color="#3A3A40" />
-            <SolidColorBrush x:Key="AppInputBottomLineBrush" Color="#55555C" />
-            <SolidColorBrush x:Key="AppComboBackgroundBrush" Color="#2E2E32" />
-            <SolidColorBrush x:Key="AppComboBorderBrush" Color="#3D3D43" />
-            <SolidColorBrush x:Key="AppHoverBackgroundBrush" Color="#28282C" />
-            <SolidColorBrush x:Key="AppActiveBackgroundBrush" Color="#2A2A2E" />
-            <SolidColorBrush x:Key="AppDividerBrush" Color="#2C2C30" />
-            <SolidColorBrush x:Key="AppDashedBorderBrush" Color="#4A4A50" />
+            <!-- D3 색 토큰 (시안 원값) -->
+            <Color x:Key="AppRootBackgroundColor">#1A1A1C</Color>
+            <Color x:Key="AppContentBackgroundColor">#202023</Color>
+            <Color x:Key="AppContentBorderColor">#2C2C30</Color>
+            <Color x:Key="AppCardBackgroundColor">#242427</Color>
+            <Color x:Key="AppCardBorderColor">#2F2F34</Color>
+            <Color x:Key="AppInputBackgroundColor">#2A2A2E</Color>
+            <Color x:Key="AppInputBorderColor">#3A3A40</Color>
+            <Color x:Key="AppInputBottomLineColor">#55555C</Color>
+            <Color x:Key="AppComboBackgroundColor">#2E2E32</Color>
+            <Color x:Key="AppComboBorderColor">#3D3D43</Color>
+            <Color x:Key="AppHoverBackgroundColor">#28282C</Color>
+            <Color x:Key="AppActiveBackgroundColor">#2A2A2E</Color>
+            <Color x:Key="AppDividerColor">#2C2C30</Color>
+            <Color x:Key="AppDashedBorderColor">#4A4A50</Color>
+            <Color x:Key="AppTextPrimaryColor">#E8E8EA</Color>
+            <Color x:Key="AppTextStrongColor">#FFFFFF</Color>
+            <Color x:Key="AppTextSecondaryColor">#9A9AA0</Color>
+            <Color x:Key="AppTextTertiaryColor">#8A8A90</Color>
+            <Color x:Key="AppTextNavColor">#B8B8BE</Color>
+            <Color x:Key="AppChipTextColor">#D8D8DC</Color>
+            <Color x:Key="AppAccentColor">#F25C54</Color>
+            <Color x:Key="AppAccentHoverColor">#FF6F66</Color>
+            <Color x:Key="AppAccentSoftHoverColor">#FF8A82</Color>
+            <Color x:Key="AppTintBackgroundColor">#2A2326</Color>
+            <Color x:Key="AppTintBorderColor">#4A3338</Color>
+            <Color x:Key="AppTintTextColor">#E8C9C5</Color>
+            <Color x:Key="AppTintBodyColor">#C9B4B1</Color>
+            <Color x:Key="AppTintButtonBackgroundColor">#3A2A2C</Color>
+            <Color x:Key="AppTintButtonTextColor">#F2A49F</Color>
+            <Color x:Key="AppMonitorNumberSelectedColor">#F2A49F</Color>
+            <Color x:Key="AppMonitorNumberColor">#6A6A70</Color>
+            <Color x:Key="AppMonitorSubSelectedColor">#C9948F</Color>
+            <Color x:Key="AppMonitorSubColor">#7A7A80</Color>
+            <Color x:Key="AppMonitorBorderColor">#3A3A40</Color>
+            <Color x:Key="AppMonitorStandColor">#3A3A40</Color>
 
-            <!-- 텍스트 -->
-            <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="#E8E8EA" />
-            <SolidColorBrush x:Key="AppTextStrongBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="#9A9AA0" />
-            <SolidColorBrush x:Key="AppTextTertiaryBrush" Color="#8A8A90" />
-            <SolidColorBrush x:Key="AppTextNavBrush" Color="#B8B8BE" />
-            <SolidColorBrush x:Key="AppChipTextBrush" Color="#D8D8DC" />
+            <!-- 대응 브러시 (화면 소비용) — 배경·면 -->
+            <SolidColorBrush x:Key="AppRootBackgroundBrush" Color="{StaticResource AppRootBackgroundColor}" />
+            <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="{StaticResource AppContentBackgroundColor}" />
+            <SolidColorBrush x:Key="AppContentBorderBrush" Color="{StaticResource AppContentBorderColor}" />
+            <SolidColorBrush x:Key="AppCardBackgroundBrush" Color="{StaticResource AppCardBackgroundColor}" />
+            <SolidColorBrush x:Key="AppCardBorderBrush" Color="{StaticResource AppCardBorderColor}" />
+            <SolidColorBrush x:Key="AppInputBackgroundBrush" Color="{StaticResource AppInputBackgroundColor}" />
+            <SolidColorBrush x:Key="AppInputBorderBrush" Color="{StaticResource AppInputBorderColor}" />
+            <SolidColorBrush x:Key="AppInputBottomLineBrush" Color="{StaticResource AppInputBottomLineColor}" />
+            <SolidColorBrush x:Key="AppComboBackgroundBrush" Color="{StaticResource AppComboBackgroundColor}" />
+            <SolidColorBrush x:Key="AppComboBorderBrush" Color="{StaticResource AppComboBorderColor}" />
+            <SolidColorBrush x:Key="AppHoverBackgroundBrush" Color="{StaticResource AppHoverBackgroundColor}" />
+            <SolidColorBrush x:Key="AppActiveBackgroundBrush" Color="{StaticResource AppActiveBackgroundColor}" />
+            <SolidColorBrush x:Key="AppDividerBrush" Color="{StaticResource AppDividerColor}" />
+            <SolidColorBrush x:Key="AppDashedBorderBrush" Color="{StaticResource AppDashedBorderColor}" />
 
-            <!-- 포인트(코럴) -->
-            <SolidColorBrush x:Key="AppAccentBrush" Color="#F25C54" />
-            <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#FF6F66" />
-            <SolidColorBrush x:Key="AppAccentSoftHoverBrush" Color="#FF8A82" />
+            <!-- 대응 브러시 — 텍스트 -->
+            <SolidColorBrush x:Key="AppTextPrimaryBrush" Color="{StaticResource AppTextPrimaryColor}" />
+            <SolidColorBrush x:Key="AppTextStrongBrush" Color="{StaticResource AppTextStrongColor}" />
+            <SolidColorBrush x:Key="AppTextSecondaryBrush" Color="{StaticResource AppTextSecondaryColor}" />
+            <SolidColorBrush x:Key="AppTextTertiaryBrush" Color="{StaticResource AppTextTertiaryColor}" />
+            <SolidColorBrush x:Key="AppTextNavBrush" Color="{StaticResource AppTextNavColor}" />
+            <SolidColorBrush x:Key="AppChipTextBrush" Color="{StaticResource AppChipTextColor}" />
 
-            <!-- 코럴 틴트 면 (재생 중 pill·안내 배너) -->
-            <SolidColorBrush x:Key="AppTintBackgroundBrush" Color="#2A2326" />
-            <SolidColorBrush x:Key="AppTintBorderBrush" Color="#4A3338" />
-            <SolidColorBrush x:Key="AppTintTextBrush" Color="#E8C9C5" />
-            <SolidColorBrush x:Key="AppTintBodyBrush" Color="#C9B4B1" />
-            <SolidColorBrush x:Key="AppTintButtonBackgroundBrush" Color="#3A2A2C" />
-            <SolidColorBrush x:Key="AppTintButtonTextBrush" Color="#F2A49F" />
+            <!-- 대응 브러시 — 포인트(코럴)·틴트 면 -->
+            <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource AppAccentColor}" />
+            <SolidColorBrush x:Key="AppAccentHoverBrush" Color="{StaticResource AppAccentHoverColor}" />
+            <SolidColorBrush x:Key="AppAccentSoftHoverBrush" Color="{StaticResource AppAccentSoftHoverColor}" />
+            <SolidColorBrush x:Key="AppTintBackgroundBrush" Color="{StaticResource AppTintBackgroundColor}" />
+            <SolidColorBrush x:Key="AppTintBorderBrush" Color="{StaticResource AppTintBorderColor}" />
+            <SolidColorBrush x:Key="AppTintTextBrush" Color="{StaticResource AppTintTextColor}" />
+            <SolidColorBrush x:Key="AppTintBodyBrush" Color="{StaticResource AppTintBodyColor}" />
+            <SolidColorBrush x:Key="AppTintButtonBackgroundBrush" Color="{StaticResource AppTintButtonBackgroundColor}" />
+            <SolidColorBrush x:Key="AppTintButtonTextBrush" Color="{StaticResource AppTintButtonTextColor}" />
 
-            <!-- 모니터 카드 -->
+            <!-- 대응 브러시 — 모니터 카드 -->
+            <SolidColorBrush x:Key="AppMonitorNumberSelectedBrush" Color="{StaticResource AppMonitorNumberSelectedColor}" />
+            <SolidColorBrush x:Key="AppMonitorNumberBrush" Color="{StaticResource AppMonitorNumberColor}" />
+            <SolidColorBrush x:Key="AppMonitorSubSelectedBrush" Color="{StaticResource AppMonitorSubSelectedColor}" />
+            <SolidColorBrush x:Key="AppMonitorSubBrush" Color="{StaticResource AppMonitorSubColor}" />
+            <SolidColorBrush x:Key="AppMonitorBorderBrush" Color="{StaticResource AppMonitorBorderColor}" />
+            <SolidColorBrush x:Key="AppMonitorStandBrush" Color="{StaticResource AppMonitorStandColor}" />
+
+            <!-- 그라디언트 (D3: AppMonitorSelectedBackground 180° / AppThumbPlaceholderBackground 135°) -->
             <LinearGradientBrush x:Key="AppMonitorSelectedBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
                 <GradientStop Offset="0" Color="#3A2726" />
                 <GradientStop Offset="1" Color="#2A1E1D" />
             </LinearGradientBrush>
-            <SolidColorBrush x:Key="AppMonitorNumberSelectedBrush" Color="#F2A49F" />
-            <SolidColorBrush x:Key="AppMonitorNumberBrush" Color="#6A6A70" />
-            <SolidColorBrush x:Key="AppMonitorSubSelectedBrush" Color="#C9948F" />
-            <SolidColorBrush x:Key="AppMonitorSubBrush" Color="#7A7A80" />
-            <SolidColorBrush x:Key="AppMonitorBorderBrush" Color="#3A3A40" />
-            <SolidColorBrush x:Key="AppMonitorStandBrush" Color="#3A3A40" />
-
-            <!-- 썸네일 placeholder -->
-            <LinearGradientBrush x:Key="AppThumbPlaceholderBrush" StartPoint="0,0" EndPoint="1,1">
+            <LinearGradientBrush x:Key="AppThumbPlaceholderBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Offset="0" Color="#4A3038" />
                 <GradientStop Offset="1" Color="#25191D" />
             </LinearGradientBrush>
         </ResourceDictionary>
 
-        <!-- 고대비 — 시스템 HC 색으로 매핑 (시각 정합 정밀 조정은 Deferred, plan D11) -->
+        <!-- 고대비 — 시스템 HC 색으로 매핑 (시각 정합 정밀 조정은 Deferred, plan D11).
+             HC의 시스템 색은 리터럴 별칭이 불가능해 Color 토큰 없이 Brush만 재정의한다. -->
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="AppRootBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="AppContentBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
@@ -105,7 +143,7 @@
             <SolidColorBrush x:Key="AppMonitorSubBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AppMonitorBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AppMonitorStandBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="AppThumbPlaceholderBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="AppThumbPlaceholderBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
