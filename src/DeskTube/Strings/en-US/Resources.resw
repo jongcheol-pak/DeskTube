@@ -228,4 +228,19 @@
   <data name="Common_Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="StartupTaskDisplayName" xml:space="preserve">
+    <value>DeskTube</value>
+  </data>
+  <data name="AutoStartCard.Header" xml:space="preserve">
+    <value>Start automatically with Windows</value>
+  </data>
+  <data name="AutoStartCard.Description" xml:space="preserve">
+    <value>After you sign in, playback resumes quietly from the tray</value>
+  </data>
+  <data name="Settings_AutoStartDisabledByUser" xml:space="preserve">
+    <value>Turned off in Windows startup settings. Turn it on in Settings &gt; Apps &gt; Startup.</value>
+  </data>
+  <data name="Settings_AutoStartByPolicy" xml:space="preserve">
+    <value>This setting is managed by your organization and cannot be changed here.</value>
+  </data>
 </root>

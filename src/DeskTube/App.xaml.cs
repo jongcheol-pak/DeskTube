@@ -38,14 +38,21 @@ public partial class App : Application
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
 
+        // 자동 시작(부팅) 판별 — 활성화 종류 우선, 조회 실패 시 명령줄 인자 폴백 (plan T4·D3)
+        var quietStart = StartupService.WasActivatedByStartupTask()
+            || StartupArgs.HasStartupFlag(Environment.GetCommandLineArgs());
+
         _window = new MainWindow();
-        _window.Activate();
+        if (!quietStart)
+        {
+            _window.Activate(); // 자동 시작이면 창 없이 트레이만 (PRD FR-8)
+        }
 
         // async void 회피 — 실패는 로그로 남기고 앱은 뜬다 (UI가 Services null로 미준비 안내)
-        _ = InitializeServicesAsync();
+        _ = InitializeServicesAsync(quietStart);
     }
 
-    private async Task InitializeServicesAsync()
+    private async Task InitializeServicesAsync(bool autoPlay)
     {
         try
         {
@@ -62,6 +69,32 @@ public partial class App : Application
         _tray.Initialize();
 
         ServicesInitialized?.Invoke(this, EventArgs.Empty);
+
+        if (autoPlay)
+        {
+            await TryAutoPlayLastAsync();
+        }
+    }
+
+    /// <summary>자동 시작 — 마지막 재생 리스트로 조용히 재생 시작 (PRD Q8). 리스트가 없으면 생략하고 트레이만 상주 (plan T4 Edge).</summary>
+    private async Task TryAutoPlayLastAsync()
+    {
+        var services = Services!;
+        var lastId = services.Settings.LastPlaylistId;
+        var playlist = lastId.HasValue
+            ? services.Library.Playlists.FirstOrDefault(p => p.Id == lastId.Value)
+            : null;
+        if (playlist is null || playlist.Items.Count == 0)
+        {
+            AppLog.Write("자동 시작: 재생할 마지막 플레이리스트가 없어 재생을 생략합니다.");
+            return;
+        }
+
+        var result = await services.Coordinator.StartAsync(playlist.Id);
+        if (!result.IsSuccess)
+        {
+            AppLog.Write($"자동 시작 재생 실패: {result.Message}");
+        }
     }
 
     /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 InfoBar 안내 표시).</summary>

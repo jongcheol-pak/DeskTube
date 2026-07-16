@@ -49,9 +49,13 @@ public partial class MonitorChoice : ObservableObject
 public partial class SettingsViewModel : ObservableObject
 {
     private AppServices? _services;
+    private readonly StartupService _startup = new();
 
     /// <summary>초기값 채우는 중 — 변경 적용(저장·서비스 호출) 억제.</summary>
     private bool _loading;
+
+    /// <summary>StartupTask 실제 상태를 토글에 반영하는 중 — 변경 콜백 억제.</summary>
+    private bool _autoStartUpdating;
 
     private readonly List<string?> _audioIds = [];
 
@@ -119,6 +123,19 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsNoticeOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool AutoStartEnabled { get; set; }
+
+    /// <summary>토글 조작 가능 여부 — DisabledByUser/정책 관리 상태면 false (plan T4 Edge).</summary>
+    [ObservableProperty]
+    public partial bool AutoStartToggleAvailable { get; set; }
+
+    [ObservableProperty]
+    public partial string? AutoStartStatusText { get; set; }
+
+    [ObservableProperty]
+    public partial bool AutoStartStatusVisible { get; set; }
 
     /// <summary>페이지 진입 시 호출. 서비스 준비 전이면 준비 완료 이벤트를 1회 대기한다.</summary>
     public void Load()
@@ -199,6 +216,63 @@ public partial class SettingsViewModel : ObservableObject
         {
             _loading = false;
         }
+
+        // StartupTask 상태는 비동기 조회 — 로드 플래그 밖에서 실제 상태로 채움
+        _ = RefreshAutoStartAsync();
+    }
+
+    private async Task RefreshAutoStartAsync()
+    {
+        try
+        {
+            var state = await _startup.GetStateAsync();
+            ApplyAutoStartState(state);
+        }
+        catch (Exception ex)
+        {
+            // 조회 실패(비패키지 실행 등) — 토글 비활성으로 방어
+            AppLog.Write($"자동 실행 상태 조회 실패: {ex.GetType().Name} {ex.Message}");
+            AutoStartToggleAvailable = false;
+        }
+    }
+
+    /// <summary>StartupTask 실제 상태를 UI에 반영 (요청 거부 시 토글 되돌림 포함).</summary>
+    private void ApplyAutoStartState(Windows.ApplicationModel.StartupTaskState state)
+    {
+        _autoStartUpdating = true;
+        try
+        {
+            AutoStartEnabled = state is Windows.ApplicationModel.StartupTaskState.Enabled
+                or Windows.ApplicationModel.StartupTaskState.EnabledByPolicy;
+            AutoStartToggleAvailable = state is Windows.ApplicationModel.StartupTaskState.Enabled
+                or Windows.ApplicationModel.StartupTaskState.Disabled;
+            AutoStartStatusText = state switch
+            {
+                Windows.ApplicationModel.StartupTaskState.DisabledByUser => Loc.Get("Settings_AutoStartDisabledByUser"),
+                Windows.ApplicationModel.StartupTaskState.DisabledByPolicy
+                    or Windows.ApplicationModel.StartupTaskState.EnabledByPolicy => Loc.Get("Settings_AutoStartByPolicy"),
+                _ => null,
+            };
+            AutoStartStatusVisible = AutoStartStatusText is not null;
+        }
+        finally
+        {
+            _autoStartUpdating = false;
+        }
+    }
+
+    partial void OnAutoStartEnabledChanged(bool value)
+    {
+        if (_loading || _autoStartUpdating || _services is null)
+        {
+            return;
+        }
+
+        Apply(async () =>
+        {
+            var state = await _startup.SetEnabledAsync(value);
+            ApplyAutoStartState(state); // 거부됐으면(DisabledByUser 등) 실제 상태로 되돌림
+        }, "자동 실행 설정");
     }
 
     private void OnMonitorSelectionChanged(MonitorChoice changed)

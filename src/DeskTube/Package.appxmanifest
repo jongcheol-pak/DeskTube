@@ -3,8 +3,9 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  IgnorableNamespaces="uap uap5 rescap">
 
   <Identity
     Name="DeskTube.Dev"
@@ -36,6 +37,16 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <!-- 부팅 자동 시작 (PRD FR-8) — 기본 꺼짐, 설정 토글로 활성화 (plan T4).
+             표시명은 슬래시 3개형 ms-resource 필수 (AGENTS 다국어 규칙 4 — root 명시형은 resolve 실패) -->
+        <uap5:Extension Category="windows.startupTask" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask
+            TaskId="DeskTubeStartupTask"
+            Enabled="false"
+            DisplayName="ms-resource:///Resources/StartupTaskDisplayName" />
+        </uap5:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

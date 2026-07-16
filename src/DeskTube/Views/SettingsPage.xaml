@@ -73,6 +73,18 @@
                     IsClosable="False"
                     Severity="Informational" />
 
+                <!-- 부팅 자동 시작 (FR-8 — T4, T2에서 이연된 카드) -->
+                <controls:SettingsCard x:Uid="AutoStartCard">
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.AutoStartEnabled, Mode=TwoWay}"
+                        IsEnabled="{x:Bind ViewModel.AutoStartToggleAvailable, Mode=OneWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    IsOpen="{x:Bind ViewModel.AutoStartStatusVisible, Mode=OneWay}"
+                    Message="{x:Bind ViewModel.AutoStartStatusText, Mode=OneWay}"
+                    IsClosable="False"
+                    Severity="Warning" />
+
                 <!-- 자동 일시정지 정책 (NFR-1) -->
                 <controls:SettingsExpander x:Uid="PauseExpander" IsExpanded="True">
                     <controls:SettingsExpander.Items>
