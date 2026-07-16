@@ -424,9 +424,9 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
   - **Halt Forecast**: 없음 — 그룹 구성·카드 순서·문구는 시각 요소 분해 표에서 사전 확정, 소비하는 신규 컨트롤(T4)·스타일(T2)은 선행 task 산출물, 파괴적·의존성·외부 요소 없음
   - **Depends on**: T2, T4
 
-- [ ] T8. 정보 화면 재설계
+- [x] T8. 정보 화면 재설계
   - **Type**: C
-  - **Design**: 해당 없음 — 신규 심볼 없음 (카드 구조 재구성 + T2 스타일 소비)
+  - **Design**: 신규 심볼 없음 — 단 토큰 1종(`AppLargeIconCornerRadius`=12, DesignTokens.xaml) 추가(하드코딩 금지 규칙 이행 — spec 리뷰 MINOR 소급 정정). 카드 구조 재구성 + T2 스타일 소비
   - **Acceptance**: Given 정보 화면, Then 앱 카드(아이콘 52·이름·"버전 {v} · 개발자: {dev}" 한 줄)·개인정보 카드·라이선스 카드형 expander가 시안 스펙으로 표시되고 라이선스 전문 펼침·버전 조회 기능 불변 (기계 검증: 빌드+테스트 / 시각 ⏳ HUMAN-VERIFY)
   - **Files**:
     - 주: `src/DeskTube/Views/AboutPage.xaml`
@@ -473,6 +473,8 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
   - 결정: 칩 클릭은 View(OnChipClick)가 App.Main 경유 — VM 커맨드 대신 (순수 화면 이동).
   - 결정: 활성 표시는 PlaylistEntry.IsActive + x:Bind 정적 함수(ActiveNameBrush/ActiveWeight) — 상하 인셋은 컨테이너 Padding 0,12.
   - 결정: hover 핸들러는 IsEnabled 가드 필수 (PointerEntered는 비활성에도 발생).
+- T7-T8 완료: T7 설정 재설계(그룹 4개·순서 재배열·볼륨 값 라벨·콤보 문구 원문화·틴트 배너·SettingsCard lightweight — 램프 스타일 복원). T8 정보 재설계(앱 카드 한 줄 정보 About_InfoLineFormat·개인정보 카드·라이선스 Expander 카드 — AboutDeveloper·About_VersionFormat 키 정리). 빌드 0경고·테스트 100/100.
+  - 결정: 텍스트는 항상 램프 스타일 + 크기·굵기·색 오버라이드 (AGENTS 규칙 4 — T7 리뷰 교훈, 잔존 패턴은 Deferred [SUGGEST]).
 
 ## Next Steps
 - plan 승인 후 `pjc:implement-task`로 T1부터 자율 실행
