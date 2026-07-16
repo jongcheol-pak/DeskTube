@@ -142,7 +142,9 @@ public sealed class TrayIconService : IDisposable
         var result = await coordinator.StartAsync(playlist.Id);
         if (!result.IsSuccess)
         {
-            _showSettings(result.Message ?? Loc.Get("Tray_PlayFailed"));
+            // 서비스 오류 문구는 미로컬라이즈(내부용) — 사용자에겐 리소스 문구, 상세는 로그로
+            AppLog.Write($"트레이 재생 시작 실패: {result.Message}");
+            _showSettings(Loc.Get("Tray_PlayFailed"));
         }
     }
 
