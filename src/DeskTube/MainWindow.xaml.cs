@@ -17,9 +17,9 @@ public sealed partial class MainWindow : Window
         Title = "DeskTube";
         AppWindow.Closing += OnAppWindowClosing;
 
-        // 초기 선택 = 홈
+        // 초기 선택 = 홈 (SelectedItem 대입이 SelectionChanged를 이미 태울 수 있어 NavigateOnce로 중복 방지)
         Nav.SelectedItem = NavHomeItem;
-        ContentFrame.Navigate(typeof(HomePage));
+        NavigateOnce(typeof(HomePage));
     }
 
     private void OnNavSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

@@ -154,7 +154,7 @@
 
 - [ ] T2. 설정 셸 + 재생 설정 페이지 (FR-10·FR-13 UI)
   - **Type**: D
-  - **Design**: ① `Views/` `ViewModels/`: `MainWindow`(NavigationView 셸), `HomePage`+`HomeViewModel`(URL 입력·즉시 재생), `SettingsPage`+`SettingsViewModel` ② SettingsPage 카드: 모니터 선택(다중 체크)·오디오 출력 모니터(콤보)·볼륨 슬라이더·재생 모드·화질 스케일(콤보 + 유튜브 자동 결정 안내 InfoBar)·자동 실행 토글·자동 일시정지 정책 3토글·언어 ③ ViewModel → part1 서비스(DI) 호출, View는 x:Bind만 ④ 이번에 안 함: 설정 검색, 테마 수동 전환(시스템 추종 — AGENTS 규칙 3)
+  - **Design**: ① `Views/` `ViewModels/`: `MainWindow`(NavigationView 셸), `HomePage`+`HomeViewModel`(URL 입력·즉시 재생), `SettingsPage`+`SettingsViewModel` ② SettingsPage 카드: 모니터 선택(다중 체크)·오디오 출력 모니터(콤보)·볼륨 슬라이더·재생 모드·화질 스케일(콤보 + 유튜브 자동 결정 안내 InfoBar)·자동 실행 토글·자동 일시정지 정책 3토글·언어 ③ ViewModel → part1 서비스(DI) 호출, View는 x:Bind만 ④ 이번에 안 함: 설정 검색, 테마 수동 전환(시스템 추종 — AGENTS 규칙 3), **자동 실행 토글 카드(T4에서 StartupService와 함께)·언어 카드(T7에서 전환 절차와 함께) — 백엔드 없는 비기능 토글 노출 방지 (T2 리뷰 합의, T4·T7 Files에 반영)**
   - **Acceptance**: Given 설정 화면, When 각 항목 변경, Then 즉시 적용(볼륨·모니터는 재생 중 반영)되고 앱 재시작 후 유지 — HUMAN-VERIFY; ViewModel 로직은 빌드+x:Bind 컴파일 검증
   - **Files**:
     - 주: `src/DeskTube/MainWindow.xaml(.cs)`, `src/DeskTube/Views/SettingsPage.xaml(.cs)`, `src/DeskTube/ViewModels/SettingsViewModel.cs`
@@ -189,7 +189,7 @@
   - **Acceptance**: Given 자동 실행 토글 on + 재부팅(또는 StartupTask 시뮬레이션 실행), When 로그인, Then 창 없이 트레이 상주 + 마지막 재생 설정으로 배경 재생 시작 — HUMAN-VERIFY; 시작 인자→모드 판별 로직은 xUnit
   - **Files**:
     - 주: `src/DeskTube/Services/StartupService.cs`, `src/DeskTube/Package.appxmanifest`
-    - 동반: `src/DeskTube/App.xaml.cs`
+    - 동반: `src/DeskTube/App.xaml.cs`, `src/DeskTube/Views/SettingsPage.xaml`, `src/DeskTube/ViewModels/SettingsViewModel.cs` (자동 실행 토글 카드 — T2에서 이연)
     - 테스트: `tests/DeskTube.Tests/StartupArgsTests.cs`
   - **Edge Cases**:
     - 사용자가 Windows 설정에서 시작 앱을 직접 꺼 둠(StartupTaskState=DisabledByUser) → 토글에 "시스템 설정에서 꺼짐" 상태 표시, RequestEnableAsync는 재요청 불가 안내
@@ -237,7 +237,7 @@
   - **Acceptance**: Given 언어 전환(ko↔en), When 모든 화면 순회, Then 미번역(키 노출) 문구 0 + 전환 후 테마 유지(AGENTS 규칙 3-⑤) — HUMAN-VERIFY; 하드코딩 검색(grep: XAML `Text="[가-힣A-Za-z]`·code `"..."` UI 문자열) 0건
   - **Files**:
     - 주: `src/DeskTube/Strings/en-US/Resources.resw`, `src/DeskTube/Strings/ko-KR/Resources.resw`
-    - 동반: `src/DeskTube/Services/Loc.cs`, (T1~T6의 View/ViewModel — 키 등재 확인)
+    - 동반: `src/DeskTube/Services/Loc.cs`, `src/DeskTube/Views/SettingsPage.xaml`, `src/DeskTube/ViewModels/SettingsViewModel.cs` (언어 카드 — T2에서 이연), (T1~T6의 View/ViewModel — 키 등재 확인)
   - **Edge Cases**:
     - 누락 키 → Loc.Get이 키 자체 반환(누락 가시화 — AGENTS 규칙 2)
     - OS 언어가 ko/en 외 → en-US 폴백(DefaultLanguage)
