@@ -20,8 +20,24 @@ public sealed partial class LoginWindow : Window
         Title = Loc.Get("Login_Title");
         SystemBackdrop = new MicaBackdrop(); // MainWindow와 시각 통일 (T5/D4)
         ThemeHelper.Register(this); // 저장 테마 적용 + 변경 재적용 등록 (FR-17)
-        Closed += (_, _) => _isClosed = true;
+        Closed += OnClosed;
         _ = InitializeAsync();
+    }
+
+    /// <summary>
+    /// 창 닫힘 — WebView2를 확정 해제한다. 해제 없이 창만 닫히면 대기 중이던 네이티브 콜백
+    /// (컨트롤러 생성 재시도 완료 등)이 죽은 컨트롤로 재진입해 AV로 앱 전체가 죽을 수 있다
+    /// (2026-07-16 크래시 덤프 — docs/plans/2026-07-16-debug-settings-crash.md).
+    /// </summary>
+    private void OnClosed(object sender, WindowEventArgs args)
+    {
+        _isClosed = true;
+        if (LoginWebView.CoreWebView2 is { } core)
+        {
+            core.NavigationCompleted -= OnNavigationCompleted;
+        }
+
+        LoginWebView.Close(); // 생성 진행 중이면 취소, 완료 상태면 컨트롤러 해제
     }
 
     private async Task InitializeAsync()
@@ -56,7 +72,15 @@ public sealed partial class LoginWindow : Window
             var cookies = await sender.CookieManager.GetCookiesAsync("https://www.youtube.com");
             if (YouTubeSessionService.HasSessionCookie(cookies) && !_isClosed)
             {
-                Close();
+                // WebView2 이벤트 콜스택 안에서 창을 닫으면 해제 중인 컨트롤로 네이티브 콜백이
+                // 재진입할 수 있어(2026-07-16 크래시 덤프), 디스패처로 콜스택 밖에서 닫는다
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (!_isClosed)
+                    {
+                        Close();
+                    }
+                });
             }
         }
         catch (Exception ex)

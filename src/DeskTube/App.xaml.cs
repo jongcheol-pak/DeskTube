@@ -23,6 +23,24 @@ public partial class App : Application
         ApplySavedStartupOverrides();
 
         InitializeComponent();
+
+        // 처리되지 않은 예외 로깅 — 핸들러가 없으면 프로세스가 아무 기록 없이 죽어 크래시
+        // 원인 추적이 불가능하다 (2026-07-16 조사 — docs/plans/2026-07-16-debug-settings-crash.md).
+        // 기록만 하고 예외는 삼키지 않는다 (Handled 미설정 — 상태 불명인 채 계속 실행 방지).
+        UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+    }
+
+    /// <summary>XAML 디스패처 경로의 미처리 예외 기록 (이벤트 핸들러·바인딩 예외 등).</summary>
+    private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        AppLog.Write($"처리되지 않은 XAML 예외: {e.Exception?.GetType().Name} {e.Message}\n{e.Exception?.StackTrace}");
+    }
+
+    /// <summary>XAML 경로 밖(스레드 풀·WinRT 콜백 등)의 미처리 예외 기록 — 종료 직전 마지막 단서.</summary>
+    private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        AppLog.Write($"처리되지 않은 도메인 예외: {e.ExceptionObject}");
     }
 
     /// <summary>settings.json의 Language·Theme만 동기로 선읽기해 적용한다 (없으면 시스템 추종).</summary>
