@@ -3,6 +3,13 @@
 **PRD**: docs/prd.md
 **이전 plan**: docs/plans/2026-07-15-desktube-core-part1.md
 
+## 이전 part 핸드오프
+- 함정: 존재하지 않는 타입을 소스에 참조하면 XAML 컴파일러가 CS 오류 대신 WMC9999(내부 NRE)로 죽는다. 경고 확인은 반드시 `--no-incremental` 전체 재빌드로 (증분 빌드가 미변경 프로젝트 경고를 숨김).
+- 함정: 테스트는 `dotnet test tests/DeskTube.Tests/DeskTube.Tests.csproj -c Debug -p:Platform=x64` — 플랫폼 플래그 없으면 MSIX 타깃 오류. 앱 csproj의 `WindowsAppSdkAutoInitialize=false`는 테스트 호스트 호환용이므로 제거 금지 (App 생성자가 명시 초기화).
+- 기각된 접근: `[LibraryImport]`+델리게이트(unsafe 요구 → `DllImport` 사용), `CoreWebView2InitializationException` 타입(미존재 — 런타임 부재는 HResult 0x80070002로 판별).
+- 검증 지름길: `dotnet build DeskTube.slnx -c Debug -p:Platform=x64 --no-incremental && dotnet test tests/DeskTube.Tests/DeskTube.Tests.csproj -c Debug -p:Platform=x64 && dotnet format DeskTube.slnx --verify-no-changes`
+- 배선 참조: 서비스 소비는 `App.Services`(AppServices — 수동 컴포지션 루트, D13). 트레이·UI는 `Coordinator`(StartAsync/Pause/Resume/SetVolumeAsync 등)와 `PowerPolicy.Reevaluate()`(설정 토글 후)를 호출하면 된다.
+
 ## 요구 이해
 - **원문 요청**: "설정 화면 기능 — 모니터 선택, 유튜브 url 입력, 플레이 리스트 생성 관리 … 윈도우 부팅 후 자동 실행(트레이 아이콘으로 실행) … 앱 정보 화면, 오픈소스 라이선스 화면, 화질 설정 / 트레이 아이콘 — 재생, 정지, 종료, 볼륨 on/off 메뉴" (+ 후속: 유튜브 로그인으로 프리미엄 광고 제거)
 - **이해한 요구**: part1의 코어 엔진 위에 사용자 대면 기능을 완성한다 — 트레이 아이콘, 설정 화면(모니터·URL·볼륨·오디오 대상·재생 모드·화질·자동 실행), 플레이리스트 관리 UI, 부팅 자동 시작, 유튜브 로그인(Should), 앱 정보·오픈소스 라이선스 화면, 한/영 다국어, Store 제출 가능 상태(WACK) 검증. 상세 요구는 docs/prd.md가 정본.
