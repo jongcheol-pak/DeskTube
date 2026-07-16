@@ -410,7 +410,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
   - **Halt Forecast**: (없음 — 파괴적·의존성·외부 요소 없음. resw 키 제거는 D6 결정으로 사전 확정)
   - **Depends on**: T2
 
-- [ ] T7. 설정 화면 재설계
+- [x] T7. 설정 화면 재설계
   - **Type**: C
   - **Design**: 신규 심볼 1 — `SettingsPage.FormatVolume(double)` x:Bind 포맷 헬퍼(볼륨 값 라벨용, spec 리뷰 MINOR 소급 정정). 그 외 그룹 헤더 4개 + 카드 재배열 + T4 컨트롤·T2 스타일 소비
   - **Acceptance**: Given 설정 화면, When 각 설정 조작, Then 기존 항목 전수(FR-10 — 모니터·크기·화질+배너·미러 하향·오디오·볼륨·음소거·재생 순서·자동 실행(+상태 InfoBar)·언어·계정·자동 일시정지 3토글 — 테마 카드는 T2에서 제거됨) 동작 불변 + 시안 그룹 순서·카드 스타일·문구 반영, 볼륨 값 라벨 표시 (기계 검증: 빌드+테스트 + 항목 개수 전후 대조(테마 제외) / 시각 ⏳ HUMAN-VERIFY)
