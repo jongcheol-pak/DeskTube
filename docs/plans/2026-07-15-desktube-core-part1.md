@@ -326,6 +326,7 @@
 - 수동 검증(HUMAN-VERIFY 누적 목록): 아이콘 뒤 렌더링(T5), 소리 포함 자동 재생·화질 스케일(T6), 2모니터 동기+단일 오디오(T7), 전체화면/잠금/세이버 일시정지(T8), **클린 설치 후 최초 실행**(T2 — WinAppSDK 자동 초기화를 App 생성자 명시 호출로 대체해 초기화 시점이 원본보다 늦음, 프레임워크 패키지 최초 설치/복구 경로 실기 확인 필요) — 각 task 완료 보고에 명시
 
 ## Phase Ledger
+- Phase F 통과 (HEAD c50b38e — F-7 BLOCKER 0/MAJOR 0/MINOR 2: notes 커밋으로 m1 해소, m2는 part2 승계)
 
 ## Retry Ledger
 
