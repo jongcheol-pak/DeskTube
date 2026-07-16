@@ -10,13 +10,14 @@ namespace DeskTube;
 /// 진입점 Window — NavigationView 설정 셸 (plan D1). WinUIEx WindowManager 적용 (T5):
 /// 창 크기·위치 저장·복원(PersistenceId) + 최소 크기 + Mica 백드롭 + 커스텀 타이틀바.
 /// WindowEx 상속 대신 WindowManager를 쓴 이유 — XAML 루트를 WindowEx로 바꾸면
-/// 생성되는 XamlTypeInfo가 obsolete 속성(Icon)을 등록해 CS0618 경고가 나며 억제 불가.
-/// WindowManager는 동일 기능을 임의 창에 제공한다 (WinUIEx 공식 문서).
+/// 생성되는 XamlTypeInfo.g.cs가 obsolete 속성(Icon)을 등록해 CS0618 경고 발생
+/// (이 프로젝트 빌드로 재현 확인, 생성 코드라 억제 불가). WindowManager는 동일 기능을
+/// 임의 창에 제공한다 (WinUIEx 공식 문서 WindowManager.md).
 /// X 닫기는 종료가 아니라 트레이로 숨김 (PRD FR-9, plan D2).
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    /// <summary>창 상태 관리자 — GC로 기능이 끊기지 않게 창 수명 동안 유지.</summary>
+    /// <summary>창 상태 관리자 — 수명 보장이 문서화돼 있지 않아 방어적으로 창 수명 동안 참조를 유지.</summary>
     private readonly WinUIEx.WindowManager _manager;
 
     public MainWindow()

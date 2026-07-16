@@ -144,7 +144,7 @@
   - **Halt Forecast**: 없음 — (AGENTS 규칙 3 개정은 T8, 이미 사용자 합의)
   - **Depends on**: T5 (타이틀바·백드롭 확정 후 테마 적용 지점 안정화)
 
-- [ ] T5. WinUIEx 도입 — 창 상태·Mica·타이틀바 (사용자 선택 a~d)
+- [x] T5. WinUIEx 도입 — 창 상태·Mica·타이틀바 (사용자 선택 a~d)
   - **Type**: D
   - **Design**: (D4 참조) ① csproj에 WinUIEx 2.9.2 ② MainWindow: `Window`→`WinUIEx.WindowEx` — PersistenceId="MainWindow"(크기·위치 저장·복원), MinWidth 720·MinHeight 480, ExtendsContentIntoTitleBar+타이틀바(앱명), Mica(SystemBackdrop) ③ LoginWindow: Mica 적용 ④ 기존 AppWindow.Closing(닫기=숨김)·ForceClose·창 재생성 경로 동작 유지 ⑤ 구체 API는 P-4에서 패키지 문서 검증 후 사용 ⑥ 간접화 없음
   - **Acceptance**: 창 크기·위치가 재시작 후 복원 + 닫기=트레이 숨김·언어 전환 재생성 정상 — HUMAN-VERIFY; 빌드·테스트 통과 (회귀 0)
