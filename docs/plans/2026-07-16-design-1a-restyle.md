@@ -458,6 +458,8 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 - 수동 검증 (사용자): 시스템 라이트 모드에서도 앱 다크 고정 확인, 4페이지 왕복, 트레이 진입, 재생 중 pill, 모니터 토글 동기(홈↔설정), 칩 이동
 
 ## Phase Ledger
+- Phase F 통과 (HEAD e0e28e6) — F-1~F-6 자체 검증 + F-7 plan-completion-reviewer OK (BLOCKER/MAJOR 0, MINOR 1 기등록)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-1·3·10·11·12·13·18 충족 + FR-17 REMOVED 이행(심볼 grep 0), 시각 실표시는 ⏳ HUMAN-VERIFY (미충족 아님)
 
 ## Retry Ledger
 
@@ -477,7 +479,8 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
   - 결정: 텍스트는 항상 램프 스타일 + 크기·굵기·색 오버라이드 (AGENTS 규칙 4 — T7 리뷰 교훈, 잔존 패턴은 Deferred [SUGGEST]).
 
 ## Next Steps
-- plan 승인 후 `pjc:implement-task`로 T1부터 자율 실행
+- 모든 task 완료 + Phase F/G 통과. 남은 것: 사용자 HUMAN-VERIFY(앱 실행 — 다크 고정·코럴 전파·4페이지 시각·모니터 토글 동기·pill·칩 이동) 후 main 병합 여부 결정 (push·병합은 별도 승인)
+- Suggested skills: 공식 /code-review (원하면), /security-review (해당 없음 — 외부 표면 변화 없음)
 
 ## Open Questions
 - [x] Q1: 라이트 테마 처리 → ~~시안 톤 번안~~ **사용자 후속 지시(2026-07-16)로 대체: 테마 변경 기능 삭제, 다크 고정** (FR-17 REMOVED, D3 개정)
