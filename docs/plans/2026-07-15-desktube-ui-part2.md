@@ -49,6 +49,7 @@
 - T3 MINOR: PlaylistsPage 마스터-디테일 레이아웃이 AGENTS 디자인 규칙 6(폼형 골격)의 예외 — AGENTS.md에 예외 명시 검토 (레이아웃 적정성은 HUMAN-VERIFY 목록에 포함)
 - T3 MINOR: PlaylistsViewModel의 Rename/AddItem 실패 안내가 LimitExceeded 외 코드를 뭉뚱그림 — 오류 원인 늘어나면 ErrorCode별 분기 추가
 - [SUGGEST] T4: "마지막 재생 리스트 조회→StartAsync" 로직이 App.TryAutoPlayLastAsync·TrayIconService.PlayAsync 2곳 중복 — 3회째 등장 시 공통 헬퍼로 추출 (스킬 공통화 문턱 3회)
+- T5 MINOR: 세션 상태 변경을 이벤트가 아닌 View 주도 재조회로 구현 — 소비자가 늘어나면(트레이 상태 표시 등) YouTubeSessionService에 상태 변경 이벤트 도입 재검토
 
 ## Investigation Log
 - part1 Investigation Log의 검증 사실을 전제로 함 (IFrame API·프리미엄 임베드·WebView2 autoplay·24H2·StartupTask·H.NotifyIcon·WinAppSDK 2.2 — 전부 웹 공식 출처 확인 완료, 2026-07-15)
@@ -204,9 +205,9 @@
     - (i) "StartupTask 표시명 리소스 형식?" → AGENTS 다국어 규칙 4 확정(`ms-resource:///Resources/<키>`)
   - **Depends on**: T2
 
-- [ ] T5. 유튜브 로그인 (FR-15)
+- [x] T5. 유튜브 로그인 (FR-15)
   - **Type**: C
-  - **Design**: ① `Views/LoginWindow.xaml(.cs)` + `Services/YouTubeSessionService.cs` ② 세션 서비스 — 로그인 상태 확인(youtube.com 쿠키 SAPISID 존재 여부), 로그인 창 열기, 로그아웃(쿠키 전체 삭제+플레이어 리로드), 상태 변경 이벤트 ③ part1 `WebViewEnvironment`(동일 UDF) 사용, SettingsPage에 로그인 카드(상태 표시+버튼) 추가 ④ 이번에 안 함: 계정 프로필 표시(이름·사진), 다중 계정
+  - **Design**: ① `Views/LoginWindow.xaml(.cs)` + `Services/YouTubeSessionService.cs` ② 세션 서비스 — 로그인 상태 확인(youtube.com 쿠키 SAPISID 존재 여부), 로그인 창 열기, 로그아웃(쿠키 전체 삭제+플레이어 리로드), 상태 변경 이벤트(구현 시 View 주도 재조회로 대체 — 소비자가 설정 페이지 1곳뿐, LoginWindow.Closed 후 RefreshSessionAsync) ③ part1 `WebViewEnvironment`(동일 UDF) 사용, SettingsPage에 로그인 카드(상태 표시+버튼) 추가 ④ 이번에 안 함: 계정 프로필 표시(이름·사진), 다중 계정
   - **Acceptance**: Given 프리미엄 계정, When 로그인 창에서 로그인 완료, Then 설정에 "로그인됨" 표시 + 이후 배경 재생에서 광고 미표시(HUMAN-VERIFY — 구글 차단 시: 차단 안내 표시 + 나머지 기능 정상이면 통과, PRD FR-15 명시); 로그아웃 시 쿠키 삭제 확인
   - **Files**:
     - 주: `src/DeskTube/Services/YouTubeSessionService.cs`, `src/DeskTube/Views/LoginWindow.xaml(.cs)`
