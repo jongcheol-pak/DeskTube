@@ -50,6 +50,8 @@
 - T3 MINOR: PlaylistsViewModel의 Rename/AddItem 실패 안내가 LimitExceeded 외 코드를 뭉뚱그림 — 오류 원인 늘어나면 ErrorCode별 분기 추가
 - [SUGGEST] T4: "마지막 재생 리스트 조회→StartAsync" 로직이 App.TryAutoPlayLastAsync·TrayIconService.PlayAsync 2곳 중복 — 3회째 등장 시 공통 헬퍼로 추출 (스킬 공통화 문턱 3회)
 - T5 MINOR: 세션 상태 변경을 이벤트가 아닌 View 주도 재조회로 구현 — 소비자가 늘어나면(트레이 상태 표시 등) YouTubeSessionService에 상태 변경 이벤트 도입 재검토
+- T6 MINOR: AboutViewModel의 라이선스 로드가 동기 파일 IO (로컬 소량 5파일 한정 예외) — 파일이 늘면 LoadAsync 전환
+- T6 MINOR: 정보 화면의 개인정보처리방침 안내가 저장소 경로(docs/privacy-policy.md)를 참조 — Store 제출 시 사용자가 호스팅 URL 확보 후 문구를 URL로 교체 (D7 후속)
 
 ## Investigation Log
 - part1 Investigation Log의 검증 사실을 전제로 함 (IFrame API·프리미엄 임베드·WebView2 autoplay·24H2·StartupTask·H.NotifyIcon·WinAppSDK 2.2 — 전부 웹 공식 출처 확인 완료, 2026-07-15)
@@ -114,7 +116,7 @@
 ### D5. 오픈소스 라이선스 화면 데이터
 - **Options**: A) 런타임 NuGet 메타데이터 수집 / B) 빌드 시 고정 목록(`Assets/licenses/` 텍스트 + 인덱스 JSON)을 수동 관리 + 테스트로 "참조 패키지 ⊆ 목록" 검증
 - **Chosen**: B
-- **Rationale**: 패키지 수가 적고(6±), 런타임 수집은 과설계. 누락은 테스트(LicenseInventoryTests — csproj PackageReference 대조)로 차단.
+- **Rationale**: 패키지 수가 적고(6±), 런타임 수집은 과설계. 누락은 테스트(LicenseInventoryTests — csproj PackageReference 대조)로 차단. (구현 시 확정: 빌드 시점 전용 패키지(Microsoft.Windows.SDK.BuildTools — 배포 산출물 미포함)는 테스트의 명시 제외 목록으로 대상에서 제외 — FR-12 취지는 재배포 코드의 고지)
 - **Source**: PRD FR-12 검증 방법
 
 ### D6. 다국어 적용 방식
@@ -222,7 +224,7 @@
     - ※ 신규 외부 서비스 인증정보 도입 아님 — 사용자 본인 계정을 구글 페이지에서 직접 입력(앱은 미보관, D9)
   - **Depends on**: T2
 
-- [ ] T6. 앱 정보 + 오픈소스 라이선스 화면 (FR-11·12, NFR-6 문서)
+- [x] T6. 앱 정보 + 오픈소스 라이선스 화면 (FR-11·12, NFR-6 문서)
   - **Type**: C
   - **Design**: ① `Views/AboutPage.xaml(.cs)` + `ViewModels/AboutViewModel.cs` + `Assets/licenses/`(패키지별 라이선스 전문 텍스트 + `index.json`) + `docs/privacy-policy.md` ② AboutPage — 앱 이름·버전(Package.Current에서 조회)·개발자·개인정보처리방침 요지, 라이선스 목록(Expander로 전문 표시) ③ NavigationView 정보 항목에서 진입 ④ 이번에 안 함: 업데이트 확인 기능
   - **Acceptance**: Given 정보 화면, When 열람, Then 버전이 manifest와 일치·모든 참조 패키지의 라이선스 전문 표시 — HUMAN-VERIFY; `LicenseInventoryTests`(csproj PackageReference 집합 ⊆ index.json 집합) xUnit 통과
@@ -295,6 +297,11 @@
 ## Retry Ledger
 
 ## Progress Log
+- T3-T6 완료: 플레이리스트 관리(마스터-디테일·드래그 정렬·재생 중 큐 반영), 부팅 자동 시작(StartupTask·조용 시작·설정 토글), 유튜브 로그인(세션 프로브·LoginWindow·로그아웃 리로드), 정보·라이선스 화면(index.json+테스트 게이트·privacy-policy.md). 빌드 경고 0 / 테스트 81/81 (신규 StartupArgs 4·LicenseInventory 2) / format 0.
+  - 결정: Coordinator additive 3종 — ApplySelectedMonitorsAsync(T2)·NotifyPlaylistChangedAsync(T3)·ReloadCurrentTrack(T5). 전부 기존 private 경로 위임, 파괴적 변경 없음 (spec 리뷰 타당 판정).
+  - 결정: BuildTools는 라이선스 목록 제외(빌드 전용 — 테스트 명시 목록), H.NotifyIcon 전문은 MIT expression 기준 표준 전문.
+  - 결정: 세션 상태는 이벤트 대신 View 주도 재조회 (LoginWindow.Closed → RefreshSessionAsync).
+  - 리뷰 이의: T2 quality "PlayAsync 재진입" MAJOR를 AsyncRelayCommand 기본값 문서로 반증 → 철회.
 - T1-T2 완료: 트레이 아이콘(H.NotifyIcon) + NavigationView 셸·홈(URL 즉시 재생)·설정 페이지. 빌드 경고 0 / 테스트 75/75 / format 0. 각 task spec+quality 이중 리뷰 OK.
   - 결정: H.NotifyIcon.WinUI는 2.4.1이 net10 전용이라 **2.3.2**(net8 호환 최신) 사용.
   - 결정: 자동 실행 토글 카드→T4, 언어 카드→T7로 이연 (백엔드 없는 비기능 토글 노출 방지 — plan Design ④·T4/T7 Files에 반영, spec 리뷰 합의).
