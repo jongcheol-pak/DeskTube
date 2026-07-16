@@ -208,7 +208,7 @@
     - (ii-a) 공개 프로퍼티 `Items` 요소 타입 변경(소비처 View 1쌍뿐, 계획된 변경) → `## 사전 승인 항목` 3 등재
   - **Depends on**: T1, T2, T3
 
-- [ ] T5. PlaylistsPage.xaml 멜론 차트 스타일 + resw (FR-18)
+- [x] T5. PlaylistsPage.xaml 멜론 차트 스타일 + resw (FR-18)
   - **Type**: D
   - **Design**: ① `Views/PlaylistsPage.xaml` 우측 영역만 재구성(D5) ② 신규 심볼 없음 — XAML 구조 변경 + 페이지 리소스 pill 스타일 1개(4-D) ③ Entry(T4)에 x:Bind ④ 공용 스타일 사전·커스텀 컨트롤은 만들지 않음 (화면 1곳 — YAGNI)
   - **Acceptance**: 빌드 경고 0 + `## 시각 요소 분해` 표 전 항목이 구현에 존재(V-9 대조) — 시각 적정성은 ⏳ HUMAN-VERIFY / 문구 하드코딩 0(전부 x:Uid·resw en/ko 양쪽) / 위/아래/삭제가 컨텍스트 메뉴로 동작
