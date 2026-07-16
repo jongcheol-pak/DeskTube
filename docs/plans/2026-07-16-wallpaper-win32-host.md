@@ -105,7 +105,7 @@
     - (i) "컨트롤러 vs 컴포지션 컨트롤러?" → 일반 컨트롤러(CreateCoreWebView2ControllerAsync)로 확정 — T5 검증 API, 배경창은 입력 불필요
   - **Depends on**: -
 
-- [ ] T2. 조사 문서 마무리 (debug 문서 Fix/Verification 기록)
+- [x] T2. 조사 문서 마무리 (debug 문서 Fix/Verification 기록)
   - **Type**: A
   - **Design**: `docs/debug-2026-07-16-av-crash.md`의 "Phase 4 — Fix"·"Verification"을 실제 수정·검증 결과로 갱신
   - **Acceptance**: 문서에 수정 파일·검증 결과(빌드/테스트/재현 생존)가 기록됨

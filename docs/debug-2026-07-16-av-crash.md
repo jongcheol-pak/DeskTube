@@ -36,14 +36,25 @@ WebView2 시각 트리 합성이 트리거를 가속(재생 시작 수 초 내).
 | 부착 (기존 코드) | 2/2 사망 (각 15초) |
 
 ## Phase 4 — Fix
-미적용 — 수정이 part1 코어 구조 변경(다중 파일·아키텍처)이라 plan 범위 초과로 Halt, 사용자 승인 대기.
-제안: WallpaperWindow(XAML)를 순수 Win32 창으로 대체하고 WebView2를
-`CoreWebView2Environment.CreateCoreWebView2ControllerAsync(hwnd)`(컨트롤러 호스팅)로 전환
-(T5 세션 프로브에서 이미 사용한 API — 검증된 배경화면 앱 구조와 동일).
+plan `docs/plans/2026-07-16-wallpaper-win32-host.md` T1로 구현 (사용자 승인 후, 커밋 `T1: 배경창 Win32 호스트 전환`):
+- `Interop/WallpaperSurface.cs` 신규 — 순수 Win32 표시 창 (WS_POPUP + WS_EX_TOOLWINDOW|NOACTIVATE,
+  검정 브러시, WM_SIZE→Resized 콜백, WndProc 델리게이트 GC 보호 — MonitorInterop 패턴)
+- `Services/WallpaperHost.cs` — WallpaperWindow 대신 WallpaperSurface 생성·부착 (부착/재배치/해제/EnsureHealthy 경로 유지)
+- `Services/PlayerHost.cs` — XAML WebView2 컨트롤 → `CoreWebView2Controller`(CreateFromWindowHandle 호스팅),
+  Bounds 직접 관리(Resized 추종), 재시도 타이머는 DispatcherQueue 주입
+- `Services/AppServices.cs` 배선, `Views/WallpaperWindow.xaml(.cs)` 삭제
+- 공개 계약(IWallpaperHost/IPlayerHost) 무변경 — 테스트 목킹 무영향
+
+- Test added: 없음 (네이티브 창·WebView2 경로 — 자동 단위 테스트 불가). 대신 UIA 자동 재현 시나리오로 검증 (아래).
+- Defense in depth: 없음 (원인 계층 자체를 제거 — 방어 코드 불요)
 
 ## Verification
-- 진단 코드는 전부 원복(git checkout), 실험 잔여물(바탕화면 잔상·프로세스) 정리 완료.
-- 회귀 테스트는 수정 구현 시 추가 예정 (UI/네이티브 경로라 자동 테스트 불가 — 수동 재현 절차는 위 Reproduction).
+- Build: `dotnet build --no-incremental -p:Platform=x64` 경고 0·오류 0 (Debug)
+- Tests: 81/81 통과 (공개 계약 무변경 — 회귀 없음)
+- Manual repro: **더 이상 재현 안 됨** — 동일 UIA 시나리오(재생 클릭→60초 관찰) 2/2 생존
+  + WebView2 기동 확인 + 영상 종료→정지·정리 경로 통과 (WebView2 잔존 0, 크래시 이벤트 0).
+  수정 전 동일 시나리오 3/3 사망 (사용자 1 + 자동 재현 2).
+- 진단 코드는 전부 원복, 실험 잔여물(바탕화면 잔상·프로세스) 정리 완료.
 
 ## 부수 관찰 (별도 이슈 후보)
 - 단일 인스턴스 보장 없음 — 트레이 상주 + VS 재실행으로 2개 인스턴스가 쉽게 공존 (위키 single-instance 패턴 참조). 크래시 원인은 아니지만(H3 기각) 별도 보완 가치.
