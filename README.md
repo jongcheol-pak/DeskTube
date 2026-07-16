@@ -18,9 +18,9 @@
 - **화질 스케일**: 렌더링 세로 해상도 제한(원본/1080/720/480)으로 시스템 부하 조절 (FR-13)
 - **음소거 토글**: 설정의 음소거 카드에서 켬/끔 — 트레이 볼륨 체크와 상태 공유 (FR-5)
 - **동영상 크기 모드**: 채움(16:9로 화면 덮고 크롭, 기본) / 맞춤(영상비 유지 레터박스) / 늘리기(화면에 꽉 차게 왜곡) (FR-16)
-- **앱 테마**: 시스템 설정 사용 / 라이트 / 다크 — 변경 즉시 모든 창에 적용 (FR-17)
+- **다크 전용 디자인**: 코럴 포인트(#F25C54)의 다크 UI 고정 — Claude Design 시안(DeskTube 1a) 기반, 색·치수는 `Resources/DesignTokens.xaml` 토큰으로 관리 (테마 변경 기능 없음 — FR-17 폐기)
 - **부하 절감 옵션**: 소리 없는(미러) 모니터 화질을 720 이하로 하향(opt-in) + 정지·창 숨김 시 메모리 자동 반환 (NFR-2)
-- **창 상태 복원**: 설정 창 크기·위치를 재시작 후 복원(WinUIEx), Mica 배경·커스텀 타이틀바
+- **창 상태 복원**: 설정 창 크기·위치를 재시작 후 복원(WinUIEx), 커스텀 타이틀바(44px, 시스템 캡션 버튼)
 - **다국어**: 한국어/English + 시스템 언어 추종 (NFR-4)
 - **정보 화면**: 버전·개인정보 처리방침 요지·오픈소스 라이선스 전문 (FR-11·12)
 
@@ -64,7 +64,6 @@ src/DeskTube/
 │   ├── TrayIconService    # H.NotifyIcon 트레이 (메뉴 5항목)
 │   ├── StartupService     # StartupTask 상태·조용 시작 판별 (-startup 인자 폴백)
 │   ├── YouTubeSessionService # 로그인 세션 (SAPISID 쿠키) 확인·로그아웃
-│   ├── ThemeHelper        # 앱 테마 적용 (창 등록·즉시 전환 — FR-17)
 │   └── JsonStateStore     # settings/playlists JSON 원자적 영속화 (손상 .bak 복구)
 ├── Interop/               # WallpaperSurface(Win32 배경창)·WorkerW·모니터·세션·워킹셋 P/Invoke
 └── Strings/               # en-US(폴백)·ko-KR .resw
