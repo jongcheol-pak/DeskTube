@@ -159,6 +159,7 @@ public sealed class PlaybackCoordinator : IDisposable
         CleanupAll();
         _queue = null;
         SetStatus(PlaybackStatus.Stopped);
+        Interop.ProcessInterop.TrimWorkingSet(); // 유휴 진입 — 워킹셋 OS 반환 (NFR-2, plan D6)
         return Task.CompletedTask;
     }
 

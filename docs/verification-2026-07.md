@@ -64,6 +64,28 @@ Add-AppxPackage -Path "D:\...\AppPackages\DeskTube_0.1.0.0_x64_Test\DeskTube_0.1
 - [ ] T7: ko↔en 전환 시 미번역(키 노출) 0 + 전환 후 테마 유지
 - [ ] part1 이월: 아이콘 뒤 렌더링·종료 복구, 소리 자동재생, 2모니터 동기, 전체화면/잠금/세이버 자동 일시정지, 클린 설치 최초 실행
 
+## 유휴 워킹셋 트림 실측 (NFR-2 — 2026-07-16, UI·성능 배치 T7)
+
+`SetProcessWorkingSetSize(-1,-1)` 트림(재생 정지·창 숨김 시점 — plan D6)의 자동 실측 결과.
+절차: Debug x64 loose 배포 등록(`Add-AppxPackage -Register`) → `shell:AppsFolder`로 실행 →
+15초 유휴 → `Process.CloseMainWindow()`(WM_CLOSE → 닫기=숨김 경로 → 트림 발동) → 워킹셋 추이 기록.
+
+| 시점 | 워킹셋 (외부 Get-Process 측정) |
+|---|---|
+| 트림 전 (창 표시·유휴) | 196.1 MB |
+| 트림 후 2초 (창 숨김) | 26.4 MB |
+| 트림 후 10초 (안정) | 26.6 MB |
+
+- 앱 내부 로그(트림 지점 실측): `워킹셋 트림 완료: 196MB → 2MB` (직후 재적재분 포함 외부 측정 약 26MB에 수렴)
+- **NFR-2 목표(정지 대기 ≤150MB) 대비: 충족** — 유휴 트림 후 약 27MB (목표의 1/5 수준)
+- 재생→정지 경로의 트림은 동일 함수(`ProcessInterop.TrimWorkingSet`) 호출이며 로그로 발동 확인 가능
+  — 재생 시나리오 실측(정지 직후 감소·재개 지연 체감)은 ⏳ HUMAN-VERIFY (아래 목록 참조)
+- 측정 참고: 이전 등록이 오래된 `bin\...\AppX` 레이아웃을 가리켜 초기 측정이 구버전으로 진행됐음 —
+  패키지 제거 후 bin 루트 재등록으로 해결. **loose 배포 검증 시 `Get-Process ... | % Path`로 실행
+  바이너리 경로를 먼저 확인할 것** (AppX 폴더는 CLI 빌드에서 갱신되지 않음)
+
+- [ ] ⏳ HUMAN-VERIFY: 재생 중 정지(트레이) 직후 워킹셋 감소 확인 + 트림 직후 재생 재시작 체감 지연 없음 (문제 시 숨김 시점 트림만 유지 — plan D6 Edge)
+
 ## README 대조
 
 README.md의 기능 목록 ↔ 구현 대조는 T8 리뷰(spec-compliance)가 코드 기준으로 확인.

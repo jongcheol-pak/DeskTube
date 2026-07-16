@@ -99,6 +99,12 @@ public sealed partial class MainWindow : Window
 
         args.Cancel = true;
         sender.Hide();
+
+        // 창 숨김 = 유휴 진입 — 재생 중이 아닐 때만 워킹셋 반환 (NFR-2, plan D6 — 재생 중 트림 금지)
+        if (App.Services is null || App.Services.Coordinator.Status == Services.PlaybackStatus.Stopped)
+        {
+            Interop.ProcessInterop.TrimWorkingSet();
+        }
     }
 
     /// <summary>안내 메시지 표시 (트레이 진입 안내 등 — 문구는 호출측이 리소스에서 조회).</summary>
