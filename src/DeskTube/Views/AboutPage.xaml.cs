@@ -1,5 +1,6 @@
 using DeskTube.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace DeskTube.Views;
 
@@ -9,6 +10,7 @@ public sealed partial class AboutPage : Page
     public AboutPage()
     {
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Required; // 전환 시 재생성 방지 (NFR-3, 내용은 정적이라 1회 로드로 충분)
         ViewModel.Load();
     }
 

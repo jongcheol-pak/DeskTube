@@ -1,6 +1,7 @@
 using DeskTube.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 
 namespace DeskTube.Views;
@@ -11,6 +12,7 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Required; // 전환 시 재생성 방지 (NFR-3)
     }
 
     public HomeViewModel ViewModel { get; } = new();

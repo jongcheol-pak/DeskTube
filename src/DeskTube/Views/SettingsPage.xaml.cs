@@ -2,6 +2,7 @@ using DeskTube.Services;
 using DeskTube.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace DeskTube.Views;
 
@@ -11,14 +12,20 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         InitializeComponent();
+        NavigationCacheMode = NavigationCacheMode.Required; // 전환 시 재생성 방지 (NFR-3)
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
-        ViewModel.SignInRequested += OnSignInRequested;
     }
 
     public SettingsViewModel ViewModel { get; } = new();
 
-    private void OnLoaded(object sender, RoutedEventArgs e) => ViewModel.Load();
+    // 캐시 페이지는 Loaded/Unloaded가 진입마다 반복되므로 구독·해제를 대칭으로 유지
+    // (ctor 구독 + Unloaded 해제면 2번째 진입부터 로그인 버튼이 무반응이 됨)
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SignInRequested += OnSignInRequested;
+        ViewModel.Load();
+    }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {

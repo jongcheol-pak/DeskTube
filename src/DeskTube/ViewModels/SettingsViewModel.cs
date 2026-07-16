@@ -168,12 +168,25 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>로그인 창 열기 요청 — 창 생성은 View(SettingsPage)가 담당 (MVVM 경계).</summary>
     public event EventHandler? SignInRequested;
 
-    /// <summary>페이지 진입 시 호출. 서비스 준비 전이면 준비 완료 이벤트를 1회 대기한다.</summary>
+    /// <summary>최초 초기화 완료 — 이후 진입은 모니터 목록 갱신만 수행 (NFR-3, plan D7).</summary>
+    private bool _initialized;
+
+    /// <summary>
+    /// 페이지 진입 시 호출. 서비스 준비 전이면 준비 완료 이벤트를 1회 대기한다.
+    /// 페이지가 캐시되므로(NavigationCacheMode.Required) 재진입에서는 무거운 조회
+    /// (StartupTask·세션 프로브)를 생략하고 모니터 목록만 재열거한다.
+    /// </summary>
     public void Load()
     {
         if (App.Services is null)
         {
             App.ServicesInitialized += OnServicesInitialized;
+            return;
+        }
+
+        if (_initialized)
+        {
+            RefreshMonitors();
             return;
         }
 
@@ -189,47 +202,16 @@ public partial class SettingsViewModel : ObservableObject
         Populate(App.Services!);
     }
 
+    /// <summary>최초 진입 1회 — 설정값·모니터 목록 로드 후 StartupTask·세션 상태를 비동기 조회.</summary>
     private void Populate(AppServices services)
     {
         _services = services;
+        _initialized = true;
         _loading = true;
         try
         {
             var settings = services.Settings;
-            var monitors = services.Monitors.GetMonitors();
-
-            // 저장된 선택을 실제 적용 규칙(주 모니터 폴백)으로 해석해 그대로 표시
-            var effective = MonitorService.ResolveTargets(monitors, settings.SelectedMonitorIds)
-                .Select(m => m.Id)
-                .ToHashSet();
-
-            Monitors.Clear();
-            var index = 1;
-            foreach (var monitor in monitors)
-            {
-                var name = string.Format(Loc.Get("Settings_MonitorNameFormat"), index, monitor.Width, monitor.Height);
-                if (monitor.IsPrimary)
-                {
-                    name += Loc.Get("Settings_MonitorPrimarySuffix");
-                }
-
-                Monitors.Add(new MonitorChoice(monitor.Id, name, effective.Contains(monitor.Id), OnMonitorSelectionChanged));
-                index++;
-            }
-
-            // 오디오 대상 — "자동(주 모니터)" + 모니터 목록
-            AudioOptions.Clear();
-            _audioIds.Clear();
-            AudioOptions.Add(Loc.Get("Settings_AudioAuto"));
-            _audioIds.Add(null);
-            for (var i = 0; i < monitors.Count; i++)
-            {
-                AudioOptions.Add(Monitors[i].DisplayName);
-                _audioIds.Add(monitors[i].Id);
-            }
-
-            var audioIdx = _audioIds.IndexOf(settings.AudioMonitorId);
-            AudioIndex = audioIdx >= 0 ? audioIdx : 0;
+            RefreshMonitorListCore(settings);
 
             Volume = settings.Volume;
             ModeIndex = (int)settings.Mode;
@@ -251,10 +233,70 @@ public partial class SettingsViewModel : ObservableObject
             _loading = false;
         }
 
-        // StartupTask·로그인 세션 상태는 비동기 조회 — 로드 플래그 밖에서 실제 상태로 채움
+        // StartupTask·로그인 세션 상태는 비동기 조회 — 로드 플래그 밖에서 실제 상태로 채움.
+        // 이 로그가 재진입에 반복되면 캐시가 깨진 것 (acceptance: 2번째 진입 시 프로브 미실행 확인용)
+        AppLog.Write("설정 최초 로드 — 자동 실행·로그인 상태 확인 (재진입은 모니터 목록만 갱신)");
         _ = RefreshAutoStartAsync();
         _session = new YouTubeSessionService(App.MainWindowHandle);
         _ = RefreshSessionAsync();
+    }
+
+    /// <summary>재진입 시 모니터 구성 변화만 반영 (가벼움 — 목록 재열거).</summary>
+    private void RefreshMonitors()
+    {
+        if (_services is null)
+        {
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            RefreshMonitorListCore(_services.Settings);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <summary>모니터 체크 목록·오디오 대상 콤보 재구성 (호출측이 _loading 가드를 건다).</summary>
+    private void RefreshMonitorListCore(AppSettings settings)
+    {
+        var monitors = _services!.Monitors.GetMonitors();
+
+        // 저장된 선택을 실제 적용 규칙(주 모니터 폴백)으로 해석해 그대로 표시
+        var effective = MonitorService.ResolveTargets(monitors, settings.SelectedMonitorIds)
+            .Select(m => m.Id)
+            .ToHashSet();
+
+        Monitors.Clear();
+        var index = 1;
+        foreach (var monitor in monitors)
+        {
+            var name = string.Format(Loc.Get("Settings_MonitorNameFormat"), index, monitor.Width, monitor.Height);
+            if (monitor.IsPrimary)
+            {
+                name += Loc.Get("Settings_MonitorPrimarySuffix");
+            }
+
+            Monitors.Add(new MonitorChoice(monitor.Id, name, effective.Contains(monitor.Id), OnMonitorSelectionChanged));
+            index++;
+        }
+
+        // 오디오 대상 — "자동(주 모니터)" + 모니터 목록
+        AudioOptions.Clear();
+        _audioIds.Clear();
+        AudioOptions.Add(Loc.Get("Settings_AudioAuto"));
+        _audioIds.Add(null);
+        for (var i = 0; i < monitors.Count; i++)
+        {
+            AudioOptions.Add(Monitors[i].DisplayName);
+            _audioIds.Add(monitors[i].Id);
+        }
+
+        var audioIdx = _audioIds.IndexOf(settings.AudioMonitorId);
+        AudioIndex = audioIdx >= 0 ? audioIdx : 0;
     }
 
     /// <summary>로그인 상태 갱신 — 페이지 로드·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>

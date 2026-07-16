@@ -108,7 +108,7 @@
 
 ## Tasks
 
-- [ ] T1. 페이지 전환 속도 개선 (NFR-3)
+- [x] T1. 페이지 전환 속도 개선 (NFR-3)
   - **Type**: D
   - **Design**: ① 4페이지 ctor에 `NavigationCacheMode = Required` ② SettingsViewModel — `Load()`를 최초 초기화(1회 가드)와 `RefreshMonitors()`(매 진입)로 분리, 세션 프로브·StartupTask는 최초 1회만 ③ PlaylistsViewModel — 캐시 대응(진입마다 라이브러리 재바인딩은 유지 — 가벼움) ④ 신규 심볼 없음, 간접화 없음
   - **Acceptance**: 빌드·테스트 통과 + 코드 검증: 2번째 설정 진입 시 세션 프로브 미실행(로그로 확인 가능하게 최초 1회 로그) — 체감 즉시성은 HUMAN-VERIFY(NFR-3 ≤300ms 목표)
