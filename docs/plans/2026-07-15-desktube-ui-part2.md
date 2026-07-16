@@ -31,10 +31,10 @@
 | FR-15 | Should | T5 | ✅ 커버 |
 | FR-1~7, FR-14 | Must | (part1 기구현) | ✅ 이전 part 기구현 |
 | NFR-1 | — | (part1 기구현) | ✅ 이전 part 기구현 |
-| NFR-2 | — | T8 (실측) | ✅ 커버 |
-| NFR-3 | — | T8 (실측) | ✅ 커버 |
+| NFR-2 | — | T8 (실측) | ⏳ 실측 대기 (사용자 수행 — verification-2026-07.md) |
+| NFR-3 | — | T8 (실측) | ⏳ 실측 대기 (사용자 수행 — verification-2026-07.md) |
 | NFR-4 | — | T7 | ✅ 커버 |
-| NFR-5 | — | T8 (WACK) | ✅ 커버 |
+| NFR-5 | — | T8 (WACK) | ⏳ 실측 대기 (WACK — 관리자 권한, 사용자 수행) |
 | NFR-6 | — | T5(쿠키 로컬), T6(처리방침 문서) | ✅ 커버 |
 
 ## Out of Scope
@@ -298,6 +298,9 @@
 - 수동 검증 누적 목록(HUMAN-VERIFY): 트레이 메뉴 4동작(T1), 설정 항목 반영(T2), 플레이리스트 조작→재생(T3), 부팅 자동 시작(T4), 로그인→광고 미표시(T5), 정보·라이선스 화면(T6), 언어 전환(T7)
 
 ## Phase Ledger
+- 전 task 완료 (T1~T8, 2026-07-16)
+- Phase F 통과 (HEAD 9d58693 — F-7 Opus: BLOCKER 0·MAJOR 0·MINOR 1(PRD Coverage 표 ⏳ 구분 — 보정 완료), 빌드 경고 0·테스트 81/81 재실행 확인)
+- Phase G 통과 (Must 100% — active Must FR-1~14 전체 트리 기준 충족, FR-15 Should 충족, NFR-2·3·5는 ⏳ 사용자 실측 대기)
 
 ## Retry Ledger
 
@@ -316,7 +319,9 @@
   - 함정(위키): x:Uid 정적 텍스트 언어는 App 생성자 이전 동기 선읽기 필요(T7 참고), 부팅 직후 COM 미준비로 AppInstance API는 try/catch+인자 폴백(T4 참고).
 
 ## Next Steps
-- part1(docs/plans/2026-07-15-desktube-core-part1.md) 완료 후 이 plan을 `pjc:implement-task`로 실행 (경로 명시 호출)
+- 권장 다음 액션: `docs/verification-2026-07.md`의 사용자 실측 3건(WACK·워킹셋·콜드 스타트) + T1~T7 수동 검증 수행 → 통과 시 Store 제출 절차(README "Store 제출" 절)
+- Suggested skills: 공식 /code-review (브랜치 리뷰), pjc:record-project-fact (AGENTS.md에 Test 플래그·MSIX 패키징 명령 기록 — 승인 대기)
+- 위키: DeskTube 미등록 — 등록(절차 A) 제안됨, 결정·함정은 pending.md 큐에 기록 완료
 
 ## Open Questions
 - [x] part1 Open Questions와 동일 — 전부 해소 (docs/prd.md 결정 기록 + part1 Q10·Q11)
