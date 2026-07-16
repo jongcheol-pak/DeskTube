@@ -1,10 +1,12 @@
+using DeskTube.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube;
 
 /// <summary>
-/// 진입점 Window (설정 셸). 실제 내비게이션 구성은 part2 T2에서 추가된다.
+/// 진입점 Window — NavigationView 설정 셸 (plan D1).
 /// X 닫기는 종료가 아니라 트레이로 숨김 (PRD FR-9, plan D2).
 /// </summary>
 public sealed partial class MainWindow : Window
@@ -14,6 +16,41 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         Title = "DeskTube";
         AppWindow.Closing += OnAppWindowClosing;
+
+        // 초기 선택 = 홈
+        Nav.SelectedItem = NavHomeItem;
+        ContentFrame.Navigate(typeof(HomePage));
+    }
+
+    private void OnNavSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        if (args.IsSettingsSelected)
+        {
+            NavigateOnce(typeof(SettingsPage));
+            return;
+        }
+
+        if (args.SelectedItem is NavigationViewItem { Tag: string tag })
+        {
+            var pageType = tag switch
+            {
+                "home" => typeof(HomePage),
+                _ => null,
+            };
+            if (pageType is not null)
+            {
+                NavigateOnce(pageType);
+            }
+        }
+    }
+
+    /// <summary>같은 페이지 재선택 시 재생성 방지.</summary>
+    private void NavigateOnce(Type pageType)
+    {
+        if (ContentFrame.CurrentSourcePageType != pageType)
+        {
+            ContentFrame.Navigate(pageType);
+        }
     }
 
     /// <summary>트레이 상주 중이면 닫기를 취소하고 숨긴다. 트레이가 없으면(초기화 실패·종료 중) 실제 닫기.</summary>

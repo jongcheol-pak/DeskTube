@@ -240,6 +240,12 @@ public sealed class PlaybackCoordinator : IDisposable
         await _store.SaveSettingsAsync(_settings);
     }
 
+    /// <summary>
+    /// 설정의 선택 모니터 변경을 재생 중에 반영한다 (part2 T2 — additive).
+    /// 모니터 구성 변경과 동일한 재해석 경로(재진입 가드 포함)를 재사용한다.
+    /// </summary>
+    public Task ApplySelectedMonitorsAsync() => HandleMonitorsChangedAsync();
+
     public async Task SetQualityScaleAsync(int height)
     {
         _settings.QualityScaleHeight = Math.Max(0, height);

@@ -28,6 +28,12 @@ public partial class App : Application
     /// <summary>트레이 '종료' 진행 중 — 창 닫기 취소(숨김) 로직을 우회한다.</summary>
     internal static bool IsExiting { get; private set; }
 
+    /// <summary>
+    /// Services 준비 완료 알림 (UI 스레드에서 발생) — 창이 서비스보다 먼저 뜨므로,
+    /// 준비 전에 열린 페이지가 이 이벤트로 늦은 초기화를 반영한다 (part2 T2).
+    /// </summary>
+    public static event EventHandler? ServicesInitialized;
+
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
@@ -54,6 +60,8 @@ public partial class App : Application
         // await 후에도 UI 스레드 컨텍스트 (WinUI SynchronizationContext) — 트레이는 UI 스레드에서 생성
         _tray = new TrayIconService(Services, ShowMainWindow, ExitApplication);
         _tray.Initialize();
+
+        ServicesInitialized?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 InfoBar 안내 표시).</summary>

@@ -4,13 +4,25 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
-        <!-- 설정 셸(NavigationView)은 part2 T2에서 구성 -->
-        <!-- 트레이 진입 안내 (재생할 리스트 없음 등 — plan T1 Edge) -->
+        <!-- 설정 셸 — NavigationView (plan D1). 플레이리스트(T3)·정보(T6) 항목은 해당 task에서 추가 -->
+        <NavigationView
+            x:Name="Nav"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="True"
+            SelectionChanged="OnNavSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Uid="NavHome" x:Name="NavHomeItem" Tag="home" Icon="Home" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="ContentFrame" />
+        </NavigationView>
+        <!-- 트레이 진입 안내 (재생할 리스트 없음 등 — plan T1 Edge). 셸 위 오버레이 -->
         <InfoBar
             x:Name="NoticeBar"
             IsOpen="False"
             Severity="Informational"
             VerticalAlignment="Top"
-            Margin="16" />
+            HorizontalAlignment="Center"
+            MaxWidth="600"
+            Margin="16,48,16,0" />
     </Grid>
 </Window>

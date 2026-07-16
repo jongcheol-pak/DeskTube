@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DeskTube.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:DeskTube.ViewModels">
+    <ScrollViewer Padding="36,24,40,24">
+        <StackPanel MaxWidth="1024" Spacing="24" HorizontalAlignment="Stretch">
+            <TextBlock x:Uid="SettingsHeader" Style="{StaticResource TitleTextBlockStyle}" />
+
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}"
+                Severity="Warning" />
+
+            <!-- StackPanel엔 IsEnabled가 없어 Control 래퍼로 일괄 비활성 (서비스 준비 전) -->
+            <ContentControl
+                IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}"
+                IsTabStop="False"
+                HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="4">
+                <!-- 재생 모니터 (다중 체크, 최소 1개 강제) -->
+                <controls:SettingsExpander
+                    x:Uid="MonitorsExpander"
+                    IsExpanded="True"
+                    ItemsSource="{x:Bind ViewModel.Monitors}">
+                    <controls:SettingsExpander.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MonitorChoice">
+                            <controls:SettingsCard Header="{x:Bind DisplayName}">
+                                <ToggleSwitch IsOn="{x:Bind IsSelected, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </DataTemplate>
+                    </controls:SettingsExpander.ItemTemplate>
+                </controls:SettingsExpander>
+
+                <!-- 오디오 출력 모니터 -->
+                <controls:SettingsCard x:Uid="AudioCard">
+                    <ComboBox
+                        MinWidth="240"
+                        ItemsSource="{x:Bind ViewModel.AudioOptions}"
+                        SelectedIndex="{x:Bind ViewModel.AudioIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- 볼륨 -->
+                <controls:SettingsCard x:Uid="VolumeCard">
+                    <Slider
+                        MinWidth="240"
+                        Minimum="0"
+                        Maximum="100"
+                        StepFrequency="1"
+                        Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- 재생 모드 -->
+                <controls:SettingsCard x:Uid="ModeCard">
+                    <ComboBox
+                        MinWidth="240"
+                        ItemsSource="{x:Bind ViewModel.ModeOptions}"
+                        SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
+                <!-- 화질 스케일 + 유튜브 자동 결정 안내 -->
+                <controls:SettingsCard x:Uid="QualityCard">
+                    <ComboBox
+                        MinWidth="240"
+                        ItemsSource="{x:Bind ViewModel.QualityOptions}"
+                        SelectedIndex="{x:Bind ViewModel.QualityIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+                <InfoBar
+                    x:Uid="QualityNote"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational" />
+
+                <!-- 자동 일시정지 정책 (NFR-1) -->
+                <controls:SettingsExpander x:Uid="PauseExpander" IsExpanded="True">
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard x:Uid="PauseFullscreenCard">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.PauseOnFullscreen, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="PauseBatterySaverCard">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.PauseOnBatterySaver, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="PauseSessionLockCard">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.PauseOnSessionLock, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
+            </StackPanel>
+            </ContentControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

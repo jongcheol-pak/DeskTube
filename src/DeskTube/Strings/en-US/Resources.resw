@@ -36,4 +36,115 @@
   <data name="Tray_PlayFailed" xml:space="preserve">
     <value>Could not start playback.</value>
   </data>
+  <data name="Common_NotReady" xml:space="preserve">
+    <value>The app is getting ready. Please try again in a moment.</value>
+  </data>
+  <data name="NavHome.Content" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HomeHeader.Text" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HomeUrlBox.Header" xml:space="preserve">
+    <value>YouTube URL</value>
+  </data>
+  <data name="HomeUrlBox.PlaceholderText" xml:space="preserve">
+    <value>Enter a YouTube video URL</value>
+  </data>
+  <data name="HomePlayButton.Content" xml:space="preserve">
+    <value>Play on desktop</value>
+  </data>
+  <data name="Home_InvalidUrl" xml:space="preserve">
+    <value>Could not recognize the YouTube video URL. Please check the address.</value>
+  </data>
+  <data name="Home_PlayFailed" xml:space="preserve">
+    <value>Could not start playback.</value>
+  </data>
+  <data name="Home_PlayStarted" xml:space="preserve">
+    <value>Background playback started.</value>
+  </data>
+  <data name="Home_QuickPlaylistName" xml:space="preserve">
+    <value>Quick play</value>
+  </data>
+  <data name="SettingsHeader.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="MonitorsExpander.Header" xml:space="preserve">
+    <value>Playback monitors</value>
+  </data>
+  <data name="MonitorsExpander.Description" xml:space="preserve">
+    <value>Choose which monitors show the background video</value>
+  </data>
+  <data name="Settings_MonitorNameFormat" xml:space="preserve">
+    <value>Display {0} — {1}×{2}</value>
+  </data>
+  <data name="Settings_MonitorPrimarySuffix" xml:space="preserve">
+    <value> (primary)</value>
+  </data>
+  <data name="Settings_MonitorMinOne" xml:space="preserve">
+    <value>At least one monitor must stay selected.</value>
+  </data>
+  <data name="AudioCard.Header" xml:space="preserve">
+    <value>Audio monitor</value>
+  </data>
+  <data name="AudioCard.Description" xml:space="preserve">
+    <value>Only this monitor plays sound</value>
+  </data>
+  <data name="Settings_AudioAuto" xml:space="preserve">
+    <value>Automatic (primary monitor)</value>
+  </data>
+  <data name="VolumeCard.Header" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="ModeCard.Header" xml:space="preserve">
+    <value>Playback order</value>
+  </data>
+  <data name="Mode_Sequential" xml:space="preserve">
+    <value>In order</value>
+  </data>
+  <data name="Mode_Shuffle" xml:space="preserve">
+    <value>Shuffle (each video once)</value>
+  </data>
+  <data name="Mode_Random" xml:space="preserve">
+    <value>Random (repeats allowed)</value>
+  </data>
+  <data name="Mode_RepeatOne" xml:space="preserve">
+    <value>Repeat one</value>
+  </data>
+  <data name="Mode_RepeatAll" xml:space="preserve">
+    <value>Repeat all</value>
+  </data>
+  <data name="QualityCard.Header" xml:space="preserve">
+    <value>Video quality</value>
+  </data>
+  <data name="Quality_Original" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="Quality_1080" xml:space="preserve">
+    <value>Up to 1080p</value>
+  </data>
+  <data name="Quality_720" xml:space="preserve">
+    <value>Up to 720p</value>
+  </data>
+  <data name="Quality_480" xml:space="preserve">
+    <value>Up to 480p</value>
+  </data>
+  <data name="QualityNote.Message" xml:space="preserve">
+    <value>YouTube automatically decides the actual streaming quality. This setting lowers the rendering resolution to reduce system load.</value>
+  </data>
+  <data name="PauseExpander.Header" xml:space="preserve">
+    <value>Pause automatically</value>
+  </data>
+  <data name="PauseExpander.Description" xml:space="preserve">
+    <value>Pause the background video to save resources</value>
+  </data>
+  <data name="PauseFullscreenCard.Header" xml:space="preserve">
+    <value>While a full-screen app is in use</value>
+  </data>
+  <data name="PauseBatterySaverCard.Header" xml:space="preserve">
+    <value>While battery saver is on</value>
+  </data>
+  <data name="PauseSessionLockCard.Header" xml:space="preserve">
+    <value>While the screen is locked</value>
+  </data>
 </root>

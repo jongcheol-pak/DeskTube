@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DeskTube.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer Padding="36,24,40,24">
+        <StackPanel MaxWidth="1024" Spacing="24" HorizontalAlignment="Stretch">
+            <TextBlock x:Uid="HomeHeader" Style="{StaticResource TitleTextBlockStyle}" />
+            <StackPanel Spacing="12">
+                <TextBox
+                    x:Uid="HomeUrlBox"
+                    x:Name="UrlBox"
+                    Text="{x:Bind ViewModel.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    KeyDown="OnUrlBoxKeyDown" />
+                <Button
+                    x:Uid="HomePlayButton"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Command="{x:Bind ViewModel.PlayCommand}" />
+            </StackPanel>
+            <InfoBar
+                IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}"
+                Severity="{x:Bind ViewModel.NoticeSeverity, Mode=OneWay}" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
