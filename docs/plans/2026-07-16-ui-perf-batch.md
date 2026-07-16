@@ -117,7 +117,7 @@
   - **Halt Forecast**: 없음 — 내부 구조 변경, 파괴적·의존성·외부 요소 없음
   - **Depends on**: -
 
-- [ ] T2. 음소거 토글 (FR-5·10)
+- [x] T2. 음소거 토글 (FR-5·10)
   - **Type**: C
   - **Design**: (D3 참조) SettingsPage 볼륨 카드에 ToggleSwitch, SettingsViewModel.IsMuted(partial property) ↔ SetMutedAsync, resw en/ko
   - **Acceptance**: 토글 → Settings.IsMuted 반영·저장, 트레이 볼륨 체크와 상태 일치 — 실동작 HUMAN-VERIFY; 빌드·테스트 통과

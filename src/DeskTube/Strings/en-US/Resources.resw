@@ -96,6 +96,15 @@
   <data name="VolumeCard.Header" xml:space="preserve">
     <value>Volume</value>
   </data>
+  <data name="MuteToggle.Header" xml:space="preserve">
+    <value>Mute</value>
+  </data>
+  <data name="MuteToggle.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="MuteToggle.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
   <data name="ModeCard.Header" xml:space="preserve">
     <value>Playback order</value>
   </data>

@@ -119,6 +119,9 @@ public partial class SettingsViewModel : ObservableObject
     public partial double Volume { get; set; }
 
     [ObservableProperty]
+    public partial bool IsMuted { get; set; }
+
+    [ObservableProperty]
     public partial int ModeIndex { get; set; }
 
     [ObservableProperty]
@@ -187,6 +190,18 @@ public partial class SettingsViewModel : ObservableObject
         if (_initialized)
         {
             RefreshMonitors();
+
+            // 음소거는 트레이 메뉴에서도 바뀌므로 재진입 때 재동기화 (T2 — 트레이와 상태 일치)
+            _loading = true;
+            try
+            {
+                IsMuted = _services!.Settings.IsMuted;
+            }
+            finally
+            {
+                _loading = false;
+            }
+
             return;
         }
 
@@ -214,6 +229,7 @@ public partial class SettingsViewModel : ObservableObject
             RefreshMonitorListCore(settings);
 
             Volume = settings.Volume;
+            IsMuted = settings.IsMuted;
             ModeIndex = (int)settings.Mode;
 
             var qualityIdx = Array.IndexOf(QualityHeights, settings.QualityScaleHeight);
@@ -437,6 +453,10 @@ public partial class SettingsViewModel : ObservableObject
 
     partial void OnVolumeChanged(double value) =>
         Apply(() => _services!.Coordinator.SetVolumeAsync((int)value), "볼륨 적용");
+
+    /// <summary>음소거 토글 (FR-5 UI 노출) — 저장·재생 반영은 기구현 SetMutedAsync가 담당.</summary>
+    partial void OnIsMutedChanged(bool value) =>
+        Apply(() => _services!.Coordinator.SetMutedAsync(value), "음소거 적용");
 
     partial void OnAudioIndexChanged(int value)
     {
