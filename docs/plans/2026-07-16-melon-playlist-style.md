@@ -244,6 +244,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T3-T4 완료 (커밋 8e4fadf, 710de40): Start/StartAsync 선택 매개변수(호출부 4곳 무변경, 셔플 첫 자리 고정) + 테스트 6건 / PlaylistItemEntry·Items 타입 전환·backfill(동시 4·취소·1회 저장)·재생 3진입점 공통 헬퍼. T4에서 XAML DataTemplate x:DataType 최소 갱신 동반(규칙 3, plan Files에 추가 기록), 고아 xmlns:models 제거. 빌드 경고 0, 테스트 100/100.
 - T1-T2 완료 (커밋 153207a, 0895f01): PlaylistItem에 Title·ChannelName additive 필드 + 구형 JSON 하위 호환 테스트 / VideoMetadataService(oEmbed, 정적 HttpClient 5초, TryParse 순수 함수) + AppServices 배선. 빌드 경고 0, 테스트 94/94. quality MINOR 2건(주석 정밀화·Fail 메시지 한글화)은 Deferred 등록.
 
 ## Next Steps

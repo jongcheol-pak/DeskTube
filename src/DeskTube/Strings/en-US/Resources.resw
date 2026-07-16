@@ -198,8 +198,20 @@
   <data name="NewPlaylistButton.Content" xml:space="preserve">
     <value>New playlist</value>
   </data>
-  <data name="PlaylistsPlayButton.Content" xml:space="preserve">
-    <value>Play this list</value>
+  <data name="ShuffleAllLabel.Text" xml:space="preserve">
+    <value>Shuffle all</value>
+  </data>
+  <data name="PlayAllLabel.Text" xml:space="preserve">
+    <value>Play all</value>
+  </data>
+  <data name="ColRankLabel.Text" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="ColInfoLabel.Text" xml:space="preserve">
+    <value>Track</value>
+  </data>
+  <data name="ColListenLabel.Text" xml:space="preserve">
+    <value>Listen</value>
   </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>Add a YouTube video URL</value>
@@ -210,14 +222,17 @@
   <data name="NoSelectionText.Text" xml:space="preserve">
     <value>Select a playlist on the left.</value>
   </data>
-  <data name="ItemUpButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemUpMenuItem.Text" xml:space="preserve">
     <value>Move up</value>
   </data>
-  <data name="ItemDownButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemDownMenuItem.Text" xml:space="preserve">
     <value>Move down</value>
   </data>
-  <data name="ItemDeleteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemDeleteMenuItem.Text" xml:space="preserve">
     <value>Remove</value>
+  </data>
+  <data name="ItemPlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Play from this track</value>
   </data>
   <data name="RenameMenuItem.Text" xml:space="preserve">
     <value>Rename</value>

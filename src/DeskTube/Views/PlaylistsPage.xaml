@@ -75,9 +75,11 @@
             </ListView>
         </Grid>
 
-        <!-- 우측: 선택 리스트의 항목 -->
+        <!-- 우측: 선택 리스트의 항목 — 차트형 UI (FR-18, plan T5 시각 요소 분해) -->
         <Grid Grid.Row="2" Grid.Column="1" RowSpacing="8">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -85,7 +87,6 @@
             <Grid Grid.Row="0" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBox
@@ -99,54 +100,176 @@
                     Grid.Column="1"
                     Command="{x:Bind ViewModel.AddItemCommand}"
                     IsEnabled="{x:Bind ViewModel.CanAddItem, Mode=OneWay}" />
+            </Grid>
+
+            <!-- 알약(pill) 액션 줄 — 셔플듣기·전체듣기 (plan D4) -->
+            <StackPanel
+                Grid.Row="1"
+                Orientation="Horizontal"
+                Spacing="8"
+                Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
                 <Button
-                    x:Uid="PlaylistsPlayButton"
-                    Grid.Column="2"
+                    Height="32"
+                    Padding="14,0"
+                    CornerRadius="16"
+                    Command="{x:Bind ViewModel.ShuffleAllCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE8B1;" FontSize="13" />
+                        <TextBlock x:Uid="ShuffleAllLabel" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Height="32"
+                    Padding="14,0"
+                    CornerRadius="16"
                     Style="{StaticResource AccentButtonStyle}"
-                    Command="{x:Bind ViewModel.PlayCommand}"
-                    IsEnabled="{x:Bind ViewModel.HasSelection, Mode=OneWay}" />
+                    Command="{x:Bind ViewModel.PlayCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE768;" FontSize="13" />
+                        <TextBlock x:Uid="PlayAllLabel" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- 컬럼 헤더 행 — 순위/곡정보/듣기 (열 폭은 아래 행 템플릿과 동일하게 유지) -->
+            <Grid
+                Grid.Row="2"
+                Padding="0,0,0,8"
+                ColumnSpacing="12"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="48" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    x:Uid="ColRankLabel"
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    x:Uid="ColInfoLabel"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    x:Uid="ColListenLabel"
+                    Grid.Column="3"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </Grid>
 
             <TextBlock
                 x:Uid="NoSelectionText"
-                Grid.Row="1"
+                Grid.Row="3"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Style="{StaticResource BodyTextBlockStyle}"
                 Visibility="{x:Bind InvertVisibility(ViewModel.HasSelection), Mode=OneWay}" />
 
-            <!-- ListView 기본 가상화 유지 (1000개 대비 — plan T3 Edge), 드래그 정렬 지원 -->
+            <!-- ListView 기본 가상화 유지 (1000개 대비 — plan T3 Edge), 드래그 정렬 지원.
+                 행 조작(위/아래/삭제)은 우클릭 메뉴 (plan D6), 행에는 재생 버튼만. -->
             <ListView
                 x:Name="ItemListView"
-                Grid.Row="1"
+                Grid.Row="3"
                 ItemsSource="{x:Bind ViewModel.Items}"
                 SelectionMode="None"
                 CanDragItems="True"
                 CanReorderItems="True"
                 AllowDrop="True"
                 Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0,10" />
+                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:PlaylistItemEntry">
-                        <Grid ColumnSpacing="4">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem x:Uid="ItemUpMenuItem" Click="OnMoveUpClick">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE74A;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Uid="ItemDownMenuItem" Click="OnMoveDownClick">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE74B;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Uid="ItemDeleteMenuItem" Click="OnRemoveItemClick">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Delete" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40" />
+                                <ColumnDefinition Width="56" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="48" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
                                 Grid.Column="0"
-                                Text="{x:Bind DisplayTitle, Mode=OneWay}"
+                                Text="{x:Bind Rank, Mode=OneWay}"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                TextTrimming="CharacterEllipsis" />
-                            <Button x:Uid="ItemUpButton" Grid.Column="1" Click="OnMoveUpClick">
-                                <FontIcon Glyph="&#xE74A;" />
-                            </Button>
-                            <Button x:Uid="ItemDownButton" Grid.Column="2" Click="OnMoveDownClick">
-                                <FontIcon Glyph="&#xE74B;" />
-                            </Button>
-                            <Button x:Uid="ItemDeleteButton" Grid.Column="3" Click="OnRemoveItemClick">
-                                <SymbolIcon Symbol="Delete" />
+                                Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <!-- 유튜브 썸네일은 16:9뿐이라 정사각(56×56)은 중앙 크롭으로 표현 (plan D8) -->
+                            <Border
+                                Grid.Column="1"
+                                Width="56"
+                                Height="56"
+                                CornerRadius="4"
+                                Background="{ThemeResource ControlFillColorDefaultBrush}">
+                                <Image Stretch="UniformToFill">
+                                    <Image.Source>
+                                        <BitmapImage UriSource="{x:Bind ThumbnailUri}" DecodePixelWidth="112" />
+                                    </Image.Source>
+                                </Image>
+                            </Border>
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Spacing="2">
+                                <TextBlock
+                                    Text="{x:Bind DisplayTitle, Mode=OneWay}"
+                                    FontWeight="SemiBold"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Text="{x:Bind ChannelName, Mode=OneWay}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button
+                                x:Uid="ItemPlayButton"
+                                Grid.Column="3"
+                                Width="36"
+                                Height="36"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                CornerRadius="18"
+                                Background="Transparent"
+                                BorderThickness="1"
+                                BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                Click="OnPlayItemClick">
+                                <FontIcon
+                                    Glyph="&#xE768;"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
                             </Button>
                         </Grid>
                     </DataTemplate>

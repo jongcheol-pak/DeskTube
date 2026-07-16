@@ -198,8 +198,20 @@
   <data name="NewPlaylistButton.Content" xml:space="preserve">
     <value>새 플레이리스트</value>
   </data>
-  <data name="PlaylistsPlayButton.Content" xml:space="preserve">
-    <value>이 리스트 재생</value>
+  <data name="ShuffleAllLabel.Text" xml:space="preserve">
+    <value>셔플듣기</value>
+  </data>
+  <data name="PlayAllLabel.Text" xml:space="preserve">
+    <value>전체듣기</value>
+  </data>
+  <data name="ColRankLabel.Text" xml:space="preserve">
+    <value>순위</value>
+  </data>
+  <data name="ColInfoLabel.Text" xml:space="preserve">
+    <value>곡정보</value>
+  </data>
+  <data name="ColListenLabel.Text" xml:space="preserve">
+    <value>듣기</value>
   </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>추가할 유튜브 영상 주소를 입력하세요</value>
@@ -210,14 +222,17 @@
   <data name="NoSelectionText.Text" xml:space="preserve">
     <value>왼쪽에서 플레이리스트를 선택하세요.</value>
   </data>
-  <data name="ItemUpButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemUpMenuItem.Text" xml:space="preserve">
     <value>위로 이동</value>
   </data>
-  <data name="ItemDownButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemDownMenuItem.Text" xml:space="preserve">
     <value>아래로 이동</value>
   </data>
-  <data name="ItemDeleteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemDeleteMenuItem.Text" xml:space="preserve">
     <value>삭제</value>
+  </data>
+  <data name="ItemPlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>이 곡부터 듣기</value>
   </data>
   <data name="RenameMenuItem.Text" xml:space="preserve">
     <value>이름 변경</value>

@@ -48,8 +48,9 @@ public partial class PlaylistItemEntry : ObservableObject
 
     public string VideoId { get; }
 
-    /// <summary>썸네일 URL — 임베드 플레이어와 같은 유튜브 CDN, 영상 ID 외 정보 미전송 (FR-18).</summary>
-    public string ThumbnailUrl => $"https://i.ytimg.com/vi/{VideoId}/mqdefault.jpg";
+    /// <summary>썸네일 URI — 임베드 플레이어와 같은 유튜브 CDN, 영상 ID 외 정보 미전송 (FR-18).
+    /// Uri 타입인 이유: x:Bind는 string→Uri 변환이 없어 BitmapImage.UriSource에 직결하려면 Uri여야 한다.</summary>
+    public Uri ThumbnailUri => new($"https://i.ytimg.com/vi/{VideoId}/mqdefault.jpg");
 
     [ObservableProperty]
     public partial int Rank { get; set; }

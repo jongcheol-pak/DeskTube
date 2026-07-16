@@ -175,6 +175,24 @@ public sealed partial class PlaylistsPage : Page
         }
     }
 
+    /// <summary>행 재생 버튼 — 해당 항목부터 재생 (FR-18, plan D3).</summary>
+    private async void OnPlayItemClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry item)
+        {
+            return;
+        }
+
+        try
+        {
+            await ViewModel.PlayItemAsync(item);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"항목 재생 중 오류: {ex.GetType().Name} {ex.Message}");
+        }
+    }
+
     private async void OnRemoveItemClick(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry item)
