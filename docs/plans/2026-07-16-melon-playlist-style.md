@@ -241,6 +241,8 @@
 - 수동 검증 (HUMAN-VERIFY): 플레이리스트 페이지 시각 스타일(시각 요소 분해 표 대조)·메타데이터 표시·셔플/전체/행 재생 동작 — 빌드 통과가 레이아웃 적정성을 보장하지 않음(AGENTS XAML 규칙 8)
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 6004c54) — F-1~F-6 자체 검증 + F-7 plan-completion-reviewer OK (BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-18: 기계 검증 전건 충족, 표시·시각·실동작은 ⏳ HUMAN-VERIFY (미충족 아님)
 
 ## Retry Ledger
 
@@ -249,7 +251,8 @@
 - T1-T2 완료 (커밋 153207a, 0895f01): PlaylistItem에 Title·ChannelName additive 필드 + 구형 JSON 하위 호환 테스트 / VideoMetadataService(oEmbed, 정적 HttpClient 5초, TryParse 순수 함수) + AppServices 배선. 빌드 경고 0, 테스트 94/94. quality MINOR 2건(주석 정밀화·Fail 메시지 한글화)은 Deferred 등록.
 
 ## Next Steps
-- 사용자 승인 후 `pjc:implement-task`로 T1부터 자율 실행
+- T1~T6 + Phase F/G 완료. 권장 다음 액션: 앱 실행 후 플레이리스트 화면 HUMAN-VERIFY(시각 스타일·메타 표시·셔플/전체/행 재생) → 이상 없으면 main 병합은 별도 승인으로 진행
+- Suggested skills: 공식 /code-review (선택), pjc:llm-wiki 절차 B (위키 세션에서 FR-18 반영 — vault 미설정 세션이라 이번엔 미큐잉)
 
 ## Open Questions
 - [x] Q1. 메타데이터 확보 방식 → **A) oEmbed+썸네일** (질문 라운드 1)
