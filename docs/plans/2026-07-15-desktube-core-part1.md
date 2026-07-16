@@ -327,6 +327,7 @@
 
 ## Phase Ledger
 - Phase F 통과 (HEAD c50b38e — F-7 BLOCKER 0/MAJOR 0/MINOR 2: notes 커밋으로 m1 해소, m2는 part2 승계)
+- Phase G 통과 (Must 100%) — F-7 전수 대조 재사용: part1 커버 대상 FR-1~7·14 + NFR-1 전부 충족, FR-13 스케일 로직 초과 달성, ⏭️ 다음 part 행은 part2 Phase G 몫
 
 ## Retry Ledger
 
@@ -346,8 +347,9 @@
   - 결정: WinAppSDK 모듈 자동 초기화 비활성(`WindowsAppSdkAutoInitialize=false`) + App() 생성자에서 DeploymentManager.Initialize 명시 호출 — 테스트 호스트가 앱 어셈블리 로드 시 0x80040154로 죽는 문제의 근본 해결. 클린 설치 최초 실행은 HUMAN-VERIFY 목록에 등재.
 
 ## Next Steps
-- 권장 다음 액션: 사용자 승인 후 `pjc:implement-task`를 이 파일 경로로 호출 (분할 plan이므로 경로 명시)
-- part1 완료 후: 남은 분할 plan: docs/plans/2026-07-15-desktube-ui-part2.md — pjc:implement-task로 별도 실행
+- **part1 완료 (T1~T8 + Phase F/G 통과, 2026-07-16)** — 남은 분할 plan: docs/plans/2026-07-15-desktube-ui-part2.md를 `pjc:implement-task`로 별도 실행 (새 세션 권장, 경로 명시 호출)
+- 사용자 확인 대기: HUMAN-VERIFY 목록(최종 보고 참조), D13(DI 컨테이너 편차), AGENTS.md Test 명령 갱신 제안
+- Suggested skills: pjc:implement-task (part2), 공식 /code-review (전체 브랜치)
 
 ## Open Questions
 - [x] Q1~Q9: PRD 질문 라운드에서 전부 해소 — docs/prd.md `## 결정 기록` 참조 (재생 엔진=IFrame API, 로그인=Should, 화질=간접 제어, 멀티모니터=동일 영상, 오디오=사용자 지정, OS=Win11, 일시정지=3정책 모두, 자동 실행=자동 재생, 언어=한/영)
