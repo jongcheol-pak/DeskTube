@@ -19,6 +19,11 @@
       "id": "Microsoft.WindowsAppSDK",
       "license": "Microsoft Software License Terms",
       "file": "Microsoft.WindowsAppSDK.txt"
+    },
+    {
+      "id": "WinUIEx",
+      "license": "MIT",
+      "file": "WinUIEx.txt"
     }
   ]
 }

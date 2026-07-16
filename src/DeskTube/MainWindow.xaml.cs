@@ -7,21 +7,28 @@ using Microsoft.UI.Xaml.Media;
 namespace DeskTube;
 
 /// <summary>
-/// 진입점 Window — NavigationView 설정 셸 (plan D1). WinUIEx.WindowEx 기반 (T5):
+/// 진입점 Window — NavigationView 설정 셸 (plan D1). WinUIEx WindowManager 적용 (T5):
 /// 창 크기·위치 저장·복원(PersistenceId) + 최소 크기 + Mica 백드롭 + 커스텀 타이틀바.
+/// WindowEx 상속 대신 WindowManager를 쓴 이유 — XAML 루트를 WindowEx로 바꾸면
+/// 생성되는 XamlTypeInfo가 obsolete 속성(Icon)을 등록해 CS0618 경고가 나며 억제 불가.
+/// WindowManager는 동일 기능을 임의 창에 제공한다 (WinUIEx 공식 문서).
 /// X 닫기는 종료가 아니라 트레이로 숨김 (PRD FR-9, plan D2).
 /// </summary>
-public sealed partial class MainWindow : WinUIEx.WindowEx
+public sealed partial class MainWindow : Window
 {
+    /// <summary>창 상태 관리자 — GC로 기능이 끊기지 않게 창 수명 동안 유지.</summary>
+    private readonly WinUIEx.WindowManager _manager;
+
     public MainWindow()
     {
         InitializeComponent();
         Title = "DeskTube";
 
         // 창 상태 저장·복원 + 최소 크기 (T5/D4 — 패키지 앱은 WinUIEx가 ApplicationData에 자동 저장)
-        PersistenceId = "MainWindow";
-        MinWidth = 720;
-        MinHeight = 480;
+        _manager = WinUIEx.WindowManager.Get(this);
+        _manager.PersistenceId = "MainWindow";
+        _manager.MinWidth = 720;
+        _manager.MinHeight = 480;
 
         // Mica 백드롭 + 콘텐츠 확장 타이틀바 (WinUI 표준 API — plan D4)
         SystemBackdrop = new MicaBackdrop();
