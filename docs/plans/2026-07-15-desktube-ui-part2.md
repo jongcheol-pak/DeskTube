@@ -48,6 +48,7 @@
 - (part1 이관) DI 컨테이너 도입 여부 재검토 — part2에서도 수동 컴포지션 루트(AppServices) 유지 중, 사용자 확인 필요
 - T3 MINOR: PlaylistsPage 마스터-디테일 레이아웃이 AGENTS 디자인 규칙 6(폼형 골격)의 예외 — AGENTS.md에 예외 명시 검토 (레이아웃 적정성은 HUMAN-VERIFY 목록에 포함)
 - T3 MINOR: PlaylistsViewModel의 Rename/AddItem 실패 안내가 LimitExceeded 외 코드를 뭉뚱그림 — 오류 원인 늘어나면 ErrorCode별 분기 추가
+- [SUGGEST] T4: "마지막 재생 리스트 조회→StartAsync" 로직이 App.TryAutoPlayLastAsync·TrayIconService.PlayAsync 2곳 중복 — 3회째 등장 시 공통 헬퍼로 추출 (스킬 공통화 문턱 3회)
 
 ## Investigation Log
 - part1 Investigation Log의 검증 사실을 전제로 함 (IFrame API·프리미엄 임베드·WebView2 autoplay·24H2·StartupTask·H.NotifyIcon·WinAppSDK 2.2 — 전부 웹 공식 출처 확인 완료, 2026-07-15)
@@ -187,9 +188,9 @@
     - (i) "항목 표시 형식?" → Design ④ 확정(URL 텍스트 + 사용자 지정 별칭 없음)
   - **Depends on**: T2
 
-- [ ] T4. 부팅 자동 시작 (FR-8)
+- [x] T4. 부팅 자동 시작 (FR-8)
   - **Type**: C
-  - **Design**: ① `Services/StartupService.cs` + `Package.appxmanifest`(uap5 StartupTask, Enabled=false 기본) ② `IsEnabledAsync/SetEnabledAsync`(StartupTask API 래핑) + 시작 종류 판별(D3) — 자동 시작이면 MainWindow 미표시·트레이만·마지막 상태 자동 재생(PRD Q8) ③ SettingsViewModel(토글)·App.xaml.cs(시작 분기) 소비 ④ 이번에 안 함: 시작 지연 옵션
+  - **Design**: ① `Services/StartupService.cs` + `Package.appxmanifest`(uap5 StartupTask, Enabled=false 기본) ② `GetStateAsync/SetEnabledAsync`(StartupTask API 래핑 — 구현 시 IsEnabledAsync 대신 상태 전체 반환으로 변경, DisabledByUser 등 상태별 UI 표시에 필요) + 시작 종류 판별(D3) — 자동 시작이면 MainWindow 미표시·트레이만·마지막 상태 자동 재생(PRD Q8) ③ SettingsViewModel(토글)·App.xaml.cs(시작 분기) 소비 ④ 이번에 안 함: 시작 지연 옵션
   - **Acceptance**: Given 자동 실행 토글 on + 재부팅(또는 StartupTask 시뮬레이션 실행), When 로그인, Then 창 없이 트레이 상주 + 마지막 재생 설정으로 배경 재생 시작 — HUMAN-VERIFY; 시작 인자→모드 판별 로직은 xUnit
   - **Files**:
     - 주: `src/DeskTube/Services/StartupService.cs`, `src/DeskTube/Package.appxmanifest`
