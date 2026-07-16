@@ -100,7 +100,8 @@ public sealed partial class MainWindow : Window
         args.Cancel = true;
         sender.Hide();
 
-        // 창 숨김 = 유휴 진입 — 재생 중이 아닐 때만 워킹셋 반환 (NFR-2, plan D6 — 재생 중 트림 금지)
+        // 창 숨김 = 유휴 진입 — 정지(Stopped) 상태일 때만 워킹셋 반환 (NFR-2, plan D6 —
+        // 재생은 물론 일시정지 중에도 트림하지 않음: 재개가 페이지 폴트로 느려질 수 있음)
         if (App.Services is null || App.Services.Coordinator.Status == Services.PlaybackStatus.Stopped)
         {
             Interop.ProcessInterop.TrimWorkingSet();

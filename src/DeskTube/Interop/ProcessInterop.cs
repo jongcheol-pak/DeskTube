@@ -12,7 +12,7 @@ internal static class ProcessInterop
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetCurrentProcess();
 
-    [DllImport("kernel32.dll", SetLastError = false)]
+    [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetProcessWorkingSetSize(IntPtr process, IntPtr minimumWorkingSetSize, IntPtr maximumWorkingSetSize);
 
