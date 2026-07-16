@@ -4,7 +4,7 @@ namespace DeskTube.Services;
 
 /// <summary>
 /// 배경창 수명 관리 계약 (PRD FR-2). PlaybackCoordinator(T7)는 이 인터페이스에만 의존한다
-/// — UI 타입(WallpaperWindow) 접근은 실제 구현(WallpaperHost)과 플레이어 팩토리 배선에서만 (plan T5·T7 Design).
+/// — 배경 표면 타입(WallpaperSurface, Win32) 접근은 실제 구현(WallpaperHost)과 플레이어 팩토리 배선에서만 (plan T5·T7 Design).
 /// </summary>
 public interface IWallpaperHost : IDisposable
 {

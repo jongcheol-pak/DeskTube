@@ -55,16 +55,16 @@ public sealed class AppServices : IDisposable
         IMonitorService monitors = new MonitorService();
         var wallpaperHost = new WallpaperHost();
 
-        // 플레이어 팩토리 — 배경창(UI 타입) 접근은 이 배선에서만 (plan T7 Design ②)
+        // 플레이어 팩토리 — 배경 표면(Win32) 접근은 이 배선에서만 (plan T7 Design ②, 2026-07-16 전환)
         async Task<Result<IPlayerHost>> CreatePlayerAsync(MonitorInfo monitor)
         {
-            var window = wallpaperHost.GetWindow(monitor.Id);
-            if (window is null)
+            var surface = wallpaperHost.GetSurface(monitor.Id);
+            if (surface is null)
             {
                 return Result<IPlayerHost>.Fail(ErrorCode.EnvironmentFailure, "배경창이 준비되지 않았습니다.");
             }
 
-            var player = new PlayerHost(window);
+            var player = new PlayerHost(surface, dispatcherQueue);
             var initialized = await player.InitializeAsync();
             if (!initialized.IsSuccess)
             {

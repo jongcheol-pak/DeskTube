@@ -1,15 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DeskTube.Interop;
 using DeskTube.Models;
-using DeskTube.Views;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 
 namespace DeskTube.Services;
 
 /// <summary>
 /// WebView2 기반 유튜브 플레이어 (PRD FR-1·5·13, plan D8·D9).
-/// WallpaperWindow 안의 WebView2 1개를 소유하고 player.html과 postMessage로 통신한다.
+/// Win32 배경 표면(WallpaperSurface)의 HWND에 CoreWebView2Controller를 호스팅하고
+/// player.html과 postMessage로 통신한다 — XAML WebView2 컨트롤은 크로스 프로세스 재부모화
+/// 창에서 AV로 죽어 컨트롤러 호스팅으로 전환 (plan 2026-07-16 D3).
 /// UI 스레드에서만 호출하는 전제 (plan D10).
 /// </summary>
 public sealed class PlayerHost : IPlayerHost
@@ -20,15 +21,18 @@ public sealed class PlayerHost : IPlayerHost
     private const int MaxApiLoadRetries = 3;
     private static readonly TimeSpan ApiRetryDelay = TimeSpan.FromSeconds(30);
 
-    private readonly WallpaperWindow _window;
-    private WebView2? _webView;
+    private readonly WallpaperSurface _surface;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+    private CoreWebView2Controller? _controller;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _retryTimer;
     private int _apiLoadRetries;
     private bool _renderProcessRecovered;
 
-    public PlayerHost(WallpaperWindow window)
+    /// <param name="dispatcherQueue">재시도 타이머용 UI 디스패처 (Win32 창엔 DispatcherQueue가 없음 — plan D4)</param>
+    internal PlayerHost(WallpaperSurface surface, Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue)
     {
-        _window = window;
+        _surface = surface;
+        _dispatcherQueue = dispatcherQueue;
     }
 
     public event EventHandler? Ready;
@@ -43,11 +47,16 @@ public sealed class PlayerHost : IPlayerHost
         try
         {
             var environment = await WebViewEnvironment.GetAsync();
-            _webView = new WebView2();
-            _window.AttachContent(_webView);
+            var windowRef = CoreWebView2ControllerWindowReference.CreateFromWindowHandle((ulong)_surface.Hwnd);
+            _controller = await environment.CreateCoreWebView2ControllerAsync(windowRef);
 
-            await _webView.EnsureCoreWebView2Async(environment);
-            var core = _webView.CoreWebView2;
+            // Win32 호스팅은 host가 Bounds를 직접 관리한다 (자동 리사이즈 없음 — plan D3)
+            var (width, height) = _surface.ClientSize;
+            _controller.Bounds = new Windows.Foundation.Rect(0, 0, width, height);
+            _controller.IsVisible = true;
+            _surface.Resized += OnSurfaceResized;
+
+            var core = _controller.CoreWebView2;
 
             // 배경화면 용도 — 사용자 상호작용 UI 전부 차단
             core.Settings.AreDefaultContextMenusEnabled = false;
@@ -98,21 +107,26 @@ public sealed class PlayerHost : IPlayerHost
     {
         _retryTimer?.Stop();
         _retryTimer = null;
+        _surface.Resized -= OnSurfaceResized;
 
-        if (_webView?.CoreWebView2 is { } core)
+        if (_controller?.CoreWebView2 is { } core)
         {
             core.WebMessageReceived -= OnWebMessageReceived;
             core.ProcessFailed -= OnProcessFailed;
         }
 
-        _webView?.Close();
-        _webView = null;
+        _controller?.Close();
+        _controller = null;
     }
+
+    /// <summary>배경창 크기 변경 추종 (해상도 변경 재배치 — plan D3).</summary>
+    private void OnSurfaceResized(int width, int height) =>
+        _controller?.Bounds = new Windows.Foundation.Rect(0, 0, width, height);
 
     private void PostCommand(PlayerCommand command)
     {
         // 초기화 전·파괴 후 명령은 무시 (ready 전 큐잉은 JS 측이 담당)
-        if (_webView?.CoreWebView2 is { } core)
+        if (_controller?.CoreWebView2 is { } core)
         {
             core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand));
         }
@@ -160,10 +174,10 @@ public sealed class PlayerHost : IPlayerHost
             AppLog.Write($"유튜브 API 로드 실패 — {ApiRetryDelay.TotalSeconds}초 후 재시도 ({_apiLoadRetries}/{MaxApiLoadRetries})");
 
             _retryTimer?.Stop();
-            _retryTimer = _window.DispatcherQueue.CreateTimer();
+            _retryTimer = _dispatcherQueue.CreateTimer();
             _retryTimer.Interval = ApiRetryDelay;
             _retryTimer.IsRepeating = false;
-            _retryTimer.Tick += (_, _) => _webView?.CoreWebView2?.Reload();
+            _retryTimer.Tick += (_, _) => _controller?.CoreWebView2?.Reload();
             _retryTimer.Start();
             return;
         }
@@ -183,7 +197,7 @@ public sealed class PlayerHost : IPlayerHost
         if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited && !_renderProcessRecovered)
         {
             _renderProcessRecovered = true;
-            _webView?.Reload();
+            _controller?.CoreWebView2?.Reload();
             return;
         }
 

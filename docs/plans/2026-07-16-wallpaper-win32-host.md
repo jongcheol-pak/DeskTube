@@ -87,7 +87,7 @@
 
 ## Tasks
 
-- [ ] T1. 배경창 Win32 호스트 전환 (FR-1·FR-2 구현 계층 교체)
+- [x] T1. 배경창 Win32 호스트 전환 (FR-1·FR-2 구현 계층 교체)
   - **Type**: D
   - **Design**: ① `Interop/WallpaperSurface.cs` 신규 — Win32 표시 창 소유(RegisterClass/CreateWindowExW/DefWindowProc WndProc/DestroyWindow — DisplayChangeWindow 패턴 재사용), `Hwnd`·`ClientSize`·`event Resized`·`Dispose` 책임 ② `WallpaperHost`: Surface 레코드를 WallpaperSurface 기반으로, `GetWindow`→`GetSurface(monitorId): WallpaperSurface?`, 부착/재배치/해제/EnsureHealthy 경로는 기존 유지 ③ `PlayerHost`: ctor `(WallpaperSurface surface, DispatcherQueue dispatcherQueue)`, InitializeAsync에서 `CreateCoreWebView2ControllerAsync(CreateFromWindowHandle(hwnd))`·Bounds=클라이언트 크기·기존 core 설정(가상 호스트·이벤트) 그대로, Resized 구독→Bounds 갱신, Dispose=`controller.Close()` ④ `AppServices.CreatePlayerAsync`: GetSurface+dispatcherQueue 주입 배선 ⑤ `Views/WallpaperWindow.xaml(.cs)` 삭제 ⑥ 이번에 안 함: 추상 창 팩토리·컨트롤러 풀링 등 간접화 없음 (직접 참조 유지)
   - **Acceptance**: ① `dotnet build --no-incremental -p:Platform=x64` 경고·오류 0 ② 기존 테스트 81/81 ③ **UIA 자동 재현(재생 클릭 → 60초 관찰) 2회 연속 생존** — 동일 시나리오가 수정 전 3/3 사망이었음 ④ 재생 화면이 실제 표시(WebView2 프로세스 기동 확인) ⑤ 정지 시 배경 복구 경로(DetachAll→SPI) 동작 — 로그 확인

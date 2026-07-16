@@ -1,16 +1,17 @@
 using DeskTube.Interop;
 using DeskTube.Models;
-using DeskTube.Views;
 
 namespace DeskTube.Services;
 
 /// <summary>
 /// WorkerW 기반 배경창 수명 관리 (PRD FR-2, plan D3).
+/// 배경 표면은 순수 Win32 창(WallpaperSurface) — WinUI 3 창은 크로스 프로세스 SetParent를
+/// 지원하지 않아 AV로 죽는다 (plan 2026-07-16, docs/debug-2026-07-16-av-crash.md).
 /// UI 스레드에서만 호출하는 전제 (plan D10 — 상태 접근 직렬화는 PlaybackCoordinator가 보장).
 /// </summary>
 public sealed class WallpaperHost : IWallpaperHost
 {
-    private sealed record Surface(WallpaperWindow Window, IntPtr Hwnd, MonitorInfo Monitor);
+    private sealed record Surface(WallpaperSurface Window, MonitorInfo Monitor);
 
     private readonly Dictionary<string, Surface> _surfaces = [];
     private IntPtr _workerW;
@@ -28,16 +29,15 @@ public sealed class WallpaperHost : IWallpaperHost
         if (_surfaces.TryGetValue(monitor.Id, out var existing))
         {
             // 이미 부착됨 — 위치만 갱신 (해상도 변경 재배치 경로)
-            WallpaperInterop.PositionOnWorkerW(existing.Hwnd, workerW, monitor.X, monitor.Y, monitor.Width, monitor.Height);
+            WallpaperInterop.PositionOnWorkerW(existing.Window.Hwnd, workerW, monitor.X, monitor.Y, monitor.Width, monitor.Height);
             _surfaces[monitor.Id] = existing with { Monitor = monitor };
             return Result.Ok();
         }
 
-        var window = new WallpaperWindow();
-        var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-        WallpaperInterop.AttachToWorkerW(hwnd, workerW, monitor.X, monitor.Y, monitor.Width, monitor.Height);
+        var window = new WallpaperSurface(monitor.X, monitor.Y, monitor.Width, monitor.Height);
+        WallpaperInterop.AttachToWorkerW(window.Hwnd, workerW, monitor.X, monitor.Y, monitor.Width, monitor.Height);
 
-        _surfaces[monitor.Id] = new Surface(window, hwnd, monitor);
+        _surfaces[monitor.Id] = new Surface(window, monitor);
         AppLog.Write($"배경창 부착: {monitor.Id} ({monitor.Width}x{monitor.Height})");
         return Result.Ok();
     }
@@ -68,8 +68,8 @@ public sealed class WallpaperHost : IWallpaperHost
         WallpaperInterop.RefreshDesktopWallpaper();
     }
 
-    /// <summary>T6 플레이어 배선용 — 부착된 창을 반환한다 (코디네이터는 사용하지 않음, App 배선 전용).</summary>
-    public WallpaperWindow? GetWindow(string monitorId) =>
+    /// <summary>플레이어 배선용 — 부착된 배경 표면을 반환한다 (코디네이터는 사용하지 않음, App 배선 전용 — internal 유지: Interop 타입 비공개 관례).</summary>
+    internal WallpaperSurface? GetSurface(string monitorId) =>
         _surfaces.TryGetValue(monitorId, out var surface) ? surface.Window : null;
 
     public Result EnsureHealthy()
@@ -81,7 +81,7 @@ public sealed class WallpaperHost : IWallpaperHost
 
         // Explorer 재시작 등으로 WorkerW·배경창 핸들이 무효화됐는지 점검
         var workerWAlive = _workerW != IntPtr.Zero && WallpaperInterop.IsWindow(_workerW);
-        var allSurfacesAlive = _surfaces.Values.All(s => WallpaperInterop.IsWindow(s.Hwnd));
+        var allSurfacesAlive = _surfaces.Values.All(s => WallpaperInterop.IsWindow(s.Window.Hwnd));
         if (workerWAlive && allSurfacesAlive)
         {
             return Result.Ok();
@@ -97,10 +97,10 @@ public sealed class WallpaperHost : IWallpaperHost
 
         foreach (var (id, surface) in _surfaces.ToList())
         {
-            if (WallpaperInterop.IsWindow(surface.Hwnd))
+            if (WallpaperInterop.IsWindow(surface.Window.Hwnd))
             {
                 WallpaperInterop.AttachToWorkerW(
-                    surface.Hwnd, workerW,
+                    surface.Window.Hwnd, workerW,
                     surface.Monitor.X, surface.Monitor.Y, surface.Monitor.Width, surface.Monitor.Height);
             }
             else
@@ -131,15 +131,7 @@ public sealed class WallpaperHost : IWallpaperHost
     private static void CloseSurface(Surface surface)
     {
         // 파괴 전 셸 계층에서 분리해 잔재를 남기지 않는다 (plan D3 원상복구)
-        WallpaperInterop.DetachFromWorkerW(surface.Hwnd);
-        try
-        {
-            surface.Window.Close();
-        }
-        catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.COMException)
-        {
-            // 이미 파괴된 창(Explorer 크래시 등) — 무시하고 정리 계속
-            AppLog.Write($"배경창 닫기 실패(무시): {ex.GetType().Name}");
-        }
+        WallpaperInterop.DetachFromWorkerW(surface.Window.Hwnd);
+        surface.Window.Dispose(); // Win32 DestroyWindow — 이미 파괴된 핸들은 내부에서 무시됨
     }
 }
