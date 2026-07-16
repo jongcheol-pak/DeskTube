@@ -52,6 +52,8 @@
 - T5 MINOR: 세션 상태 변경을 이벤트가 아닌 View 주도 재조회로 구현 — 소비자가 늘어나면(트레이 상태 표시 등) YouTubeSessionService에 상태 변경 이벤트 도입 재검토
 - T6 MINOR: AboutViewModel의 라이선스 로드가 동기 파일 IO (로컬 소량 5파일 한정 예외) — 파일이 늘면 LoadAsync 전환
 - T6 MINOR: 정보 화면의 개인정보처리방침 안내가 저장소 경로(docs/privacy-policy.md)를 참조 — Store 제출 시 사용자가 호스팅 URL 확보 후 문구를 URL로 교체 (D7 후속)
+- T7 MINOR: 언어 전환 셸 재로드를 AGENTS 규칙 3-④ "새 Frame"이 아닌 "창 재생성"으로 확대 구현 (x:Uid NavigationView 항목은 Frame 교체로 안 바뀜 — 근거 주석) — AGENTS.md 규칙 3-④ 문구 보정 검토 (record-project-fact 승인 필요)
+- T7 예외 기록: 하드코딩 검사 잔존 2건은 브랜드명 "DeskTube"(AboutPage 앱명·MainWindow Title) — 양 언어 동일 표기, 번역 비대상
 
 ## Investigation Log
 - part1 Investigation Log의 검증 사실을 전제로 함 (IFrame API·프리미엄 임베드·WebView2 autoplay·24H2·StartupTask·H.NotifyIcon·WinAppSDK 2.2 — 전부 웹 공식 출처 확인 완료, 2026-07-15)
@@ -239,7 +241,7 @@
     - (i) "라이선스 목록 관리 방식?" → D5 확정
   - **Depends on**: T2
 
-- [ ] T7. 다국어 리소스 완성 (NFR-4)
+- [x] T7. 다국어 리소스 완성 (NFR-4)
   - **Type**: C
   - **Design**: ① `Strings/en-US/Resources.resw`(중립 폴백) + `Strings/ko-KR/Resources.resw` + `Services/Loc.cs`(코드비하인드 조회 헬퍼) ② T1~T6에서 x:Uid/Loc.Get으로 이미 분리된 키를 en/ko 전수 등재, 언어 설정(시스템 추종 기본 + 수동 전환 콤보)은 AGENTS 다국어 규칙 3 절차로 구현 ③ 전 View·ViewModel이 소비 ④ 이번에 안 함: 제3 언어
   - **Acceptance**: Given 언어 전환(ko↔en), When 모든 화면 순회, Then 미번역(키 노출) 문구 0 + 전환 후 테마 유지(AGENTS 규칙 3-⑤) — HUMAN-VERIFY; 하드코딩 검색(grep: XAML `Text="[가-힣A-Za-z]`·code `"..."` UI 문자열) 0건
