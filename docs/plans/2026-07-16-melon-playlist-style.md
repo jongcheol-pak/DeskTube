@@ -195,7 +195,7 @@
     - (ii-a) 공개 메서드 시그니처 확장(계획된 변경, 호출부 4곳 무변경) → `## 사전 승인 항목` 2 등재
   - **Depends on**: -
 
-- [ ] T4. PlaylistsViewModel 개편 — Entry 래퍼·메타 채움·재생 커맨드 (FR-18)
+- [x] T4. PlaylistsViewModel 개편 — Entry 래퍼·메타 채움·재생 커맨드 (FR-18)
   - **Type**: D
   - **Design**: ① `ViewModels/PlaylistsViewModel.cs` 안에 `PlaylistItemEntry` 추가(같은 파일의 PlaylistEntry 선례) ② `PlaylistItemEntry` — 항목 1건의 표시 상태(Rank·Title·ChannelName·ThumbnailUrl·폴백 텍스트) 보유 (D9) ③ VM이 VideoMetadataService(T2)·Coordinator(T3 확장)를 소비, View는 Entry만 바인딩 ④ 메타 캐시 계층·백그라운드 큐 서비스는 만들지 않음 — VM 내 backfill 메서드 1개로 충분 (YAGNI)
   - **Acceptance**: Given 메타 없는 기존 항목, When 리스트 선택, Then Title 없는 항목만 조회돼 행이 순차 갱신되고 저장은 1회 / Given 항목 추가, When 조회 성공, Then 즉시 제목·채널 표시+영속화, 실패해도 항목 추가는 성공(URL 표시) / When 셔플듣기, Then 재생 모드가 Shuffle로 저장되고 재생 시작 / When 행 재생, Then 해당 항목부터 시작 — 로직은 빌드+기존 테스트, 동작은 HUMAN-VERIFY
