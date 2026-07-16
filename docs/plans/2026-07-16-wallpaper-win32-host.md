@@ -27,6 +27,7 @@
 - 단일 인스턴스 보장 (Named Mutex + 창 전면화 — 위키 single-instance 패턴): 트레이 상주 + 재실행으로 2인스턴스 공존 관찰됨 (debug 문서 부수 관찰)
 - 유휴 워킹셋 ~208MB 관찰 — T8 실측 시 NFR-2 목표(150MB)와 대조
 - 전역 예외 훅(UnhandledException 로깅) 상시 탑재 검토 — 위키 global-exception-handling 패턴 (이번 조사에서 진단용으로 유효했음)
+- [MINOR] WallpaperHost.Surface 레코드의 `Window` 필드명 → `Surface` 리네임 (담는 타입이 WallpaperSurface — F-7 nit, 다음 접촉 시)
 
 ## Investigation Log
 - 근본 원인·대조 실험: `docs/debug-2026-07-16-av-crash.md` (부착 생략 2/2 생존 vs 부착 2/2 사망, H2·H3 기각) — 이 세션 실측
@@ -128,6 +129,9 @@
 - HUMAN-VERIFY 잔여: 아이콘 뒤 렌더링 시각 확인(빌드·생존으로는 z-order 시각 품질 미보장), 다중 모니터 동기(2모니터 환경)
 
 ## Phase Ledger
+- 전 task 완료 (T1~T2, 2026-07-16)
+- Phase F 통과 (HEAD e8dd699 — F-7 Opus: BLOCKER 0·MAJOR 0·MINOR 1(record 필드명 nit — follow-up), 빌드·테스트 독립 재실행 일치)
+- Phase G 통과 (Must 100% — 커버 대상 FR-1·FR-2 코드 경로 충족, 시각 확인은 HUMAN-VERIFY)
 
 ## Retry Ledger
 
