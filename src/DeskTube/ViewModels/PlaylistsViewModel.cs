@@ -24,6 +24,10 @@ public partial class PlaylistEntry : ObservableObject
 
     [ObservableProperty]
     public partial int ItemCount { get; set; }
+
+    /// <summary>현재 선택된 리스트 — 시안 활성 표시(코럴 인디케이터·텍스트 강조)용 (restyle T6).</summary>
+    [ObservableProperty]
+    public partial bool IsActive { get; set; }
 }
 
 /// <summary>
@@ -187,7 +191,16 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
-    partial void OnSelectedPlaylistChanged(PlaylistEntry? value) => RefreshItems();
+    partial void OnSelectedPlaylistChanged(PlaylistEntry? value)
+    {
+        // 시안 활성 표시 — 선택 항목만 코럴 인디케이터·강조 텍스트 (restyle T6)
+        foreach (var entry in Playlists)
+        {
+            entry.IsActive = ReferenceEquals(entry, value);
+        }
+
+        RefreshItems();
+    }
 
     /// <summary>우측 항목 컬렉션을 모델에서 다시 채운다 (선택 변경·항목 조작 후). 메타 누락분은 백그라운드 채움.</summary>
     private void RefreshItems()

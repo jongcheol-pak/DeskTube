@@ -5,6 +5,7 @@ using DeskTube.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 
@@ -43,15 +44,22 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>x:Bind 함수 — 곡수 표기 ("12곡", 시안 헤더 행).</summary>
     public string FormatCount(int count) => string.Format(Loc.Get("Playlists_CountFormat"), count);
 
-    // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
+    /// <summary>x:Bind 함수 — 활성 리스트 항목의 텍스트 강조 (시안 #FFF w600 / 비활성 #B8B8BE).</summary>
+    public static Brush ActiveNameBrush(bool isActive) =>
+        TokenBrush(isActive ? "AppTextStrongBrush" : "AppTextNavBrush");
 
-    private static Microsoft.UI.Xaml.Media.Brush TokenBrush(string key) =>
-        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[key];
+    public static Windows.UI.Text.FontWeight ActiveWeight(bool isActive) =>
+        isActive ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
+
+    // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
+    // PointerEntered/Exited는 IsEnabled=False에도 발생하므로 비활성 버튼 강조 방지 가드 필수 (리뷰 M1)
+
+    private static Brush TokenBrush(string key) => (Brush)Application.Current.Resources[key];
 
     /// <summary>외곽선 버튼(추가·셔플듣기) hover — 테두리만 코럴.</summary>
     private void OnOutlineButtonPointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is Button button)
+        if (sender is Button { IsEnabled: true } button)
         {
             button.BorderBrush = TokenBrush("AppAccentBrush");
         }
@@ -68,7 +76,7 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>새 플레이리스트(점선 근사) hover — 테두리·텍스트 모두 코럴 (시안).</summary>
     private void OnDashedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is Button button)
+        if (sender is Button { IsEnabled: true } button)
         {
             button.BorderBrush = TokenBrush("AppAccentBrush");
             button.Foreground = TokenBrush("AppAccentBrush");
@@ -87,7 +95,7 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>행 재생 버튼 hover — 테두리·글리프 코럴 (시안).</summary>
     private void OnRowPlayPointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is Button { Content: FontIcon icon } button)
+        if (sender is Button { IsEnabled: true, Content: FontIcon icon } button)
         {
             button.BorderBrush = TokenBrush("AppAccentBrush");
             icon.Foreground = TokenBrush("AppAccentBrush");

@@ -3,7 +3,8 @@
     x:Class="DeskTube.Views.PlaylistsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:DeskTube.ViewModels">
+    xmlns:vm="using:DeskTube.ViewModels"
+    xmlns:local="using:DeskTube.Views">
     <!-- 시안 플레이리스트: 좌 300px 패널(제목·새 리스트·목록) / 우(추가 입력·리스트명+곡수+듣기 버튼·트랙 행).
          컬럼 헤더 행은 시안에 없어 제거 (plan D6). -->
     <Grid>
@@ -66,13 +67,15 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="Padding" Value="14,12" />
+                            <!-- 좌우 패딩 0 — 활성 인디케이터를 항목 왼쪽 끝(left:0)에 붙이기 위함 (시안).
+                                 텍스트 들여쓰기 14는 템플릿(바 3 + 마진 11)이 담당 -->
+                            <Setter Property="Padding" Value="0,12" />
                             <Setter Property="CornerRadius" Value="{StaticResource AppCardCornerRadius}" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="vm:PlaylistEntry">
-                            <Grid ColumnSpacing="8">
+                            <Grid>
                                 <Grid.ContextFlyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem x:Uid="RenameMenuItem" Click="OnRenameClick" />
@@ -80,17 +83,31 @@
                                     </MenuFlyout>
                                 </Grid.ContextFlyout>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock
+                                <!-- 활성 인디케이터 (시안 — 좌측 3px 코럴, 상하 12 인셋은 컨테이너 패딩이 담당) -->
+                                <Rectangle
                                     Grid.Column="0"
+                                    Width="3"
+                                    RadiusX="2"
+                                    RadiusY="2"
+                                    Fill="{ThemeResource AppAccentBrush}"
+                                    VerticalAlignment="Stretch"
+                                    Visibility="{x:Bind IsActive, Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Margin="11,0,8,0"
                                     Text="{x:Bind Name, Mode=OneWay}"
                                     FontSize="13"
+                                    FontWeight="{x:Bind local:PlaylistsPage.ActiveWeight(IsActive), Mode=OneWay}"
+                                    Foreground="{x:Bind local:PlaylistsPage.ActiveNameBrush(IsActive), Mode=OneWay}"
                                     VerticalAlignment="Center"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
-                                    Grid.Column="1"
+                                    Grid.Column="2"
+                                    Margin="0,0,14,0"
                                     Text="{x:Bind ItemCount, Mode=OneWay}"
                                     FontSize="13"
                                     VerticalAlignment="Center"

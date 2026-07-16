@@ -200,8 +200,8 @@
         <Setter Property="Foreground" Value="{ThemeResource AppChipTextBrush}" />
     </Style>
 
-    <!-- 점선 버튼 (새 플레이리스트 — 시안: dashed 테두리는 XAML 미지원이라 근사값 유지,
-         hover 코럴은 소비측에서 처리. dashed 표현은 T6에서 Border 조합으로 구현) -->
+    <!-- 점선 버튼 (새 플레이리스트 — 시안: dashed 테두리는 XAML 미지원이라 전용 테두리 색 실선으로 근사,
+         hover 코럴 전환은 소비측 포인터 이벤트가 처리 — PlaylistsPage.OnDashedButtonPointer*) -->
     <Style x:Key="AppDashedButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{ThemeResource AppDashedBorderBrush}" />
