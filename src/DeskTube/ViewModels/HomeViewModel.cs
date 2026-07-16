@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DeskTube.Services;
@@ -5,19 +6,37 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube.ViewModels;
 
+/// <summary>홈 빠른 재생 칩 1개 (플레이리스트 요약 — restyle plan T5, 시안 chips).</summary>
+public sealed record QuickChip(Guid Id, string Name, string CountText);
+
 /// <summary>
-/// 홈 — URL 입력·즉시 재생 (PRD FR-10, plan T2 Design ①).
+/// 홈 — URL 입력·즉시 재생 + 재생 중 pill + 모니터 카드 + 빠른 재생 칩 (restyle plan T5, 시안).
 /// 즉시 재생은 "빠른 재생" 플레이리스트(이름 고정)를 만들어 그 항목을 교체하는 방식 —
 /// part1 Coordinator가 플레이리스트 단위로만 재생하므로 공개 계약을 바꾸지 않는다.
 /// </summary>
 public partial class HomeViewModel : ObservableObject
 {
+    private AppServices? _services;
+    private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcher;
+
     public HomeViewModel()
     {
+        MonitorPanel.MonitorsRefreshed += OnMonitorStateChanged;
+        MonitorPanel.SelectionChanged += OnMonitorStateChanged;
+        MonitorPanel.NoticeRequested += OnPanelNoticeRequested;
+        MonitorPanel.NoticeCleared += OnPanelNoticeCleared;
+
         // partial property는 초기화 식을 못 가짐 (MVVMTK0045 대응으로 필드 대신 채택)
         Url = string.Empty;
         NoticeSeverity = InfoBarSeverity.Informational;
+        PlayingLabel = string.Empty;
     }
+
+    /// <summary>모니터 카드 패널 (설정과 공유하는 공용 VM — 선택 상태의 정본은 AppSettings).</summary>
+    public MonitorPanelViewModel MonitorPanel { get; } = new();
+
+    /// <summary>빠른 재생 칩 (플레이리스트 요약 — 클릭 시 View가 플레이리스트 페이지로 이동, D5).</summary>
+    public ObservableCollection<QuickChip> QuickChips { get; } = [];
 
     [ObservableProperty]
     public partial string Url { get; set; }
@@ -30,6 +49,122 @@ public partial class HomeViewModel : ObservableObject
 
     [ObservableProperty]
     public partial InfoBarSeverity NoticeSeverity { get; set; }
+
+    /// <summary>재생 중 pill 표시 (Stopped 외 상태 — 일시정지 중에도 정지 가능해야 함).</summary>
+    [ObservableProperty]
+    public partial bool IsPlaying { get; set; }
+
+    /// <summary>"디스플레이 1·2에서 재생 중" (시안 playingLabel — 선택 모니터 번호 나열).</summary>
+    [ObservableProperty]
+    public partial string PlayingLabel { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasChips { get; set; }
+
+    /// <summary>
+    /// 페이지 진입 시 호출 (SettingsViewModel과 동일한 지연 초기화 패턴).
+    /// 캐시 재진입에도 호출돼 모니터·칩·재생 상태를 재동기화한다 (plan T5 Edge — stale 방지).
+    /// </summary>
+    public void Load()
+    {
+        if (App.Services is null)
+        {
+            App.ServicesInitialized += OnServicesInitialized;
+            return;
+        }
+
+        AttachCore(App.Services);
+    }
+
+    /// <summary>페이지 이탈 시 호출 — 구독 해제 (Loaded/Unloaded 대칭, 누수 방지).</summary>
+    public void Detach()
+    {
+        App.ServicesInitialized -= OnServicesInitialized;
+        if (_services is not null)
+        {
+            _services.Coordinator.StatusChanged -= OnStatusChanged;
+        }
+
+        MonitorPanel.Detach();
+    }
+
+    private void OnServicesInitialized(object? sender, EventArgs e)
+    {
+        App.ServicesInitialized -= OnServicesInitialized;
+        AttachCore(App.Services!);
+    }
+
+    private void AttachCore(AppServices services)
+    {
+        if (_services is null)
+        {
+            _services = services;
+            _dispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        }
+
+        // 재진입마다 해제 후 재구독 (Detach와 대칭 — MonitorPanel.Attach와 동일 멱등 패턴)
+        services.Coordinator.StatusChanged -= OnStatusChanged;
+        services.Coordinator.StatusChanged += OnStatusChanged;
+
+        MonitorPanel.Attach(services);
+        RefreshChips();
+        UpdatePlaybackState(services.Coordinator.Status);
+    }
+
+    /// <summary>정지 pill 버튼 (시안 "■ 정지") — 상태 갱신은 StatusChanged 이벤트가 반영.</summary>
+    [RelayCommand]
+    private async Task StopAsync()
+    {
+        if (_services is null)
+        {
+            return;
+        }
+
+        await _services.Coordinator.StopAsync();
+    }
+
+    /// <summary>StatusChanged는 발생 스레드가 보장되지 않아 UI로 마셜링 (plan T5 Edge).</summary>
+    private void OnStatusChanged(object? sender, PlaybackStatus status) =>
+        _dispatcher?.TryEnqueue(() => UpdatePlaybackState(status));
+
+    private void UpdatePlaybackState(PlaybackStatus status)
+    {
+        IsPlaying = status != PlaybackStatus.Stopped;
+        UpdatePlayingLabel();
+    }
+
+    private void OnMonitorStateChanged(object? sender, EventArgs e) => UpdatePlayingLabel();
+
+    private void UpdatePlayingLabel()
+    {
+        var numbers = string.Join("·", MonitorPanel.Monitors.Where(m => m.IsSelected).Select(m => m.Number));
+        PlayingLabel = string.Format(Loc.Get("Home_PlayingFormat"), numbers);
+    }
+
+    /// <summary>빠른 재생 칩 재구성 — 페이지 진입마다 리스트 이름·곡수 최신화.</summary>
+    private void RefreshChips()
+    {
+        if (_services is null)
+        {
+            return; // PlayAsync가 Attach 전에 실행된 드문 경로 — 다음 진입 때 채워짐
+        }
+
+        QuickChips.Clear();
+        foreach (var playlist in _services.Library.Playlists)
+        {
+            QuickChips.Add(new QuickChip(
+                playlist.Id,
+                playlist.Name,
+                string.Format(Loc.Get("Home_ChipCountFormat"), playlist.Items.Count)));
+        }
+
+        HasChips = QuickChips.Count > 0;
+    }
+
+    private void OnPanelNoticeRequested(object? sender, string message) =>
+        ShowNotice(message, InfoBarSeverity.Warning);
+
+    private void OnPanelNoticeCleared(object? sender, EventArgs e) => IsNoticeOpen = false;
 
     [RelayCommand]
     private async Task PlayAsync()
@@ -84,6 +219,7 @@ public partial class HomeViewModel : ObservableObject
             return;
         }
 
+        RefreshChips(); // "빠른 재생" 리스트 생성·곡 교체가 칩 표시에 반영되게
         ShowNotice(Loc.Get("Home_PlayStarted"), InfoBarSeverity.Success);
     }
 

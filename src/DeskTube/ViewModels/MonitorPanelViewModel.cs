@@ -28,6 +28,9 @@ public partial class MonitorPanelViewModel : ObservableObject
     /// <summary>선택이 유효하게 처리됨 — 떠 있던 안내(최소 1개 차단)를 닫으라는 신호.</summary>
     public event EventHandler? NoticeCleared;
 
+    /// <summary>선택 구성이 바뀜 (유효 토글 직후) — 홈 재생 중 라벨 등 파생 표시 갱신용 (T5).</summary>
+    public event EventHandler? SelectionChanged;
+
     /// <summary>
     /// 서비스 연결 + 목록 구성. UI 스레드에서 호출하는 전제 (MonitorsChanged 마셜링용
     /// DispatcherQueue를 여기서 캡처). 페이지 Loaded마다 호출해도 안전하다 —
@@ -155,6 +158,7 @@ public partial class MonitorPanelViewModel : ObservableObject
         _services.Settings.SelectedMonitorIds = selected;
         NoticeCleared?.Invoke(this, EventArgs.Empty); // 유효 선택 — 떠 있던 최소 1개 안내 닫기 (구 동작 보존)
         UpdateAudioBadges();
+        SelectionChanged?.Invoke(this, EventArgs.Empty);
         _ = ApplyAsync();
 
         async Task ApplyAsync()

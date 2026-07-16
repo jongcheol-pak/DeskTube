@@ -167,6 +167,8 @@
     <CornerRadius x:Key="AppMonitorCardCornerRadius">10</CornerRadius>
     <CornerRadius x:Key="AppMonitorStandCornerRadius">3</CornerRadius>
     <CornerRadius x:Key="AppBadgeCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="AppPillCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="AppStopButtonCornerRadius">14</CornerRadius>
     <Thickness x:Key="AppPagePadding">56,44</Thickness>
     <x:Double x:Key="AppSettingsCardMaxWidth">900</x:Double>
 

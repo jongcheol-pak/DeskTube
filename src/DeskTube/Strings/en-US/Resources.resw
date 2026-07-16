@@ -46,16 +46,34 @@
     <value>Home</value>
   </data>
   <data name="HomeHeader.Text" xml:space="preserve">
-    <value>Home</value>
+    <value>Play on your desktop</value>
   </data>
-  <data name="HomeUrlBox.Header" xml:space="preserve">
-    <value>YouTube URL</value>
+  <data name="HomeSubtitle.Text" xml:space="preserve">
+    <value>Paste a YouTube link and it plays right on your desktop background</value>
   </data>
   <data name="HomeUrlBox.PlaceholderText" xml:space="preserve">
     <value>Enter a YouTube video URL</value>
   </data>
-  <data name="HomePlayButton.Content" xml:space="preserve">
-    <value>Play on desktop</value>
+  <data name="HomePlayLabel.Text" xml:space="preserve">
+    <value>Play</value>
+  </data>
+  <data name="HomeStopLabel.Text" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Home_PlayingFormat" xml:space="preserve">
+    <value>Playing on Display {0}</value>
+  </data>
+  <data name="HomeMonitorsTitle.Text" xml:space="preserve">
+    <value>Playback monitors</value>
+  </data>
+  <data name="HomeMonitorsHint.Text" xml:space="preserve">
+    <value>Click to select · Sound plays only on the speaker-marked monitor</value>
+  </data>
+  <data name="HomeQuickPlayTitle.Text" xml:space="preserve">
+    <value>Quick play</value>
+  </data>
+  <data name="Home_ChipCountFormat" xml:space="preserve">
+    <value>{0} tracks</value>
   </data>
   <data name="Home_InvalidUrl" xml:space="preserve">
     <value>Could not recognize the YouTube video URL. Please check the address.</value>

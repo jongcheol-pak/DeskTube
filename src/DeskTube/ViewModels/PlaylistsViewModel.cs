@@ -153,6 +153,38 @@ public partial class PlaylistsViewModel : ObservableObject
         }
 
         IsReady = true;
+
+        // 칩 진입 등으로 예약된 선택 적용 — 목록 재구성이 선택을 비우므로 여기서 소비 (restyle T5)
+        ApplyPendingSelection();
+        _pendingSelectionId = null;
+    }
+
+    /// <summary>홈 빠른 재생 칩 진입 시 예약할 선택 (Populate가 소비 — restyle T5·D5).</summary>
+    private Guid? _pendingSelectionId;
+
+    /// <summary>
+    /// 지정 리스트 선택 (홈 칩 → 페이지 이동 진입점, restyle T5·D5).
+    /// 페이지 Loaded의 Populate가 목록을 재구성하며 선택을 비우므로, 예약해 두고 즉시도 시도한다.
+    /// 리스트가 그 사이 삭제됐으면 조용히 무시 (plan T5 Edge — 선택 없음 폴백).
+    /// </summary>
+    public void SelectPlaylist(Guid playlistId)
+    {
+        _pendingSelectionId = playlistId;
+        ApplyPendingSelection();
+    }
+
+    private void ApplyPendingSelection()
+    {
+        if (_pendingSelectionId is not Guid id)
+        {
+            return;
+        }
+
+        var entry = Playlists.FirstOrDefault(p => p.Id == id);
+        if (entry is not null)
+        {
+            SelectedPlaylist = entry;
+        }
     }
 
     partial void OnSelectedPlaylistChanged(PlaylistEntry? value) => RefreshItems();

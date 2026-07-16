@@ -46,16 +46,34 @@
     <value>홈</value>
   </data>
   <data name="HomeHeader.Text" xml:space="preserve">
-    <value>홈</value>
+    <value>바탕화면에서 재생</value>
   </data>
-  <data name="HomeUrlBox.Header" xml:space="preserve">
-    <value>유튜브 URL</value>
+  <data name="HomeSubtitle.Text" xml:space="preserve">
+    <value>유튜브 영상 주소를 붙여넣으면 바탕화면 배경에서 바로 재생됩니다</value>
   </data>
   <data name="HomeUrlBox.PlaceholderText" xml:space="preserve">
     <value>유튜브 영상 주소를 입력하세요</value>
   </data>
-  <data name="HomePlayButton.Content" xml:space="preserve">
-    <value>바탕화면에서 재생</value>
+  <data name="HomePlayLabel.Text" xml:space="preserve">
+    <value>재생</value>
+  </data>
+  <data name="HomeStopLabel.Text" xml:space="preserve">
+    <value>정지</value>
+  </data>
+  <data name="Home_PlayingFormat" xml:space="preserve">
+    <value>디스플레이 {0}에서 재생 중</value>
+  </data>
+  <data name="HomeMonitorsTitle.Text" xml:space="preserve">
+    <value>재생 모니터</value>
+  </data>
+  <data name="HomeMonitorsHint.Text" xml:space="preserve">
+    <value>클릭해서 선택 · 소리는 스피커 표시 모니터에서만</value>
+  </data>
+  <data name="HomeQuickPlayTitle.Text" xml:space="preserve">
+    <value>빠른 재생</value>
+  </data>
+  <data name="Home_ChipCountFormat" xml:space="preserve">
+    <value>{0}곡</value>
   </data>
   <data name="Home_InvalidUrl" xml:space="preserve">
     <value>유튜브 영상 주소를 인식할 수 없습니다. 주소를 확인해 주세요.</value>

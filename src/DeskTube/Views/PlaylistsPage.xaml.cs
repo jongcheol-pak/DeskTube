@@ -27,6 +27,16 @@ public sealed partial class PlaylistsPage : Page
 
     public PlaylistsViewModel ViewModel { get; } = new();
 
+    /// <summary>홈 빠른 재생 칩 진입 — 파라미터의 리스트를 선택 (restyle T5·D5, MainWindow.NavigateToPlaylists).</summary>
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        if (e.Parameter is Guid playlistId)
+        {
+            ViewModel.SelectPlaylist(playlistId);
+        }
+    }
+
     /// <summary>x:Bind 함수 — 선택 없음 안내의 반전 가시성.</summary>
     public Visibility InvertVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
