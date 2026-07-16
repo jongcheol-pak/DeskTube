@@ -16,6 +16,9 @@
 - [2026-07-16] 단일 인스턴스 보장 (Named Mutex + 창 전면화 — 위키 single-instance 패턴): 트레이 상주 + 재실행으로 2인스턴스 공존 관찰 (출처: 2026-07-16-wallpaper-win32-host, debug 부수 관찰)
 - [2026-07-16] 전역 예외 훅(UnhandledException 로깅) 상시 탑재 검토 — 위키 global-exception-handling 패턴, AV 조사에서 진단 유효성 확인 (출처: 2026-07-16-wallpaper-win32-host)
 - [2026-07-16] [SUGGEST] MainWindow 커스텀 타이틀바 Grid 높이 48px 고정 — DPI/버전별 캡션 버튼 높이 변화 시 시각 미스매치 가능, AppWindow.TitleBar 값 참조 검토 (출처: 2026-07-16-ui-perf-batch T5 quality SUGGEST)
+- [2026-07-16] 홈 화면 현재 재생 정보에 제목·썸네일 표시 — FR-18 메타 인프라(VideoMetadataService·PlaylistItem 캐시) 재사용 (출처: 2026-07-16-melon-playlist-style Deferred)
+- [2026-07-16] VideoMetadataService 클래스 요약 주석에 "취소는 예외로 전파" 구절 보강 (출처: 2026-07-16-melon-playlist-style T2 quality m1)
+- [2026-07-16] VideoMetadataService Result.Fail 메시지를 서술형 한글로 통일 — 현재 로그 전용이라 무해, UI 노출 시 필수 (출처: 2026-07-16-melon-playlist-style T2 quality m2)
 
 ## 종결
 - [2026-07-16 → 2026-07-16] 유휴 워킹셋 ~208MB 관찰 → NFR-2 대조 — 반영 (2026-07-16-ui-perf-batch T7: 트림 도입 + 자동 실측 2경로, 유휴 약 27MB로 목표 150MB 충족)
