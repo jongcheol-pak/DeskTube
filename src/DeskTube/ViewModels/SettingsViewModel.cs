@@ -75,6 +75,7 @@ public partial class SettingsViewModel : ObservableObject
         QualityIndex = -1;
         AudioIndex = -1;
         LanguageIndex = -1;
+        FitModeIndex = -1;
 
         ModeOptions =
         [
@@ -91,6 +92,12 @@ public partial class SettingsViewModel : ObservableObject
             Loc.Get("Quality_720"),
             Loc.Get("Quality_480"),
         ];
+        FitModeOptions =
+        [
+            Loc.Get("Fit_Cover"),
+            Loc.Get("Fit_Contain"),
+            Loc.Get("Fit_Stretch"),
+        ];
         LanguageOptions =
         [
             Loc.Get("Language_System"),
@@ -106,6 +113,9 @@ public partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<string> ModeOptions { get; }
 
     public IReadOnlyList<string> QualityOptions { get; }
+
+    /// <summary>크기 모드 콤보 — 인덱스가 FitMode enum 값과 일치 (채움/맞춤/늘리기, FR-16).</summary>
+    public IReadOnlyList<string> FitModeOptions { get; }
 
     public IReadOnlyList<string> LanguageOptions { get; }
 
@@ -126,6 +136,9 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int QualityIndex { get; set; }
+
+    [ObservableProperty]
+    public partial int FitModeIndex { get; set; }
 
     [ObservableProperty]
     public partial int AudioIndex { get; set; }
@@ -234,6 +247,8 @@ public partial class SettingsViewModel : ObservableObject
 
             var qualityIdx = Array.IndexOf(QualityHeights, settings.QualityScaleHeight);
             QualityIndex = qualityIdx >= 0 ? qualityIdx : 0;
+
+            FitModeIndex = (int)settings.FitMode;
 
             PauseOnFullscreen = settings.PauseOnFullscreen;
             PauseOnBatterySaver = settings.PauseOnBatterySaver;
@@ -479,6 +494,15 @@ public partial class SettingsViewModel : ObservableObject
         if (value >= 0 && value < QualityHeights.Length)
         {
             Apply(() => _services!.Coordinator.SetQualityScaleAsync(QualityHeights[value]), "화질 스케일 적용");
+        }
+    }
+
+    /// <summary>크기 모드 변경 (FR-16) — 재생 중이면 전 플레이어에 즉시 반영.</summary>
+    partial void OnFitModeIndexChanged(int value)
+    {
+        if (value >= 0 && value < FitModeOptions.Count)
+        {
+            Apply(() => _services!.Coordinator.SetFitModeAsync((FitMode)value), "크기 모드 적용");
         }
     }
 

@@ -108,6 +108,21 @@
   <data name="ModeCard.Header" xml:space="preserve">
     <value>Playback order</value>
   </data>
+  <data name="FitModeCard.Header" xml:space="preserve">
+    <value>Video size</value>
+  </data>
+  <data name="FitModeCard.Description" xml:space="preserve">
+    <value>Choose how the video fits your screen</value>
+  </data>
+  <data name="Fit_Cover" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="Fit_Contain" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="Fit_Stretch" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
   <data name="Mode_Sequential" xml:space="preserve">
     <value>In order</value>
   </data>

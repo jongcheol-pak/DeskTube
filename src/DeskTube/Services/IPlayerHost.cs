@@ -60,6 +60,9 @@ public interface IPlayerHost : IDisposable
     /// <summary>화질 간접 제어 — 렌더 세로 해상도 (0 = 원본, PRD FR-13).</summary>
     void SetQualityScale(int height);
 
+    /// <summary>동영상 크기 모드 — 채움/맞춤/늘리기 (PRD FR-16).</summary>
+    void SetFitMode(FitMode mode);
+
     /// <summary>최근 시각 이벤트 캐시 (초). 아직 보고 없으면 0.</summary>
     double CurrentTime { get; }
 }

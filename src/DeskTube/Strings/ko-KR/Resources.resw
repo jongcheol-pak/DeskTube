@@ -108,6 +108,21 @@
   <data name="ModeCard.Header" xml:space="preserve">
     <value>재생 순서</value>
   </data>
+  <data name="FitModeCard.Header" xml:space="preserve">
+    <value>동영상 크기</value>
+  </data>
+  <data name="FitModeCard.Description" xml:space="preserve">
+    <value>영상을 화면에 어떻게 맞출지 선택합니다</value>
+  </data>
+  <data name="Fit_Cover" xml:space="preserve">
+    <value>채움</value>
+  </data>
+  <data name="Fit_Contain" xml:space="preserve">
+    <value>맞춤</value>
+  </data>
+  <data name="Fit_Stretch" xml:space="preserve">
+    <value>늘리기</value>
+  </data>
   <data name="Mode_Sequential" xml:space="preserve">
     <value>순서대로</value>
   </data>

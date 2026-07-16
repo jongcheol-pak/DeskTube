@@ -121,6 +121,7 @@ public sealed class PlaybackCoordinator : IDisposable
             var player = created.Value;
             Subscribe(player);
             player.SetQualityScale(_settings.QualityScaleHeight);
+            player.SetFitMode(_settings.FitMode);
             _players[target.Id] = new PlayerEntry(target, player);
         }
 
@@ -294,6 +295,18 @@ public sealed class PlaybackCoordinator : IDisposable
         foreach (var entry in _players.Values)
         {
             entry.Player.SetQualityScale(_settings.QualityScaleHeight);
+        }
+
+        await _store.SaveSettingsAsync(_settings);
+    }
+
+    /// <summary>동영상 크기 모드 변경 (PRD FR-16) — 전 플레이어 즉시 적용 + 저장.</summary>
+    public async Task SetFitModeAsync(FitMode mode)
+    {
+        _settings.FitMode = mode;
+        foreach (var entry in _players.Values)
+        {
+            entry.Player.SetFitMode(mode);
         }
 
         await _store.SaveSettingsAsync(_settings);
@@ -491,6 +504,7 @@ public sealed class PlaybackCoordinator : IDisposable
         var player = created.Value;
         Subscribe(player);
         player.SetQualityScale(_settings.QualityScaleHeight);
+        player.SetFitMode(_settings.FitMode);
         _players[monitorId] = old with { Player = player };
 
         ResumeCurrentTrack(player);
@@ -575,6 +589,7 @@ public sealed class PlaybackCoordinator : IDisposable
             var player = created.Value;
             Subscribe(player);
             player.SetQualityScale(_settings.QualityScaleHeight);
+            player.SetFitMode(_settings.FitMode);
             _players[target.Id] = new PlayerEntry(target, player);
             ResumeCurrentTrack(player);
         }

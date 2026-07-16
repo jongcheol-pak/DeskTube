@@ -77,6 +77,7 @@ public sealed class PlaybackCoordinatorTests
         public void SetMuted(bool muted) => Commands.Add($"mute:{muted}");
         public void Seek(double seconds) => Commands.Add($"seek:{seconds:F1}");
         public void SetQualityScale(int height) => Commands.Add($"scale:{height}");
+        public void SetFitMode(FitMode mode) => Commands.Add($"fit:{(int)mode}");
         public void Dispose() => Commands.Add("dispose");
 
         public void RaiseState(PlayerState state) => StateChanged?.Invoke(this, state);
@@ -367,5 +368,32 @@ public sealed class PlaybackCoordinatorTests
         Assert.NotSame(oldSlave, newSlave);
         Assert.Contains("load:video00000a", newSlave.Commands); // 현재 곡 이어서
         Assert.Contains("seek:42.0", newSlave.Commands); // 마스터 시각으로 동기
+    }
+
+    [Fact]
+    public async Task 재생_시작_시_저장된_크기_모드를_모든_플레이어에_초기_적용한다()
+    {
+        var h = new Harness(monitorCount: 2);
+        h.Settings.FitMode = FitMode.Contain;
+
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        // FR-16: 초기 적용은 StartAsync의 플레이어 생성 지점에서
+        Assert.Contains("fit:1", h.Players["MON-0"].Commands);
+        Assert.Contains("fit:1", h.Players["MON-1"].Commands);
+    }
+
+    [Fact]
+    public async Task 크기_모드_변경은_모든_플레이어에_전송되고_설정에_저장된다()
+    {
+        var h = new Harness(monitorCount: 2);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        await h.Coordinator.SetFitModeAsync(FitMode.Stretch);
+
+        // FR-16: 재생 중 변경 즉시 반영 (acceptance — fit 명령 전송 코드 경로)
+        Assert.Equal(FitMode.Stretch, h.Settings.FitMode);
+        Assert.Contains("fit:2", h.Players["MON-0"].Commands);
+        Assert.Contains("fit:2", h.Players["MON-1"].Commands);
     }
 }

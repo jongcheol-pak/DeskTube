@@ -126,9 +126,9 @@
   - **Halt Forecast**: 없음 — 기구현 API 소비, 파괴적·의존성 없음
   - **Depends on**: T1 (SettingsViewModel 동시 수정 충돌 방지)
 
-- [ ] T3. 동영상 크기 모드 3종 (FR-16)
+- [x] T3. 동영상 크기 모드 3종 (FR-16)
   - **Type**: D
-  - **Design**: (D2 참조) ① `Models/FitMode.cs` enum(Fill/Fit/Stretch) + `AppSettings.FitMode`(기본 Fill)·Normalize ② player.html — applyScale→`applyLayout(fitMode, scaleHeight)` 통합, `fit` 명령 추가 ③ `IPlayerHost.SetFitMode(FitMode)` + PlayerHost(PlayerCommand Fit 필드) + FakePlayer(테스트) ④ `PlaybackCoordinator.SetFitModeAsync` — 전 플레이어 적용+저장, StartAsync 시 초기 적용 ⑤ 설정 카드(콤보 3옵션)+resw ⑥ 간접화 없음 — enum·switch 직결
+  - **Design**: (D2 참조) ① `Models/FitMode.cs` enum(Cover/Contain/Stretch — D2 명명) + `AppSettings.FitMode`(기본 Cover)·Normalize ② player.html — applyScale→`applyLayout(fitMode, scaleHeight)` 통합, `fit` 명령 추가 ③ `IPlayerHost.SetFitMode(FitMode)` + PlayerHost(PlayerCommand Fit 필드) + FakePlayer(테스트) ④ `PlaybackCoordinator.SetFitModeAsync` — 전 플레이어 적용+저장, StartAsync 시 초기 적용 ⑤ 설정 카드(콤보 3옵션)+resw ⑥ 간접화 없음 — enum·switch 직결
   - **Acceptance**: 모드 저장·복원 왕복 테스트 통과 + 재생 중 콤보 변경 시 fit 명령 전송(코드 경로) — 시각 결과 3종은 HUMAN-VERIFY; 빌드·기존 테스트 통과
   - **Files**: 주: `Assets/player.html`, `Services/IPlayerHost.cs`, `Services/PlayerHost.cs`, `Services/PlaybackCoordinator.cs`, `Models/AppSettings.cs` / 동반: `Models/FitMode.cs`(신규), `Views/SettingsPage.xaml`, `ViewModels/SettingsViewModel.cs`, `Strings/…resw`, `tests/…/PlaybackCoordinatorTests.cs`(FakePlayer)
   - **Edge Cases**: 화질 스케일과 조합(채움+스케일 등 6조합 레이아웃 함수 단일 처리) / ready 전 fit 명령 → JS pending 큐 기존 경로 / 구버전 settings.json(필드 없음) → 기본 Fill
@@ -202,6 +202,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 2bb2a31, 6ce02ae): 4페이지 NavigationCacheMode.Required + SettingsViewModel Load 분리(최초 1회 프로브/재진입 RefreshMonitors), 음소거 토글 UI+resw. 빌드 경고 0·테스트 81/81·리뷰 spec/quality 둘 다 첫 판 OK.
+  - 결정: SettingsPage SignInRequested 구독 ctor→Loaded 이동(캐시 재진입 핸들러 소실 방지). 재진입 시 IsMuted 재동기화 추가(트레이 변경 stale 방지 — T2 acceptance 충족 목적, D7 "모니터만"의 예외).
 
 ## Next Steps
 - 승인 시 **새 세션에서** `docs/plans/2026-07-16-ui-perf-batch.md 구현` 으로 실행 권장 (현재 세션 컨텍스트 과밀)

@@ -66,6 +66,14 @@
                         SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
+                <!-- 동영상 크기 모드 (FR-16 — 채움/맞춤/늘리기) -->
+                <controls:SettingsCard x:Uid="FitModeCard">
+                    <ComboBox
+                        MinWidth="240"
+                        ItemsSource="{x:Bind ViewModel.FitModeOptions}"
+                        SelectedIndex="{x:Bind ViewModel.FitModeIndex, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
                 <!-- 화질 스케일 + 유튜브 자동 결정 안내 -->
                 <controls:SettingsCard x:Uid="QualityCard">
                     <ComboBox
