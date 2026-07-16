@@ -2,19 +2,32 @@ using DeskTube.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace DeskTube;
 
 /// <summary>
-/// 진입점 Window — NavigationView 설정 셸 (plan D1).
+/// 진입점 Window — NavigationView 설정 셸 (plan D1). WinUIEx.WindowEx 기반 (T5):
+/// 창 크기·위치 저장·복원(PersistenceId) + 최소 크기 + Mica 백드롭 + 커스텀 타이틀바.
 /// X 닫기는 종료가 아니라 트레이로 숨김 (PRD FR-9, plan D2).
 /// </summary>
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : WinUIEx.WindowEx
 {
     public MainWindow()
     {
         InitializeComponent();
         Title = "DeskTube";
+
+        // 창 상태 저장·복원 + 최소 크기 (T5/D4 — 패키지 앱은 WinUIEx가 ApplicationData에 자동 저장)
+        PersistenceId = "MainWindow";
+        MinWidth = 720;
+        MinHeight = 480;
+
+        // Mica 백드롭 + 콘텐츠 확장 타이틀바 (WinUI 표준 API — plan D4)
+        SystemBackdrop = new MicaBackdrop();
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
+
         AppWindow.Closing += OnAppWindowClosing;
 
         // 초기 선택 = 홈 (SelectedItem 대입이 SelectionChanged를 이미 태울 수 있어 NavigateOnce로 중복 방지)

@@ -1,5 +1,6 @@
 using DeskTube.Services;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Web.WebView2.Core;
 
 namespace DeskTube.Views;
@@ -17,6 +18,7 @@ public sealed partial class LoginWindow : Window
     {
         InitializeComponent();
         Title = Loc.Get("Login_Title");
+        SystemBackdrop = new MicaBackdrop(); // MainWindow와 시각 통일 (T5/D4)
         Closed += (_, _) => _isClosed = true;
         _ = InitializeAsync();
     }

@@ -46,6 +46,8 @@
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2270" />
+    <!-- 창 상태 저장·복원(PersistenceId)·최소 크기 — T5, 사전 승인 의존성 -->
+    <PackageReference Include="WinUIEx" Version="2.9.2" />
   </ItemGroup>
 
   <!-- VS 패키징 도구 연동 (VS 템플릿 표준 구조) -->
