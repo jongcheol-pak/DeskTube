@@ -152,7 +152,7 @@
     - (ii-a) NuGet 의존성 추가(H.NotifyIcon.WinUI) → `## 사전 승인 항목`
   - **Depends on**: - (part1 완료 전제)
 
-- [ ] T2. 설정 셸 + 재생 설정 페이지 (FR-10·FR-13 UI)
+- [x] T2. 설정 셸 + 재생 설정 페이지 (FR-10·FR-13 UI)
   - **Type**: D
   - **Design**: ① `Views/` `ViewModels/`: `MainWindow`(NavigationView 셸), `HomePage`+`HomeViewModel`(URL 입력·즉시 재생), `SettingsPage`+`SettingsViewModel` ② SettingsPage 카드: 모니터 선택(다중 체크)·오디오 출력 모니터(콤보)·볼륨 슬라이더·재생 모드·화질 스케일(콤보 + 유튜브 자동 결정 안내 InfoBar)·자동 실행 토글·자동 일시정지 정책 3토글·언어 ③ ViewModel → part1 서비스(DI) 호출, View는 x:Bind만 ④ 이번에 안 함: 설정 검색, 테마 수동 전환(시스템 추종 — AGENTS 규칙 3), **자동 실행 토글 카드(T4에서 StartupService와 함께)·언어 카드(T7에서 전환 절차와 함께) — 백엔드 없는 비기능 토글 노출 방지 (T2 리뷰 합의, T4·T7 Files에 반영)**
   - **Acceptance**: Given 설정 화면, When 각 항목 변경, Then 즉시 적용(볼륨·모니터는 재생 중 반영)되고 앱 재시작 후 유지 — HUMAN-VERIFY; ViewModel 로직은 빌드+x:Bind 컴파일 검증
@@ -289,6 +289,13 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료: 트레이 아이콘(H.NotifyIcon) + NavigationView 셸·홈(URL 즉시 재생)·설정 페이지. 빌드 경고 0 / 테스트 75/75 / format 0. 각 task spec+quality 이중 리뷰 OK.
+  - 결정: H.NotifyIcon.WinUI는 2.4.1이 net10 전용이라 **2.3.2**(net8 호환 최신) 사용.
+  - 결정: 자동 실행 토글 카드→T4, 언어 카드→T7로 이연 (백엔드 없는 비기능 토글 노출 방지 — plan Design ④·T4/T7 Files에 반영, spec 리뷰 합의).
+  - 결정: 재생 중 모니터 선택 반영 위해 PlaybackCoordinator에 additive 공개 메서드 `ApplySelectedMonitorsAsync()` 추가 (기존 private 경로 위임 — 파괴적 계약 변경 아님).
+  - 결정: 홈 "즉시 재생"은 "빠른 재생" 이름의 플레이리스트를 만들어 항목 교체 후 StartAsync (part1 계약 무변경). 서비스 오류 문구는 사용자에게 노출하지 않고 리소스 문구+로그로 분리 (T1 리뷰 교훈).
+  - 리뷰 이의: quality 리뷰의 "PlayAsync 재진입 미가드" MAJOR는 AsyncRelayCommand 기본값(동시 실행 차단, 패키지 XML 문서)으로 반증 → 리뷰어 철회.
+  - 함정(위키): x:Uid 정적 텍스트 언어는 App 생성자 이전 동기 선읽기 필요(T7 참고), 부팅 직후 COM 미준비로 AppInstance API는 try/catch+인자 폴백(T4 참고).
 
 ## Next Steps
 - part1(docs/plans/2026-07-15-desktube-core-part1.md) 완료 후 이 plan을 `pjc:implement-task`로 실행 (경로 명시 호출)
