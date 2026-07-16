@@ -10,6 +10,7 @@
         <StackPanel MaxWidth="{StaticResource AppSettingsCardMaxWidth}" Spacing="10" HorizontalAlignment="Left">
             <TextBlock
                 x:Uid="SettingsHeader"
+                Style="{StaticResource TitleTextBlockStyle}"
                 FontSize="30"
                 FontWeight="SemiBold"
                 Foreground="{ThemeResource AppTextStrongBrush}"
@@ -152,6 +153,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="14">
                         <TextBlock
                             Text="{x:Bind ViewModel.AccountStatusText, Mode=OneWay}"
+                            Style="{StaticResource BodyTextBlockStyle}"
                             FontSize="13"
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource AppTextTertiaryBrush}" />

@@ -38,6 +38,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 - 배경 재생 창(WallpaperWindow)·트레이 메뉴·LoginWindow의 시각 변경 — 시안에 정의 없음
 
 ## Deferred / Follow-up
+- [SUGGEST] 직접 FontSize 지정 TextBlock의 텍스트 램프 스타일 일괄 점검 — T7 리뷰가 SettingsPage 2곳을 잡아 수정했으나 T3~T6 화면(홈 제목·모니터 카드 제목 등)에도 같은 패턴 잔존 가능 (AGENTS.md 디자인 규칙 4)
 - T1 범위 노트: AGENTS.md DO NOT의 "언어 전환 후 테마 재적용 누락" 행이 폐기 규칙(구 3-⑤)을 참조해 stale — acceptance의 "다른 섹션 변경 없음"에서 벗어나지만 문서 동기화(규칙 7-1)를 위해 "App.xaml 외 RequestedTheme 지정 금지"로 교체함 (사소·가역 결정, 기록용)
 - "앱 시작 후 자동 재생" 설정 토글 + 동작 — 시안에는 있으나 현재 앱에 없는 신규 기능. 추가하려면 PRD FR 신설 합의 필요 (사용자 확정: 이번 제외, 다음에 기능으로 검토)
 - 홈 화면 재생 중 pill에 제목·썸네일 표시 — 기존 deferred 항목(2026-07-16, FR-18 메타 인프라 재사용)과 동일 건. 시안 pill은 "디스플레이 N에서 재생 중" 라벨만이므로 이번엔 시안대로 구현
@@ -411,7 +412,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 
 - [ ] T7. 설정 화면 재설계
   - **Type**: C
-  - **Design**: 해당 없음 — 신규 심볼 없음 (그룹 헤더 4개 + 카드 재배열 + T4 컨트롤·T2 스타일 소비)
+  - **Design**: 신규 심볼 1 — `SettingsPage.FormatVolume(double)` x:Bind 포맷 헬퍼(볼륨 값 라벨용, spec 리뷰 MINOR 소급 정정). 그 외 그룹 헤더 4개 + 카드 재배열 + T4 컨트롤·T2 스타일 소비
   - **Acceptance**: Given 설정 화면, When 각 설정 조작, Then 기존 항목 전수(FR-10 — 모니터·크기·화질+배너·미러 하향·오디오·볼륨·음소거·재생 순서·자동 실행(+상태 InfoBar)·언어·계정·자동 일시정지 3토글 — 테마 카드는 T2에서 제거됨) 동작 불변 + 시안 그룹 순서·카드 스타일·문구 반영, 볼륨 값 라벨 표시 (기계 검증: 빌드+테스트 + 항목 개수 전후 대조(테마 제외) / 시각 ⏳ HUMAN-VERIFY)
   - **Files**:
     - 주: `src/DeskTube/Views/SettingsPage.xaml`
