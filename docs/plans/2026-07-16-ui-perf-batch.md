@@ -162,7 +162,7 @@
   - **Halt Forecast**: 없음 — 기존 스케일 메커니즘 재사용
   - **Depends on**: T3 (플레이어 명령 경로 안정화 후)
 
-- [ ] T7. 유휴 메모리 절감 + 측정 (NFR-2)
+- [x] T7. 유휴 메모리 절감 + 측정 (NFR-2)
   - **Type**: C
   - **Design**: (D6 참조) `Interop/ProcessInterop.cs` 신규 — `TrimWorkingSet()`(SetProcessWorkingSetSize(-1,-1)) / 호출: Coordinator.StopAsync 완료 후·MainWindow 숨김 시 / before/after 워킹셋 측정을 `docs/verification-2026-07.md`에 기록
   - **Acceptance**: 정지·숨김 후 워킹셋이 트림 전 대비 감소(실측 수치 기록 — 자동 측정 스크립트) + 측정치를 NFR-2 목표(150MB)와 대조 기록(미달 시 원인·후속 명시) + 재생 중 트림 미호출(코드 경로); 빌드·테스트 통과
