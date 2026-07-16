@@ -325,7 +325,7 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
     - (ii-a) AGENTS.md(프로젝트 규약 문서) 수정 → `## 사전 승인 항목`에 등록
   - **Depends on**: -
 
-- [ ] T2. 다크 테마 고정 전환 + 디자인 토큰 사전 신설 + 코럴 accent 전파
+- [x] T2. 다크 테마 고정 전환 + 디자인 토큰 사전 신설 + 코럴 accent 전파
   - **Type**: D
   - **Design**: ① `src/DeskTube/Resources/DesignTokens.xaml` 신규 (D1) + 테마 기구 삭제(D3): App.xaml `RequestedTheme="Dark"` 지정, `Services/ThemeHelper.cs`·`Models/AppTheme.cs` 파일 삭제, `AppSettings.Theme` 필드 제거, SettingsViewModel 테마 멤버(ThemeOptions·ThemeIndex·OnThemeIndexChanged) 제거, SettingsPage ThemeCard 제거, resw 테마 5키(ko/en) 제거 ② 신규 심볼 = 토큰 키(D3 표: Color + 대응 SolidColorBrush/LinearGradientBrush) + 공용 Style(`AppPillButtonStyle`(플레이리스트 pill 재사용 추출), `AppChipButtonStyle`, `AppCardBorderStyle`, `AppGroupHeaderTextStyle`, `AppDashedButtonStyle`) ③ App.xaml이 병합·참조, 모든 View가 `ThemeResource`로 소비. ThemeHelper 호출부 4곳(App.xaml.cs 68·70, MainWindow.xaml.cs 40, LoginWindow.xaml.cs 22, SettingsViewModel.cs 541 — Investigation Log 전수) 제거 ④ 비추상화: 컨트롤 템플릿 전면 재작성 안 함 — lightweight styling(리소스 키 재정의)과 명시 Style만. 테마 전환 재도입 대비 훅 남기지 않음
   - **Acceptance**: Given 시스템이 라이트 모드여도, When 앱 실행, Then 모든 창이 다크(시안 원값)로 표시되고 설정에 테마 카드가 없음 (기계 검증: 빌드 0 경고·0 오류 + 테스트 통과 + DesignTokens.xaml에 D3 전 키 존재 grep + `ThemeHelper|AppTheme|Theme_` 참조 잔존 0 grep / AccentButtonStyle·ToggleSwitch On·Slider·NavigationView 인디케이터의 코럴 표시와 다크 고정 실표시는 ⏳ HUMAN-VERIFY). HighContrast 사전 존재(D11)
