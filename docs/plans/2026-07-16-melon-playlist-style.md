@@ -215,6 +215,7 @@
   - **Files**:
     - 주: `src/DeskTube/Views/PlaylistsPage.xaml`
     - 동반: `src/DeskTube/Views/PlaylistsPage.xaml.cs` (컨텍스트 메뉴 핸들러 연결 — 기존 핸들러 재사용), `src/DeskTube/Strings/en-US/Resources.resw`, `src/DeskTube/Strings/ko-KR/Resources.resw` (셔플듣기·전체듣기·헤더 3라벨·메뉴 3항목·행 재생 접근성 이름)
+    - 동반: `src/DeskTube/ViewModels/PlaylistsViewModel.cs` — Entry의 `ThumbnailUrl`(string)을 `ThumbnailUri`(Uri)로 조정 (x:Bind는 string→Uri 변환 미지원, BitmapImage.UriSource 직결 필요. 소비자 0이던 속성이라 안전 — 구현 중 조정, spec 리뷰 M2 반영)
   - **Edge Cases**: 좁은 창 폭 → 곡정보 열 `*` + TextTrimming / 썸네일 로드 실패·로드 전 → 빈 자리 배경(`ControlFillColorDefaultBrush`) 표시 / 항목 0개 리스트 → 기존 NoSelectionText·빈 목록 동작 유지 / 접근성 — 행 재생 버튼 AutomationProperties.Name 필수(AGENTS)
   - **Halt Forecast**: 없음 (XAML·리소스 — 파괴·외부·시그니처 없음)
   - **Depends on**: T4
