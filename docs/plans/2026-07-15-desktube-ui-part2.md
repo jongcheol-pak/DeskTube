@@ -137,13 +137,13 @@
 
 ## Tasks
 
-- [ ] T1. 트레이 아이콘 (FR-9)
+- [x] T1. 트레이 아이콘 (FR-9)
   - **Type**: C
   - **Design**: ① `src/DeskTube/Services/TrayIconService.cs` + 아이콘 리소스(`Assets/tray.ico`) ② H.NotifyIcon.WinUI `TaskbarIcon`을 App 수명으로 소유 — 메뉴 5항목(D2), 더블클릭=설정 창 열기 ③ PlaybackCoordinator(재생/정지/음소거)·MainWindow(열기/닫기=숨김) 호출, App.xaml.cs에서 초기화 ④ 이번에 안 함: 풍선 알림, 동적 아이콘(재생 상태 배지)
   - **Acceptance**: Given 앱 실행, When 트레이 메뉴에서 재생/정지/볼륨 켬·끔/종료 각각 실행, Then 대응 동작 수행 + 설정 창 X 클릭 시 앱이 종료되지 않고 트레이 유지 — HUMAN-VERIFY; 빌드·기존 테스트 통과
   - **Files**:
     - 주: `src/DeskTube/Services/TrayIconService.cs`
-    - 동반: `src/DeskTube/App.xaml.cs`, `src/DeskTube/MainWindow.xaml.cs`(닫기→숨김), `src/DeskTube/Assets/tray.ico`
+    - 동반: `src/DeskTube/App.xaml.cs`, `src/DeskTube/MainWindow.xaml.cs`(닫기→숨김), `src/DeskTube/Assets/tray.ico`, (구현 중 추가) `MainWindow.xaml`(안내 InfoBar), `DeskTube.csproj`, `Services/Loc.cs`, `Strings/en-US·ko-KR/Resources.resw` — D6 하드코딩 금지에 따른 선행 생성
   - **Edge Cases**:
     - 재생할 리스트가 없는 상태에서 "재생" → 설정 창 열고 안내 (조용한 무시 금지)
     - Explorer 재시작 → TaskbarCreated 재등록(H.NotifyIcon 기능 활성)
