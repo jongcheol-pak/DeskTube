@@ -40,6 +40,69 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>x:Bind 함수 — 선택 없음 안내의 반전 가시성.</summary>
     public Visibility InvertVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
+    /// <summary>x:Bind 함수 — 곡수 표기 ("12곡", 시안 헤더 행).</summary>
+    public string FormatCount(int count) => string.Format(Loc.Get("Playlists_CountFormat"), count);
+
+    // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
+
+    private static Microsoft.UI.Xaml.Media.Brush TokenBrush(string key) =>
+        (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[key];
+
+    /// <summary>외곽선 버튼(추가·셔플듣기) hover — 테두리만 코럴.</summary>
+    private void OnOutlineButtonPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button button)
+        {
+            button.BorderBrush = TokenBrush("AppAccentBrush");
+        }
+    }
+
+    private void OnOutlineButtonPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button button)
+        {
+            button.BorderBrush = TokenBrush("AppInputBorderBrush");
+        }
+    }
+
+    /// <summary>새 플레이리스트(점선 근사) hover — 테두리·텍스트 모두 코럴 (시안).</summary>
+    private void OnDashedButtonPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button button)
+        {
+            button.BorderBrush = TokenBrush("AppAccentBrush");
+            button.Foreground = TokenBrush("AppAccentBrush");
+        }
+    }
+
+    private void OnDashedButtonPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button button)
+        {
+            button.BorderBrush = TokenBrush("AppDashedBorderBrush");
+            button.Foreground = TokenBrush("AppTextNavBrush");
+        }
+    }
+
+    /// <summary>행 재생 버튼 hover — 테두리·글리프 코럴 (시안).</summary>
+    private void OnRowPlayPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button { Content: FontIcon icon } button)
+        {
+            button.BorderBrush = TokenBrush("AppAccentBrush");
+            icon.Foreground = TokenBrush("AppAccentBrush");
+        }
+    }
+
+    private void OnRowPlayPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Button { Content: FontIcon icon } button)
+        {
+            button.BorderBrush = TokenBrush("AppInputBorderBrush");
+            icon.Foreground = TokenBrush("AppChipTextBrush");
+        }
+    }
+
     private void OnLoaded(object sender, RoutedEventArgs e) => ViewModel.Load();
 
     private void OnUnloaded(object sender, RoutedEventArgs e) => ViewModel.Detach();

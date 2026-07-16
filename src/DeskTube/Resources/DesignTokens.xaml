@@ -112,6 +112,11 @@
             <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="{StaticResource AppTextStrongColor}" />
             <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="{StaticResource AppActiveBackgroundColor}" />
             <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="{StaticResource AppHoverBackgroundColor}" />
+
+            <!-- ListView lightweight 오버라이드 (시안 행 hover·활성 — plan T6) -->
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="{StaticResource AppHoverBackgroundColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="{StaticResource AppActiveBackgroundColor}" />
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="{StaticResource AppActiveBackgroundColor}" />
         </ResourceDictionary>
 
         <!-- 고대비 — 시스템 HC 색으로 매핑 (시각 정합 정밀 조정은 Deferred, plan D11).
@@ -169,6 +174,7 @@
     <CornerRadius x:Key="AppBadgeCornerRadius">20</CornerRadius>
     <CornerRadius x:Key="AppPillCornerRadius">20</CornerRadius>
     <CornerRadius x:Key="AppStopButtonCornerRadius">14</CornerRadius>
+    <CornerRadius x:Key="AppCircleButtonCornerRadius">17</CornerRadius>
     <Thickness x:Key="AppPagePadding">56,44</Thickness>
     <x:Double x:Key="AppSettingsCardMaxWidth">900</x:Double>
 

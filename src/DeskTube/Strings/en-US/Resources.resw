@@ -210,7 +210,10 @@
   <data name="PlaylistsHeader.Text" xml:space="preserve">
     <value>Playlists</value>
   </data>
-  <data name="NewPlaylistButton.Content" xml:space="preserve">
+  <data name="Playlists_CountFormat" xml:space="preserve">
+    <value>{0} tracks</value>
+  </data>
+  <data name="NewPlaylistLabel.Text" xml:space="preserve">
     <value>New playlist</value>
   </data>
   <data name="ShuffleAllLabel.Text" xml:space="preserve">
@@ -218,15 +221,6 @@
   </data>
   <data name="PlayAllLabel.Text" xml:space="preserve">
     <value>Play all</value>
-  </data>
-  <data name="ColRankLabel.Text" xml:space="preserve">
-    <value>No.</value>
-  </data>
-  <data name="ColInfoLabel.Text" xml:space="preserve">
-    <value>Track</value>
-  </data>
-  <data name="ColListenLabel.Text" xml:space="preserve">
-    <value>Listen</value>
   </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>Add a YouTube video URL</value>
