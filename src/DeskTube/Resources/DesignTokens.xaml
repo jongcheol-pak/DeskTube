@@ -102,6 +102,16 @@
                 <GradientStop Offset="0" Color="#4A3038" />
                 <GradientStop Offset="1" Color="#25191D" />
             </LinearGradientBrush>
+
+            <!-- NavigationView lightweight 오버라이드 (시안 사이드바 — plan T3, 미적용 키는 HUMAN-VERIFY로 검출) -->
+            <SolidColorBrush x:Key="NavigationViewDefaultPaneBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewItemForeground" Color="{StaticResource AppTextNavColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemForegroundSelected" Color="{StaticResource AppTextStrongColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="{StaticResource AppActiveBackgroundColor}" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="{StaticResource AppHoverBackgroundColor}" />
         </ResourceDictionary>
 
         <!-- 고대비 — 시스템 HC 색으로 매핑 (시각 정합 정밀 조정은 Deferred, plan D11).

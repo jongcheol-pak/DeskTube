@@ -2,13 +2,13 @@ using DeskTube.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace DeskTube;
 
 /// <summary>
-/// 진입점 Window — NavigationView 설정 셸 (plan D1). WinUIEx WindowManager 적용 (T5):
-/// 창 크기·위치 저장·복원(PersistenceId) + 최소 크기 + Mica 백드롭 + 커스텀 타이틀바.
+/// 진입점 Window — NavigationView 설정 셸 (plan T3, 시안 DeskTube 1a). WinUIEx WindowManager 적용:
+/// 창 크기·위치 저장·복원(PersistenceId) + 최소 크기 + 커스텀 타이틀바(44px, 시스템 캡션 버튼).
+/// 배경은 불투명 토큰(시안 — Mica 제거, plan D10), 테마는 App.xaml 다크 고정.
 /// WindowEx 상속 대신 WindowManager를 쓴 이유 — XAML 루트를 WindowEx로 바꾸면
 /// 생성되는 XamlTypeInfo.g.cs가 obsolete 속성(Icon)을 등록해 CS0618 경고 발생
 /// (이 프로젝트 빌드로 재현 확인, 생성 코드라 억제 불가). WindowManager는 동일 기능을
@@ -31,10 +31,10 @@ public sealed partial class MainWindow : Window
         _manager.MinWidth = 720;
         _manager.MinHeight = 480;
 
-        // Mica 백드롭 + 콘텐츠 확장 타이틀바 (WinUI 표준 API — plan D4)
-        SystemBackdrop = new MicaBackdrop();
+        // 콘텐츠 확장 타이틀바 — 캡션 버튼은 시스템 유지(스냅 레이아웃·접근성), 색만 토큰 정합 (Q3)
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
+        ApplyCaptionButtonColors();
 
         AppWindow.Closing += OnAppWindowClosing;
 
@@ -43,20 +43,37 @@ public sealed partial class MainWindow : Window
         NavigateOnce(typeof(HomePage));
     }
 
+    /// <summary>
+    /// 시스템 캡션 버튼을 다크 셸 토큰과 정합 — 배경 투명 + 전경/hover를 토큰 색으로.
+    /// (캡션 버튼은 앱 테마가 아니라 시스템 테마를 따를 수 있어 명시 지정 — 시각은 HUMAN-VERIFY)
+    /// </summary>
+    private void ApplyCaptionButtonColors()
+    {
+        var titleBar = AppWindow.TitleBar;
+        var transparent = Microsoft.UI.Colors.Transparent;
+        titleBar.ButtonBackgroundColor = transparent;
+        titleBar.ButtonInactiveBackgroundColor = transparent;
+        titleBar.ButtonForegroundColor = GetTokenColor("AppTextTertiaryColor");
+        titleBar.ButtonInactiveForegroundColor = GetTokenColor("AppTextTertiaryColor");
+        titleBar.ButtonHoverBackgroundColor = GetTokenColor("AppActiveBackgroundColor");
+        titleBar.ButtonHoverForegroundColor = GetTokenColor("AppTextPrimaryColor");
+    }
+
+    /// <summary>DesignTokens의 Color 토큰 조회 (없으면 안전 폴백 — 시작을 막지 않는다).</summary>
+    private static Windows.UI.Color GetTokenColor(string key) =>
+        Application.Current.Resources.TryGetValue(key, out var value) && value is Windows.UI.Color color
+            ? color
+            : Microsoft.UI.Colors.Gray;
+
     private void OnNavSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.IsSettingsSelected)
-        {
-            NavigateOnce(typeof(SettingsPage));
-            return;
-        }
-
         if (args.SelectedItem is NavigationViewItem { Tag: string tag })
         {
             var pageType = tag switch
             {
                 "home" => typeof(HomePage),
                 "playlists" => typeof(PlaylistsPage),
+                "settings" => typeof(SettingsPage),
                 "about" => typeof(AboutPage),
                 _ => null,
             };
@@ -67,12 +84,34 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>같은 페이지 재선택 시 재생성 방지.</summary>
+    /// <summary>다음 NavigateOnce에 전달할 페이지 파라미터 (칩 이동 등 — 소비 후 즉시 비움).</summary>
+    private object? _pendingNavParameter;
+
+    /// <summary>
+    /// 플레이리스트 페이지로 이동 + 해당 리스트 선택 (홈 빠른 재생 칩 진입점 — plan T3·D5).
+    /// 이미 플레이리스트 페이지면 선택만 갱신되도록 파라미터를 실어 재탐색한다.
+    /// </summary>
+    internal void NavigateToPlaylists(Guid playlistId)
+    {
+        _pendingNavParameter = playlistId;
+        if (!ReferenceEquals(Nav.SelectedItem, NavPlaylistsItem))
+        {
+            Nav.SelectedItem = NavPlaylistsItem; // SelectionChanged → NavigateOnce가 파라미터 소비
+        }
+        else
+        {
+            NavigateOnce(typeof(PlaylistsPage));
+        }
+    }
+
+    /// <summary>같은 페이지 재선택 시 재생성 방지. 대기 파라미터가 있으면 같은 페이지여도 전달한다.</summary>
     private void NavigateOnce(Type pageType)
     {
-        if (ContentFrame.CurrentSourcePageType != pageType)
+        var parameter = _pendingNavParameter;
+        _pendingNavParameter = null;
+        if (ContentFrame.CurrentSourcePageType != pageType || parameter is not null)
         {
-            ContentFrame.Navigate(pageType);
+            ContentFrame.Navigate(pageType, parameter);
         }
     }
 

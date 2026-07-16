@@ -461,6 +461,9 @@ DeskTube 설정 창(4페이지)의 시각 디자인을 시안 DeskTube 1a와 동
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 43c70fb, 15cc5ff): T1 AGENTS.md 디자인 규칙 개정(AGENTS.md는 gitignore — 디스크 반영, plan·PRD 변경 동반 커밋). T2 다크 고정 전환 + DesignTokens.xaml 신설(D3 Color 35키+Brush, HC 사전, 공용 Style 5종) + SystemAccentColor 코럴 재정의. 빌드 경고0·테스트 100/100.
+  - 결정: DesignTokens는 D3 키명 Color 리소스 + 대응 Brush 이중 구조 (spec 리뷰 B1 — acceptance grep이 D3 키명을 대조). 그라디언트 브러시 키는 AppMonitorSelectedBackgroundBrush·AppThumbPlaceholderBackgroundBrush.
+  - 결정: 다크 accent 면(AccentFillColorDefault)은 SystemAccentColorLight2를 소비 → Light2=#F25C54(원색)로 재정의.
 
 ## Next Steps
 - plan 승인 후 `pjc:implement-task`로 T1부터 자율 실행

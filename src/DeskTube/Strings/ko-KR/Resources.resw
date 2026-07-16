@@ -39,6 +39,9 @@
   <data name="Common_NotReady" xml:space="preserve">
     <value>앱을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.</value>
   </data>
+  <data name="NavSettings.Content" xml:space="preserve">
+    <value>설정</value>
+  </data>
   <data name="NavHome.Content" xml:space="preserve">
     <value>홈</value>
   </data>

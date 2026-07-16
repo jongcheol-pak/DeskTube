@@ -74,6 +74,9 @@ public partial class App : Application
     /// <summary>트레이 상주 여부 — 창 닫기를 숨김으로 바꿀지 판단 (MainWindow가 사용, plan T1).</summary>
     public static bool IsTrayActive => Current is App app && app._tray is not null;
 
+    /// <summary>설정 셸 창 접근자 — 페이지의 창 내 이동 진입점 (홈 칩 → 플레이리스트, plan T3).</summary>
+    internal MainWindow? Main => _window as MainWindow;
+
     /// <summary>트레이 '종료' 진행 중 — 창 닫기 취소(숨김) 로직을 우회한다.</summary>
     internal static bool IsExiting { get; private set; }
 
