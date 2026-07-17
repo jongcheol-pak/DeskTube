@@ -150,7 +150,7 @@
     - (ii-a) 공개 이벤트 추가 → `## 사전 승인 항목`에 등록
   - **Depends on**: -
 
-- [ ] T3. 배지 상태 로직 — 2상태 표시 + 토글 커맨드 + 이벤트 구독
+- [x] T3. 배지 상태 로직 — 2상태 표시 + 토글 커맨드 + 이벤트 구독
   - **Type**: C
   - **Design**: ① ViewModels 계층 ② `MonitorChoice.IsAudioMuted`([ObservableProperty]) — 카드별 음소거 시각 상태 / `MonitorPanelViewModel.ToggleMuteCommand`([RelayCommand] async) — `Coordinator.SetMutedAsync(!Settings.IsMuted)` 호출 1책임 ③ VM → Coordinator 호출·구독(Attach에서 `MutedChanged` 구독, Detach 해제, `_dispatcher.TryEnqueue(UpdateAudioBadges)` 마셜링 — MonitorsChanged와 동일 패턴) ④ 배지 상태를 enum·별도 클래스로 추상화하지 않음(bool 2개로 충분)
   - **Acceptance**: Given 선택된 오디오 대상 모니터, When `UpdateAudioBadges()`, Then `ShowAudioBadge = (오디오 대상 ∧ 선택됨)`(음소거 무관)·`IsAudioMuted = Settings.IsMuted`. When 트레이/설정/커맨드로 음소거 변경, Then MutedChanged 경유로 배지 상태 즉시 갱신. SettingsViewModel.OnIsMutedChanged의 수동 `MonitorPanel.UpdateAudioBadges()` 호출 제거(이벤트로 일원화). 빌드 통과

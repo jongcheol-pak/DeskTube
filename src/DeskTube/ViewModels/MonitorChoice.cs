@@ -48,9 +48,13 @@ public partial class MonitorChoice : ObservableObject
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
 
-    /// <summary>"🔊 소리" 배지 표시 — 선택됨 ∧ 오디오 대상 ∧ 비음소거 (시안 식).</summary>
+    /// <summary>소리 배지 표시 — 선택됨 ∧ 오디오 대상 (음소거 여부는 IsAudioMuted가 시각 구분 — 배지 plan T3).</summary>
     [ObservableProperty]
     public partial bool ShowAudioBadge { get; set; }
+
+    /// <summary>배지의 음소거 시각 상태 (소리/음소거 구분 — 값 정본은 AppSettings.IsMuted).</summary>
+    [ObservableProperty]
+    public partial bool IsAudioMuted { get; set; }
 
     /// <summary>마지막 체크 해제 차단의 되돌림 중 — 콜백 재진입 억제.</summary>
     internal bool SuppressCallback { get; set; }

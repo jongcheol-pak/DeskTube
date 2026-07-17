@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DeskTube.Services;
 
 namespace DeskTube.ViewModels;
@@ -47,15 +48,20 @@ public partial class MonitorPanelViewModel : ObservableObject
         // 모니터 연결/분리 즉시 반영 (plan T4 Edge) — WndProc 스레드에서 발생하므로 UI로 마셜링
         _services.Monitors.MonitorsChanged -= OnMonitorsChanged;
         _services.Monitors.MonitorsChanged += OnMonitorsChanged;
+
+        // 트레이·설정·홈 어디서 음소거를 바꿔도 배지 즉시 동기화 (배지 plan T3 — 발생 스레드 비보장, 마셜링)
+        _services.Coordinator.MutedChanged -= OnMutedChanged;
+        _services.Coordinator.MutedChanged += OnMutedChanged;
         Refresh();
     }
 
-    /// <summary>페이지 이탈 시 호출 — 모니터 변경 구독 해제 (Attach와 대칭, 누수 방지).</summary>
+    /// <summary>페이지 이탈 시 호출 — 모니터·음소거 변경 구독 해제 (Attach와 대칭, 누수 방지).</summary>
     public void Detach()
     {
         if (_services is not null)
         {
             _services.Monitors.MonitorsChanged -= OnMonitorsChanged;
+            _services.Coordinator.MutedChanged -= OnMutedChanged;
         }
     }
 
@@ -110,7 +116,7 @@ public partial class MonitorPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 오디오 배지 재계산 — 배지 = 선택됨 ∧ 오디오 대상 ∧ 비음소거 (시안 식).
+    /// 오디오 배지 재계산 — 배지 = 선택됨 ∧ 오디오 대상 (항상 표시, 소리/음소거는 IsAudioMuted가 구분 — 배지 plan T3).
     /// 대상 판정은 검증된 정적 로직(ResolveTargets/ResolveAudioTarget)을 재사용한다.
     /// </summary>
     public void UpdateAudioBadges()
@@ -128,14 +134,35 @@ public partial class MonitorPanelViewModel : ObservableObject
 
         foreach (var choice in Monitors)
         {
-            choice.ShowAudioBadge = !settings.IsMuted
-                && audio is not null
+            choice.ShowAudioBadge = audio is not null
                 && choice.IsSelected
                 && choice.Id == audio.Id;
+            choice.IsAudioMuted = settings.IsMuted;
+        }
+    }
+
+    /// <summary>홈 배지 클릭 — 음소거 토글 (FR-5 홈 진입점, 배지 plan T3). 배지 갱신은 MutedChanged 구독이 처리.</summary>
+    [RelayCommand]
+    private async Task ToggleMuteAsync()
+    {
+        if (_services is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _services.Coordinator.SetMutedAsync(!_services.Settings.IsMuted);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"음소거 전환 중 오류: {ex.GetType().Name} {ex.Message}");
         }
     }
 
     private void OnMonitorsChanged(object? sender, EventArgs e) => _dispatcher?.TryEnqueue(Refresh);
+
+    private void OnMutedChanged(object? sender, EventArgs e) => _dispatcher?.TryEnqueue(UpdateAudioBadges);
 
     private void OnMonitorSelectionChanged(MonitorChoice changed)
     {

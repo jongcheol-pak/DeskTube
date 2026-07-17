@@ -394,13 +394,9 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnVolumeChanged(double value) =>
         Apply(() => _services!.Coordinator.SetVolumeAsync((int)value), "볼륨 적용");
 
-    /// <summary>음소거 토글 (FR-5 UI 노출) — 저장·재생 반영은 기구현 SetMutedAsync가 담당. 배지도 갱신 (시안 식).</summary>
+    /// <summary>음소거 토글 (FR-5 UI 노출) — 저장·재생 반영은 기구현 SetMutedAsync가 담당. 배지 갱신은 MutedChanged 구독(공용 패널 VM)이 처리.</summary>
     partial void OnIsMutedChanged(bool value) =>
-        Apply(async () =>
-        {
-            await _services!.Coordinator.SetMutedAsync(value);
-            MonitorPanel.UpdateAudioBadges();
-        }, "음소거 적용");
+        Apply(() => _services!.Coordinator.SetMutedAsync(value), "음소거 적용");
 
     partial void OnAudioIndexChanged(int value)
     {
