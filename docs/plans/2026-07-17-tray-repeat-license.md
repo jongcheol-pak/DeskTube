@@ -26,7 +26,7 @@
 - 창/작업표시줄/타일/스플래시 아이콘 작업 — 사용자가 직접 진행 중 (이번 plan 대상 아님)
 
 ## Deferred / Follow-up
-- (없음)
+- T4 spec MINOR M1: "전체듣기 모드 명시"(PlaylistsViewModel 1줄) 단위테스트 미작성 — 레포에 ViewModel 테스트 인프라 부재(서비스 계층만 테스트하는 관례). VM 테스트 인프라 도입 시 재검토.
 
 ## Investigation Log
 - 위키 참조: 이번 4건은 프로젝트 국소 UI·로직 변경으로 위키 조회 생략 (직전 plan에서 feature/recipe 양방향 무매칭 확인 이력)
@@ -150,7 +150,7 @@
   - **Edge Cases**: 설정 페이지 NavigationCacheMode 재진입 시 제거 항목 잔상 없음(Load에서 ModeIndex 참조 제거 확인) / Mode_* 키를 다른 화면이 참조하지 않음(전수 grep 완료)
   - **Halt Forecast**: (i) "재생" 그룹이 비면 헤더 처리 애매 → 헤더도 제거로 확정(이 task 정의)
   - **Depends on**: -
-- [ ] T4. 재생 완료 시 처음부터 반복 (FR-7)
+- [x] T4. 재생 완료 시 처음부터 반복 (FR-7)
   - **Type**: D
   - **Design**: 신규 심볼 없음 — ① `PlaybackQueue.Next()`의 Sequential 분기(90~94행)를 `(_currentIndex + 1) % _items.Count` 순환으로 변경(빈 목록 null 유지), 클래스 요약·enum doc·AdvanceAsync 주석 동기화 ② `PlaylistsViewModel.StartPlaybackAsync`에서 shuffle=false 경로에 `SetModeAsync(PlaybackMode.Sequential)` 명시(D2) — Coordinator/큐 의존 방향 불변 ③ 이번에 추상화하지 않음: RepeatAll과의 로직 중복 통합(모드 의미가 달라질 수 있어 분기 유지), 모드 enum 축소(D7)
   - **Acceptance**: Given 순차 재생(전체듣기 또는 행 재생), When 마지막 곡 종료, Then 첫 곡부터 재생 계속(1곡 리스트는 같은 곡 재로드). Given 셔플듣기 직후, When 전체듣기 클릭, Then 목록 순서대로 재생. 단위테스트: 순차 끝 순환·전체듣기 모드 명시·1곡 반복 — 기존 "끝에서 정지" 테스트 2건은 반복 단언으로 교체, 나머지 전건 통과.
@@ -198,6 +198,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1~T3 완료 (커밋 0dca573, 46e1991, 691a9e7): PRD 3건 갱신 / 트레이 아이콘 Assets/AppIcon.ico 교체(tray.ico 삭제) / 설정 재생 순서 카드·그룹 헤더·VM 심볼·resw 7키×2 제거. 빌드 경고 0·테스트 100/100 유지.
 
 ## Next Steps
 - 승인 시 `pjc:implement-task`로 T1부터 자율 실행

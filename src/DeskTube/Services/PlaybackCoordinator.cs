@@ -454,7 +454,8 @@ public sealed class PlaybackCoordinator : IDisposable
         var next = _queue?.Next();
         if (next is null)
         {
-            // 순차 모드 끝 — 창 닫고 배경 복구 (plan T7 Edge Case)
+            // 재생할 항목 없음(빈 목록 — 재생 중 전 항목 삭제 등) — 창 닫고 배경 복구.
+            // 모드별 끝 도달은 null을 반환하지 않는다 (전 모드 순환 — FR-7).
             await StopAsync();
             return;
         }

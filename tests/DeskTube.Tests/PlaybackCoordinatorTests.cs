@@ -203,7 +203,7 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
-    public async Task 순차_마지막_곡_종료_시_정지하고_배경을_복구한다()
+    public async Task 순차_마지막_곡_종료_시_처음부터_반복한다()
     {
         var h = new Harness(itemCount: 1);
         await h.Coordinator.StartAsync(h.Playlist.Id);
@@ -211,9 +211,10 @@ public sealed class PlaybackCoordinatorTests
         h.Master.RaiseState(PlayerState.Playing);
         h.Master.RaiseState(PlayerState.Ended);
 
-        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
-        Assert.Contains("detach-all", h.Wallpaper.Log);
-        Assert.Contains("dispose", h.Players["MON-0"].Commands);
+        // 끝에서 정지하지 않고 첫 곡을 다시 로드한다 (FR-7 — 1곡 리스트는 같은 곡 재로드)
+        Assert.Equal(2, h.Master.Commands.Count(c => c == "load:video00000a"));
+        Assert.NotEqual(PlaybackStatus.Stopped, h.Coordinator.Status);
+        Assert.DoesNotContain("detach-all", h.Wallpaper.Log);
     }
 
     [Fact]

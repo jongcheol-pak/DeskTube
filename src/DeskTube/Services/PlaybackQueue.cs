@@ -4,8 +4,9 @@ namespace DeskTube.Services;
 
 /// <summary>
 /// 재생 순서 결정 (PRD FR-7) — 순차/셔플/랜덤/한곡반복/전체반복.
-/// 순수 로직(외부 의존 없음). 셔플은 사이클 내 전곡 1회 소진을 보장하고,
-/// 소진 후에는 재셔플해 계속 이어간다 (1곡 리스트의 반복 재생 허용 — plan T3 Edge Case).
+/// 순수 로직(외부 의존 없음). 모든 모드는 목록 끝에서 정지하지 않고 계속 반복한다
+/// (순차: 끝나면 처음부터 — 2026-07-17 FR-7 갱신). 셔플은 사이클 내 전곡 1회 소진을
+/// 보장하고, 소진 후에는 재셔플해 계속 이어간다 (1곡 리스트의 반복 재생 허용).
 /// </summary>
 public sealed class PlaybackQueue
 {
@@ -74,7 +75,7 @@ public sealed class PlaybackQueue
     }
 
     /// <summary>
-    /// 다음 항목을 결정한다. null = 재생 종료 (순차 모드의 끝, 빈 목록).
+    /// 다음 항목을 결정한다. null = 빈 목록뿐 (모든 모드가 끝에서 순환 — FR-7).
     /// </summary>
     public PlaylistItem? Next()
     {
@@ -87,12 +88,8 @@ public sealed class PlaybackQueue
         switch (_mode)
         {
             case PlaybackMode.Sequential:
-                if (_currentIndex + 1 >= _items.Count)
-                {
-                    _currentIndex = -1;
-                    return null; // 목록 끝 — 정지 (T7이 창 정리)
-                }
-                _currentIndex++;
+                // 목록 끝에서 정지하지 않고 처음부터 반복 (FR-7 — 시작 전 -1도 0으로 수렴)
+                _currentIndex = (_currentIndex + 1) % _items.Count;
                 break;
 
             case PlaybackMode.Shuffle:

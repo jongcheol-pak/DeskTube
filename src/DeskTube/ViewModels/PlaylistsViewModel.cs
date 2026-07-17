@@ -533,7 +533,7 @@ public partial class PlaylistsViewModel : ObservableObject
 
     // ---- 재생 (FR-18 — 전체듣기/셔플듣기/행 재생 3진입점이 공통 헬퍼 공유, plan 4-D) ----
 
-    /// <summary>전체듣기 — 현재 재생 모드로 리스트 처음부터.</summary>
+    /// <summary>전체듣기 — 목록 순서대로 리스트 처음부터 (끝나면 반복 — FR-7).</summary>
     [RelayCommand]
     private Task PlayAsync() => StartPlaybackAsync(startItemId: null, shuffle: false);
 
@@ -541,7 +541,7 @@ public partial class PlaylistsViewModel : ObservableObject
     [RelayCommand]
     private Task ShuffleAllAsync() => StartPlaybackAsync(startItemId: null, shuffle: true);
 
-    /// <summary>행 재생 — 해당 항목부터 (plan D3, View의 행 버튼 핸들러가 호출).</summary>
+    /// <summary>행 재생 — 해당 항목부터 목록 순서대로 (plan D3, View의 행 버튼 핸들러가 호출).</summary>
     public Task PlayItemAsync(PlaylistItemEntry entry) => StartPlaybackAsync(entry.Id, shuffle: false);
 
     private async Task StartPlaybackAsync(Guid? startItemId, bool shuffle)
@@ -552,10 +552,9 @@ public partial class PlaylistsViewModel : ObservableObject
             return;
         }
 
-        if (shuffle)
-        {
-            await _services.Coordinator.SetModeAsync(PlaybackMode.Shuffle);
-        }
+        // 진입점이 모드를 항상 명시한다 — 설정에 재생 순서 항목이 없어(2026-07-17 제거)
+        // 마지막 모드를 따라가면 셔플듣기 후 전체듣기도 셔플로 고착되기 때문 (plan D2).
+        await _services.Coordinator.SetModeAsync(shuffle ? PlaybackMode.Shuffle : PlaybackMode.Sequential);
 
         var result = await _services.Coordinator.StartAsync(playlist.Id, startItemId);
         if (!result.IsSuccess)

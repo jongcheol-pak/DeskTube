@@ -11,7 +11,7 @@ public sealed class PlaybackQueueTests
         [.. Enumerable.Range(0, count).Select(i => new PlaylistItem { Url = $"url{i}", VideoId = $"video{i:D6}" })];
 
     [Fact]
-    public void 순차_모드는_순서대로_진행하고_끝에서_정지한다()
+    public void 순차_모드는_순서대로_진행하고_끝나면_처음부터_반복한다()
     {
         var items = MakeItems(3);
         var queue = new PlaybackQueue(items, PlaybackMode.Sequential);
@@ -19,7 +19,18 @@ public sealed class PlaybackQueueTests
         Assert.Equal(items[0].Id, queue.Start()!.Id);
         Assert.Equal(items[1].Id, queue.Next()!.Id);
         Assert.Equal(items[2].Id, queue.Next()!.Id);
-        Assert.Null(queue.Next()); // 끝 — 정지
+        Assert.Equal(items[0].Id, queue.Next()!.Id); // 끝 — 처음부터 반복 (FR-7)
+    }
+
+    [Fact]
+    public void 항목_1개_순차는_같은_곡을_반복한다()
+    {
+        var items = MakeItems(1);
+        var queue = new PlaybackQueue(items, PlaybackMode.Sequential);
+
+        Assert.Equal(items[0].Id, queue.Start()!.Id);
+        Assert.Equal(items[0].Id, queue.Next()!.Id);
+        Assert.Equal(items[0].Id, queue.Next()!.Id);
     }
 
     [Fact]
