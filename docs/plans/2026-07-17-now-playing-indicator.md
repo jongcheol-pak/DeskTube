@@ -155,7 +155,7 @@
   - **Halt Forecast**:
     - (ii-a) 공개 타입 QuickChip의 형태 변경(record→class) → `## 사전 승인 항목`에 등록 (사용처 3파일 전수 확인 완료)
   - **Depends on**: T1
-- [ ] T4. PRD FR-18 보강 + README 갱신
+- [x] T4. PRD FR-18 보강 + README 갱신
   - **Type**: A
   - **Acceptance**: FR-18에 "현재 재생 중인 리스트를 플레이리스트 목록·홈 빠른 재생 칩에서 스피커 표시로 구분(일시정지 중 유지)" 취지 보강 + 변경 이력 1줄(2026-07-17, 사용자 합의) / README 기능 설명 갱신. 문서-코드 역대조 누락·잔존 0.
   - **Files**:
