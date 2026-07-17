@@ -186,6 +186,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 6b68458, cf76bcc): LastSelectedPlaylistId 필드+왕복·하위호환 테스트(106/106, spec MINOR 1 즉시 반영 — 구형 JSON 테스트 추가) / VM 선택 기록+기본 선택(칩 예약 > 저장값 > 첫 리스트, 비null만 저장).
 
 ## Next Steps
 
