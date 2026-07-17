@@ -57,6 +57,9 @@ public sealed partial class HomePage : Page
         }
     }
 
+    /// <summary>x:Bind 함수 — 칩 재생 중 글리프의 접근성 이름·툴팁 (다국어, PlaylistsPage와 동일 키).</summary>
+    public static string NowPlayingLabel() => Loc.Get("NowPlayingIndicator");
+
     /// <summary>칩 클릭 — 플레이리스트 페이지로 이동 + 해당 리스트 선택 (시안 D5, 순수 화면 이동이라 View 담당).</summary>
     private void OnChipClick(object sender, RoutedEventArgs e)
     {

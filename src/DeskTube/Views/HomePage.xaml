@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrls="using:DeskTube.Controls"
+    xmlns:local="using:DeskTube.Views"
     xmlns:vm="using:DeskTube.ViewModels">
     <!-- 시안 홈: 로그인 영역(우상단) + 제목/부제 → URL 입력+재생(카드 안 재생 중 pill) → 모니터 카드 → (하단) 빠른 재생.
          시안이 overflow:auto + 빠른 재생 하단 정렬(margin-top:auto)이라 ScrollViewer 안 Grid의
@@ -194,6 +195,14 @@
                                     <StackPanel Orientation="Horizontal" Spacing="10">
                                         <FontIcon Glyph="&#xE8FD;" FontSize="13" />
                                         <TextBlock Text="{x:Bind Name}" FontSize="13" />
+                                        <!-- 재생 중 표시 (코럴 스피커 — 플레이리스트 목록과 동일, now-playing plan T3) -->
+                                        <FontIcon
+                                            Glyph="&#xE767;"
+                                            FontSize="13"
+                                            Foreground="{ThemeResource AppAccentBrush}"
+                                            AutomationProperties.Name="{x:Bind local:HomePage.NowPlayingLabel()}"
+                                            ToolTipService.ToolTip="{x:Bind local:HomePage.NowPlayingLabel()}"
+                                            Visibility="{x:Bind IsNowPlaying, Mode=OneWay}" />
                                         <TextBlock
                                             Text="{x:Bind CountText}"
                                             FontSize="13"

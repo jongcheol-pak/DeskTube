@@ -141,7 +141,7 @@
     - 같은 리스트 재시작(StartAsync 초입 Stop→Start 연쇄): 글리프가 순간 꺼졌다 켜질 수 있음 — 허용(상태 사실 그대로 반영, 시각 영향 미미 — plan-reviewer m1, HUMAN-VERIFY에서 확인)
   - **Halt Forecast**: (없음 — 결정 전부 사전 확정)
   - **Depends on**: T1
-- [ ] T3. 홈 빠른 재생 칩에 재생 중 글리프 표시
+- [x] T3. 홈 빠른 재생 칩에 재생 중 글리프 표시
   - **Type**: C
   - **Design**: ① ViewModels/HomeViewModel.cs + Views/HomePage.xaml ② `QuickChip`을 record에서 ObservableObject partial 클래스로 전환(Id·Name·CountText는 불변 유지 + `IsNowPlaying` observable — D5 참조) ③ RefreshChips가 생성 시 초기값 설정, 기존 UpdatePlaybackState(StatusChanged 경유)가 칩 전체 재판정 — 신규 구독 불필요. 칩 템플릿 StackPanel에 FontIcon E767(AppAccentBrush, Visibility=IsNowPlaying OneWay, AutomationProperties.Name+ToolTip=resw 재사용) 추가 ④ 칩 재구성 방식(B안)·칩 스타일 신설은 하지 않음.
   - **Acceptance**: Given 홈 표시 중, When 재생 시작/정지, Then 해당 리스트 칩에만 글리프 표시/제거 / Given 재생 중 홈 진입, Then 즉시 표시 / "빠른 재생" 리스트 재생 시 그 칩에도 동일 표시. 빌드 경고 0. (시각 표시는 HUMAN-VERIFY)
@@ -183,6 +183,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 a0addd3, 0eb687e): CurrentPlaylistId 정본 신설(SetStatus 전 확정 — 레이스 제거)·IsPlaying 전환·테스트 1건 / 플레이리스트 목록 글리프(E767·resw NowPlayingIndicator·정적 헬퍼 NowPlayingLabel). 빌드 0경고·117/117·리뷰 전건 OK.
+  - 결정: 접근성 문구는 resw attached 구문 대신 정적 헬퍼 x:Bind(MonitorCardsControl.BadgeToggleName 선례) — 문구 자체는 resw 키.
 
 ## Next Steps
 

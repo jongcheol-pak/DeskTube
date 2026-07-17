@@ -6,8 +6,27 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube.ViewModels;
 
-/// <summary>홈 빠른 재생 칩 1개 (플레이리스트 요약 — restyle plan T5, 시안 chips).</summary>
-public sealed record QuickChip(Guid Id, string Name, string CountText);
+/// <summary>홈 빠른 재생 칩 1개 (플레이리스트 요약 — restyle plan T5, 시안 chips).
+/// 재생 중 표시가 실시간 갱신돼야 해 record 대신 관찰 가능 클래스 (now-playing plan T3·D5, PlaylistEntry 선례).</summary>
+public sealed partial class QuickChip : ObservableObject
+{
+    public QuickChip(Guid id, string name, string countText)
+    {
+        Id = id;
+        Name = name;
+        CountText = countText;
+    }
+
+    public Guid Id { get; }
+
+    public string Name { get; }
+
+    public string CountText { get; }
+
+    /// <summary>지금 배경 재생 중인 리스트 — 스피커 글리프 표시용.</summary>
+    [ObservableProperty]
+    public partial bool IsNowPlaying { get; set; }
+}
 
 /// <summary>
 /// 홈 — URL 입력·즉시 재생 + 재생 중 pill + 모니터 카드 + 빠른 재생 칩 (restyle plan T5, 시안).
@@ -135,6 +154,17 @@ public partial class HomeViewModel : ObservableObject
     {
         IsPlaying = status != PlaybackStatus.Stopped;
         UpdatePlayingLabel();
+        UpdateChipNowPlaying();
+    }
+
+    /// <summary>칩 재생 중 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).</summary>
+    private void UpdateChipNowPlaying()
+    {
+        var currentId = _services?.Coordinator.CurrentPlaylistId;
+        foreach (var chip in QuickChips)
+        {
+            chip.IsNowPlaying = chip.Id == currentId;
+        }
     }
 
     private void OnMonitorStateChanged(object? sender, EventArgs e) => UpdatePlayingLabel();
@@ -154,12 +184,16 @@ public partial class HomeViewModel : ObservableObject
         }
 
         QuickChips.Clear();
+        var currentId = _services.Coordinator.CurrentPlaylistId; // 재구성 시점 초기 반영 (이후 갱신은 StatusChanged)
         foreach (var playlist in _services.Library.Playlists)
         {
             QuickChips.Add(new QuickChip(
                 playlist.Id,
                 playlist.Name,
-                string.Format(Loc.Get("Home_ChipCountFormat"), playlist.Items.Count)));
+                string.Format(Loc.Get("Home_ChipCountFormat"), playlist.Items.Count))
+            {
+                IsNowPlaying = playlist.Id == currentId,
+            });
         }
 
         HasChips = QuickChips.Count > 0;
