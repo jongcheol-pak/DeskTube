@@ -146,15 +146,15 @@
                 <controls:SettingsCard x:Uid="AccountCard">
                     <StackPanel Orientation="Horizontal" Spacing="14">
                         <TextBlock
-                            Text="{x:Bind ViewModel.AccountStatusText, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.Account.AccountStatusText, Mode=OneWay}"
                             Style="{StaticResource BodyTextBlockStyle}"
                             FontSize="13"
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource AppTextTertiaryBrush}" />
                         <Button
-                            Content="{x:Bind ViewModel.AccountButtonText, Mode=OneWay}"
-                            Command="{x:Bind ViewModel.AccountActionCommand}"
-                            IsEnabled="{x:Bind ViewModel.AccountActionAvailable, Mode=OneWay}" />
+                            Content="{x:Bind ViewModel.Account.AccountButtonText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.Account.AccountActionCommand}"
+                            IsEnabled="{x:Bind ViewModel.Account.AccountActionAvailable, Mode=OneWay}" />
                     </StackPanel>
                 </controls:SettingsCard>
 

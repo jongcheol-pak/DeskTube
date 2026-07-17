@@ -19,18 +19,41 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- 제목 + 부제 (시안 30px/14px) -->
-            <StackPanel Grid.Row="0" Spacing="8">
-                <TextBlock
-                    x:Uid="HomeHeader"
-                    FontSize="30"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource AppTextStrongBrush}" />
-                <TextBlock
-                    x:Uid="HomeSubtitle"
-                    FontSize="14"
-                    Foreground="{ThemeResource AppTextSecondaryBrush}" />
-            </StackPanel>
+            <!-- 제목 + 부제 (시안 30px/14px) + 우측 로그인 상태 (FR-15) -->
+            <Grid Grid.Row="0" ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Spacing="8">
+                    <TextBlock
+                        x:Uid="HomeHeader"
+                        FontSize="30"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource AppTextStrongBrush}" />
+                    <TextBlock
+                        x:Uid="HomeSubtitle"
+                        FontSize="14"
+                        Foreground="{ThemeResource AppTextSecondaryBrush}" />
+                </StackPanel>
+                <!-- 유튜브 계정 상태 + 로그인/로그아웃 (공용 계정 패널 — 설정 카드와 동일 바인딩) -->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="14"
+                    VerticalAlignment="Top">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.Account.AccountStatusText, Mode=OneWay}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        FontSize="13"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                    <Button
+                        Content="{x:Bind ViewModel.Account.AccountButtonText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.Account.AccountActionCommand}"
+                        IsEnabled="{x:Bind ViewModel.Account.AccountActionAvailable, Mode=OneWay}" />
+                </StackPanel>
+            </Grid>
 
             <!-- URL 입력 + 재생 버튼 (시안 h48, max 860, gap 12) -->
             <Grid Grid.Row="1" MaxWidth="860" HorizontalAlignment="Left" ColumnSpacing="12">

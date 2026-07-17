@@ -26,14 +26,14 @@ public sealed partial class SettingsPage : Page
     // (ctor 구독 + Unloaded 해제면 2번째 진입부터 로그인 버튼이 무반응이 됨)
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        ViewModel.SignInRequested += OnSignInRequested;
+        ViewModel.Account.SignInRequested += OnSignInRequested;
         ViewModel.Load();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
         ViewModel.Detach();
-        ViewModel.SignInRequested -= OnSignInRequested;
+        ViewModel.Account.SignInRequested -= OnSignInRequested;
     }
 
     /// <summary>로그인 창 열기 (T5) — 닫히면 세션 상태 재확인 (도중 닫기 = 상태 변화 없음).</summary>
@@ -44,7 +44,7 @@ public sealed partial class SettingsPage : Page
         {
             try
             {
-                await ViewModel.RefreshSessionAsync();
+                await ViewModel.Account.RefreshSessionAsync();
             }
             catch (Exception ex)
             {

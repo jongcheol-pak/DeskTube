@@ -21,9 +21,35 @@ public sealed partial class HomePage : Page
     public HomeViewModel ViewModel { get; } = new();
 
     // 캐시 페이지는 Loaded/Unloaded가 진입마다 반복 — 구독·해제 대칭 (SettingsPage와 동일 패턴)
-    private void OnLoaded(object sender, RoutedEventArgs e) => ViewModel.Load();
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.Account.SignInRequested += OnSignInRequested;
+        ViewModel.Load();
+    }
 
-    private void OnUnloaded(object sender, RoutedEventArgs e) => ViewModel.Detach();
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.Detach();
+        ViewModel.Account.SignInRequested -= OnSignInRequested;
+    }
+
+    /// <summary>로그인 창 열기 (FR-15) — 닫히면 세션 상태 재확인 (SettingsPage와 동일 패턴).</summary>
+    private void OnSignInRequested(object? sender, EventArgs e)
+    {
+        var login = new LoginWindow();
+        login.Closed += async (_, _) =>
+        {
+            try
+            {
+                await ViewModel.Account.RefreshSessionAsync();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"로그인 후 상태 갱신 실패: {ex.GetType().Name} {ex.Message}");
+            }
+        };
+        login.Activate();
+    }
 
     /// <summary>빠른 재생 칩 하단 정렬 재현 — 콘텐츠가 뷰포트보다 짧으면 뷰포트만큼 늘린다 (시안 margin-top:auto).</summary>
     private void OnRootSizeChanged(object sender, SizeChangedEventArgs e) =>

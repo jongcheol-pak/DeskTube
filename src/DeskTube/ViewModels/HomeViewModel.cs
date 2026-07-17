@@ -33,6 +33,9 @@ public partial class HomeViewModel : ObservableObject
     /// <summary>모니터 카드 패널 (설정과 공유하는 공용 VM — 선택 상태의 정본은 AppSettings).</summary>
     public MonitorPanelViewModel MonitorPanel { get; } = new();
 
+    /// <summary>유튜브 계정 상태 패널 (설정과 공유하는 공용 VM — FR-15, plan T5 D5).</summary>
+    public AccountPanelViewModel Account { get; } = new();
+
     /// <summary>빠른 재생 칩 (플레이리스트 요약 — 클릭 시 View가 플레이리스트 페이지로 이동, D5).</summary>
     public ObservableCollection<QuickChip> QuickChips { get; } = [];
 
@@ -102,6 +105,7 @@ public partial class HomeViewModel : ObservableObject
         }
 
         MonitorPanel.Attach(services);
+        Account.Attach(services); // 진입마다 로그인 상태 재확인 (설정에서 로그아웃했을 수 있음 — plan T5)
         RefreshChips();
         UpdatePlaybackState(services.Coordinator.Status);
     }
