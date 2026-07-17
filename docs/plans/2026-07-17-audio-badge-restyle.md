@@ -183,7 +183,7 @@
     - (ii-a) MonitorCardsControl 공개 DP 추가 → `## 사전 승인 항목`
   - **Depends on**: T1, T3
 
-- [ ] T5. 문서 — PRD FR-5 갱신 + README
+- [x] T5. 문서 — PRD FR-5 갱신 + README
   - **Type**: A
   - **Acceptance**: docs/prd.md FR-5에 "홈 화면 모니터 카드의 소리 배지 클릭으로도 음소거를 전환할 수 있다(홈 한정). 배지는 오디오 대상 모니터에 항상 표시되며 소리/음소거 상태를 구분 표시" 취지 반영 + 변경 이력 1줄(2026-07-17). README.md 홈 화면·모니터 카드 설명이 새 배지 동작(2상태·홈 클릭 토글)과 일치
   - **Files**:
