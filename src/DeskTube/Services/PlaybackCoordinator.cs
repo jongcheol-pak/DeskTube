@@ -1,4 +1,5 @@
 using DeskTube.Models;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube.Services;
 
@@ -448,7 +449,7 @@ public sealed class PlaybackCoordinator : IDisposable
                 FireAndForget(async () =>
                 {
                     await StopAsync();
-                    ToastService.Show(Loc.Get("Playback_AllItemsFailed"), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error);
+                    ToastService.Show(Loc.Get("Playback_AllItemsFailed"), InfoBarSeverity.Error);
                 }, "전 항목 재생 불가 정지");
                 return;
             }

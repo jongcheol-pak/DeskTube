@@ -213,7 +213,7 @@
     - 동반: `src/DeskTube/Strings/ko-KR/Resources.resw`·`src/DeskTube/Strings/en-US/Resources.resw` (신규 키 `Playback_AllItemsFailed` — ko "재생할 수 있는 항목이 없어 재생을 중지했습니다." / en "Playback stopped because no items could be played.")
     - 테스트: `tests/DeskTube.Tests/PlaybackCoordinatorTests.cs` (신규 3종)
   - **Edge Cases**:
-    - 1곡 리스트가 재생 불가 — 1회 재시도 후 카운터=1 ≥ 항목 수 1 → 정지+안내(무한 재로드 방지)
+    - 1곡 리스트가 재생 불가 — 첫 에러에서 카운터=1 ≥ 항목 수 1 → 재로드 없이 즉시 정지+안내(무한 재로드 방지, 구현 확인 반영)
     - 같은 곡에서 에러 이벤트 중복 발화 — pending 플래그로 1회만 스킵
     - -1(API 로드 실패)·-2(프로세스 실패)는 기존 별도 경로(재시도·재생성) 불변
     - 재생 중 사용자가 정지 — Status Stopped 조기 반환(기존 가드 유지)
