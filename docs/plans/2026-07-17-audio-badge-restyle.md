@@ -126,8 +126,8 @@
 - **Source**: 기존 문구 리소스 (자체 확정)
 
 ## Tasks
-- [ ] T1. 디자인 토큰 — 배지 모서리·상태 색
-  - **Type**: B
+- [x] T1. 디자인 토큰 — 배지 모서리·상태 색
+  - **Type**: C (B→격상: prefilter ESCALATE — prefilter가 플랫폼 미명시 빌드로 실패 관측, 실제 `-p:Platform=x64` 빌드는 경고/오류 0)
   - **Acceptance**: Given DesignTokens.xaml, When 빌드, Then 통과하고 `AppBadgeCornerRadius`=4, Default 사전에 `AppBadgeForegroundColor #1A1A1C`·`AppBadgeMutedBackgroundColor #3A3A40`·`AppBadgeMutedForegroundColor #B8B8BE` + 대응 Brush 3개, HighContrast 사전에 같은 Brush 3개(Foreground=SystemColorHighlightTextColor 아님 — 소리 배지 배경이 Highlight이므로 HighlightText, Muted 배경=ButtonFace·글자=ButtonText) 존재 (grep 확인)
   - **Files**:
     - 주: `src/DeskTube/Resources/DesignTokens.xaml`

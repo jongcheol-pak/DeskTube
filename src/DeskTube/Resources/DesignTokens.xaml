@@ -49,6 +49,10 @@
             <Color x:Key="AppMonitorSubColor">#7A7A80</Color>
             <Color x:Key="AppMonitorBorderColor">#3A3A40</Color>
             <Color x:Key="AppMonitorStandColor">#3A3A40</Color>
+            <!-- 소리 배지 (2026-07-17 배지 리스타일 — 코럴 배경 위 진한 글자, 음소거는 저채도 회색) -->
+            <Color x:Key="AppBadgeForegroundColor">#1A1A1C</Color>
+            <Color x:Key="AppBadgeMutedBackgroundColor">#3A3A40</Color>
+            <Color x:Key="AppBadgeMutedForegroundColor">#B8B8BE</Color>
 
             <!-- 대응 브러시 (화면 소비용) — 배경·면 -->
             <SolidColorBrush x:Key="AppRootBackgroundBrush" Color="{StaticResource AppRootBackgroundColor}" />
@@ -92,6 +96,9 @@
             <SolidColorBrush x:Key="AppMonitorSubBrush" Color="{StaticResource AppMonitorSubColor}" />
             <SolidColorBrush x:Key="AppMonitorBorderBrush" Color="{StaticResource AppMonitorBorderColor}" />
             <SolidColorBrush x:Key="AppMonitorStandBrush" Color="{StaticResource AppMonitorStandColor}" />
+            <SolidColorBrush x:Key="AppBadgeForegroundBrush" Color="{StaticResource AppBadgeForegroundColor}" />
+            <SolidColorBrush x:Key="AppBadgeMutedBackgroundBrush" Color="{StaticResource AppBadgeMutedBackgroundColor}" />
+            <SolidColorBrush x:Key="AppBadgeMutedForegroundBrush" Color="{StaticResource AppBadgeMutedForegroundColor}" />
 
             <!-- 그라디언트 (D3: AppMonitorSelectedBackground 180° / AppThumbPlaceholderBackground 135°) -->
             <LinearGradientBrush x:Key="AppMonitorSelectedBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
@@ -163,6 +170,10 @@
             <SolidColorBrush x:Key="AppMonitorSubBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AppMonitorBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="AppMonitorStandBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <!-- 소리 배지 — 배경이 Highlight(AppAccentBrush)이므로 글자는 HighlightText, 음소거는 버튼 색 계열 -->
+            <SolidColorBrush x:Key="AppBadgeForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="AppBadgeMutedBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="AppBadgeMutedForegroundBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="AppThumbPlaceholderBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
@@ -176,7 +187,7 @@
     <CornerRadius x:Key="AppIconCornerRadius">5</CornerRadius>
     <CornerRadius x:Key="AppMonitorCardCornerRadius">10</CornerRadius>
     <CornerRadius x:Key="AppMonitorStandCornerRadius">3</CornerRadius>
-    <CornerRadius x:Key="AppBadgeCornerRadius">20</CornerRadius>
+    <CornerRadius x:Key="AppBadgeCornerRadius">4</CornerRadius>
     <CornerRadius x:Key="AppPillCornerRadius">20</CornerRadius>
     <CornerRadius x:Key="AppStopButtonCornerRadius">14</CornerRadius>
     <CornerRadius x:Key="AppCircleButtonCornerRadius">17</CornerRadius>
