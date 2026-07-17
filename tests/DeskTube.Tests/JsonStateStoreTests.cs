@@ -43,6 +43,8 @@ public sealed class JsonStateStoreTests : IDisposable
             FitMode = FitMode.Stretch,
             ReduceMirrorQuality = true,
             LastPlaylistId = Guid.NewGuid(),
+            LastItemId = Guid.NewGuid(),
+            AutoPlayOnLaunch = true,
             PauseOnFullscreen = false,
             Language = "ko",
         };

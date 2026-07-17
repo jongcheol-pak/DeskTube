@@ -203,6 +203,27 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 재생_시작_시_마지막_재생_항목이_저장된다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        Assert.Equal(h.Playlist.Items[0].Id, h.Settings.LastItemId); // FR-19 — 첫 곡 기록
+    }
+
+    [Fact]
+    public async Task 곡_진행_시_마지막_재생_항목이_갱신된다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseState(PlayerState.Playing);
+        h.Master.RaiseState(PlayerState.Ended);
+
+        Assert.Equal(h.Playlist.Items[1].Id, h.Settings.LastItemId); // FR-19 — 다음 곡으로 갱신
+    }
+
+    [Fact]
     public async Task 순차_마지막_곡_종료_시_처음부터_반복한다()
     {
         var h = new Harness(itemCount: 1);

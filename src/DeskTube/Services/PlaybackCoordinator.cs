@@ -461,10 +461,15 @@ public sealed class PlaybackCoordinator : IDisposable
         }
 
         LoadAll(next);
+        await _store.SaveSettingsAsync(_settings); // 곡 전환 시 LastItemId 영속 (FR-19 — StartAsync는 자체 저장에 편승)
     }
 
     private void LoadAll(PlaylistItem item)
     {
+        // 항목 재생 시작 단일 경로 — 마지막 재생 항목을 기록해 앱 시작 시 재개에 쓴다 (FR-19).
+        // 저장은 호출부 몫 (ReloadCurrentTrack은 현재 곡 재로드라 동일 값 재설정 — 저장 불요).
+        _settings.LastItemId = item.Id;
+
         _suppressEnded = true; // 새 곡 Playing 확인 전까지 이전 곡 Ended 무시
         foreach (var entry in _players.Values)
         {

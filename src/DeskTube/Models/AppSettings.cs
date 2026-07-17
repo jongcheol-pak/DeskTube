@@ -34,6 +34,12 @@ public sealed class AppSettings
     /// <summary>마지막 재생 플레이리스트 (부팅 자동 재생용 — PRD FR-8).</summary>
     public Guid? LastPlaylistId { get; set; }
 
+    /// <summary>마지막 재생 항목 — 앱 시작·부팅 자동 재생의 항목 단위 재개용 (PRD FR-19·FR-8).</summary>
+    public Guid? LastItemId { get; set; }
+
+    /// <summary>앱 시작 후 자동 재생 (PRD FR-19 — 기본 꺼짐). 켜면 일반 실행 시 마지막 항목부터 재생.</summary>
+    public bool AutoPlayOnLaunch { get; set; }
+
     /// <summary>자동 일시정지 정책 (PRD NFR-1 — 기본 모두 켬).</summary>
     public bool PauseOnFullscreen { get; set; } = true;
 
