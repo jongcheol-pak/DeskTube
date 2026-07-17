@@ -62,6 +62,8 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(settings.FitMode, loaded.FitMode);
         Assert.Equal(settings.ReduceMirrorQuality, loaded.ReduceMirrorQuality);
         Assert.Equal(settings.LastPlaylistId, loaded.LastPlaylistId);
+        Assert.Equal(settings.LastItemId, loaded.LastItemId);
+        Assert.Equal(settings.AutoPlayOnLaunch, loaded.AutoPlayOnLaunch);
         Assert.Equal(settings.PauseOnFullscreen, loaded.PauseOnFullscreen);
         Assert.Equal(settings.Language, loaded.Language);
     }
