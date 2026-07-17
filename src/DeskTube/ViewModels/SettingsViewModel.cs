@@ -95,7 +95,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool ReduceMirrorQuality { get; set; }
 
-    /// <summary>앱 시작 후 자동 재생 토글 (FR-19 — 기본 꺼짐, 마지막 항목 재개).</summary>
+    /// <summary>앱 시작 후 자동 재생 토글 (FR-19 — 기본 켜짐, 마지막 항목 재개).</summary>
     [ObservableProperty]
     public partial bool AutoPlayOnLaunch { get; set; }
 
