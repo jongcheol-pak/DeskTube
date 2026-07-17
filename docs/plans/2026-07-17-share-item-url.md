@@ -110,7 +110,7 @@
     - (ii-a) `PlaylistsViewModel.NotifyLinkCopied/NotifyLinkCopyFailed` 공개 메서드 추가 → `## 사전 승인 항목`
   - **Depends on**: -
 
-- [ ] T2. 문서 — PRD FR-18 갱신 + README
+- [x] T2. 문서 — PRD FR-18 갱신 + README
   - **Type**: A
   - **Acceptance**: docs/prd.md FR-18에 "항목 우클릭 메뉴에서 공유 — URL 확인/클립보드 복사 팝업" 취지 반영 + 변경 이력 1줄. README 플레이리스트 항목에 공유(URL 복사) 반영
   - **Files**:
