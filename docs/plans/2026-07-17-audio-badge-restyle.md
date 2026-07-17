@@ -210,6 +210,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 208d593, 51e9170): 배지 토큰(radius 4 + 상태 색 3쌍 + HC) / MutedChanged 이벤트 + 테스트(105/105). T1은 prefilter ESCALATE(플랫폼 미명시 빌드 오탐)로 C 격상 처리.
+  - 참고: dotnet test는 `-p:Platform=x64` 필수 (deferred 대장 기지 항목과 동일 원인).
 
 ## Next Steps
 
