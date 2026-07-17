@@ -39,6 +39,9 @@
   <data name="Tray_PlayFailed" xml:space="preserve">
     <value>Could not start playback.</value>
   </data>
+  <data name="Playback_AllItemsFailed" xml:space="preserve">
+    <value>Playback stopped because no items could be played.</value>
+  </data>
   <data name="Common_NotReady" xml:space="preserve">
     <value>The app is getting ready. Please try again in a moment.</value>
   </data>

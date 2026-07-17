@@ -267,6 +267,44 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 첫_곡부터_재생_불가면_Playing_이전에도_다음_곡으로_스킵한다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        // Playing 도달 전(곡 시작 직후) 에러 — 로드 억제 가드와 무관하게 스킵돼야 한다 (FR-1 보강)
+        h.Master.RaiseError(150);
+
+        Assert.Contains("load:video00001a", h.Players["MON-0"].Commands);
+    }
+
+    [Fact]
+    public async Task 연속_재생_불가_곡은_계속_스킵한다()
+    {
+        var h = new Harness(itemCount: 3);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseError(150); // 1곡째 재생 불가 → 2곡째 로드
+        h.Master.RaiseError(150); // 2곡째도 재생 불가 → 3곡째 로드
+
+        Assert.Contains("load:video00002a", h.Players["MON-0"].Commands);
+        Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status);
+    }
+
+    [Fact]
+    public async Task 전_곡이_재생_불가면_정지한다()
+    {
+        var h = new Harness(itemCount: 2);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseError(150); // 1곡째 → 2곡째 스킵
+        h.Master.RaiseError(150); // 2곡째 — 연속 2개 = 전 항목 재생 불가
+
+        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
+        Assert.Contains("detach-all", h.Wallpaper.Log); // 배경 복구까지 정리됨
+    }
+
+    [Fact]
     public async Task 플레이어_생성_실패_시_원자적으로_정리하고_실패를_반환한다()
     {
         var h = new Harness();

@@ -46,6 +46,12 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>곡 전환 직후 늦게 도착하는 이전 곡의 Ended 중복 처리 방지 (Playing 수신 시 해제).</summary>
     private bool _suppressEnded;
 
+    /// <summary>연속 재생 불가 곡 수 (FR-1) — Playing 도달 시 리셋. 큐 항목 수에 도달하면 전 항목 재생 불가로 정지.</summary>
+    private int _errorSkipCount;
+
+    /// <summary>에러 스킵 예약됨 — 같은 곡의 중복 에러 이벤트로 다중 스킵 방지 (다음 곡 로드 시 해제).</summary>
+    private bool _errorAdvancePending;
+
     private int _timeTicks;
     private int _healthFailures;
     private bool _handlingMonitorChange;
@@ -151,6 +157,8 @@ public sealed class PlaybackCoordinator : IDisposable
         _userPaused = false;
         _policyPaused = false;
         _healthFailures = 0;
+        _errorSkipCount = 0;
+        _errorAdvancePending = false;
         SetStatus(PlaybackStatus.Playing);
 
         _settings.LastPlaylistId = playlistId;
@@ -398,6 +406,7 @@ public sealed class PlaybackCoordinator : IDisposable
         if (state == PlayerState.Playing)
         {
             _suppressEnded = false;
+            _errorSkipCount = 0; // 정상 재생 도달 — 연속 재생 불가 카운트 초기화 (FR-1)
         }
         else if (state == PlayerState.Ended && !_suppressEnded && Status == PlaybackStatus.Playing)
         {
@@ -425,10 +434,26 @@ public sealed class PlaybackCoordinator : IDisposable
             return;
         }
 
-        // 임베드 금지(101/150) 등 재생 불가 — 마스터 기준으로 다음 곡 스킵 (PRD FR-1 Edge)
-        if (IsMaster(sender) && !_suppressEnded)
+        // 임베드 금지(101/150) 등 재생 불가 — 마스터 기준으로 다음 곡 스킵 (PRD FR-1 Edge).
+        // 가드는 Ended 억제(_suppressEnded)와 분리 — 곡 시작 직후(Playing 이전) 에러도 스킵해야 한다 (FR-1 보강).
+        if (IsMaster(sender) && !_errorAdvancePending)
         {
-            _suppressEnded = true;
+            _errorAdvancePending = true;
+            _errorSkipCount++;
+
+            // 전 항목 재생 불가 — 같은 곡 무한 재로드 방지: 정지 후 안내 (FR-1)
+            if (_queue is not null && _errorSkipCount >= _queue.Count)
+            {
+                AppLog.Write($"재생 불가 곡 연속 {_errorSkipCount}개 — 전 항목 재생 불가로 정지합니다.");
+                FireAndForget(async () =>
+                {
+                    await StopAsync();
+                    ToastService.Show(Loc.Get("Playback_AllItemsFailed"), Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error);
+                }, "전 항목 재생 불가 정지");
+                return;
+            }
+
+            _suppressEnded = true; // 스킵 전환 중 이전 곡의 늦은 Ended 무시 (기존 동작 유지)
             FireAndForget(AdvanceAsync, "재생 불가 곡 스킵");
         }
     }
@@ -488,6 +513,8 @@ public sealed class PlaybackCoordinator : IDisposable
         _settings.LastItemId = item.Id;
 
         _suppressEnded = true; // 새 곡 Playing 확인 전까지 이전 곡 Ended 무시
+        _errorAdvancePending = false; // 새 곡의 재생 불가 에러는 다시 수용 (이전 곡 잔여 에러의 오도착은
+                                      // 한 곡 추가 스킵으로 끝나며 전곡 불가 안전망이 무한 루프를 막는다)
         foreach (var entry in _players.Values)
         {
             entry.Player.Load(item.VideoId); // loadVideoById는 즉시 재생 시작

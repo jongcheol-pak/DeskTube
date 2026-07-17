@@ -39,6 +39,9 @@
   <data name="Tray_PlayFailed" xml:space="preserve">
     <value>재생을 시작하지 못했습니다.</value>
   </data>
+  <data name="Playback_AllItemsFailed" xml:space="preserve">
+    <value>재생할 수 있는 항목이 없어 재생을 중지했습니다.</value>
+  </data>
   <data name="Common_NotReady" xml:space="preserve">
     <value>앱을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.</value>
   </data>
