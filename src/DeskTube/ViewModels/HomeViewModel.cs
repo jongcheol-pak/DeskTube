@@ -209,5 +209,4 @@ public partial class HomeViewModel : ObservableObject
         RefreshChips(); // "빠른 재생" 리스트 생성·곡 교체가 칩 표시에 반영되게
         ToastService.Show(Loc.Get("Home_PlayStarted"), InfoBarSeverity.Success);
     }
-
 }
