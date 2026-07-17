@@ -169,6 +169,8 @@
 - 수동 검증 (HUMAN-VERIFY): ① 토글 켬 → 앱 재실행 시 마지막 곡부터 재생 ② 토글 끔 → 재생 없음 ③ 부팅 자동 시작 시 마지막 곡부터 ④ 설정 카드 문구·위치 시안 일치
 
 ## Phase Ledger
+- Phase F 통과 (HEAD a98fcf7) — F-2 테스트 104/104, F-7 plan-completion-reviewer OK (0/0/0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-19·FR-8·FR-10 전건 충족 (F-7 대조 재사용, 재루프 0회), HUMAN-VERIFY 4건 잔여
 
 ## Retry Ledger
 
@@ -176,8 +178,8 @@
 - T1~T2 완료 (커밋 d8aab80, 17e2541): PRD FR-19 신설·FR-8/10 보강 / AppSettings LastItemId·AutoPlayOnLaunch additive + LoadAll 기록·AdvanceAsync 저장(D3). 테스트 104/104. T2 spec MAJOR 1(왕복 Assert 누락) 수정 후 OK.
 
 ## Next Steps
-- 승인 시 `pjc:implement-task`로 T1부터 자율 실행
-- 완료 시 deferred.md 19행("앱 시작 후 자동 재생") `## 종결` 이동
+- 전 task 완료 + Phase F/G 통과. deferred.md "앱 시작 후 자동 재생" 종결 이관 완료.
+- 잔여: HUMAN-VERIFY 4건(토글 켬 재실행 재개·토글 끔 무재생·부팅 자동 재생 항목 재개·설정 카드 문구/위치) + main 병합/push(별도 승인)
 
 ## Open Questions
 - [x] Q1: "이어서 재생" 범위 → **항목(곡) 단위 (사용자 확정, D1 반영)**

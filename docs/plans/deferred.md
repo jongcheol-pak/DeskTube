@@ -2,6 +2,7 @@
 
 ## 대기
 - [2026-07-16] AGENTS.md Test 명령에 `-p:Platform=x64` 추가 — record-project-fact로 사용자 승인 후 갱신 (출처: 2026-07-15-desktube-core-part1 T1)
+- [2026-07-17] AGENTS.md Stack의 net8.0 표기를 실물(net10.0-windows10.0.22621.0)로 갱신 — record-project-fact 승인 필요 (출처: 2026-07-17-autoplay-on-launch F-7 부수 발견)
 - [2026-07-16] DI 컨테이너(Microsoft.Extensions.DependencyInjection) 도입 여부 — part2에서도 수동 컴포지션 루트 유지, 의존성 추가는 사용자 승인 필요. 도입·AppServices 재생성 구조 도입 시 PowerPolicyService의 PowerManager 정적 이벤트 해제 로직 동반 필요 (출처: 2026-07-15-desktube-core-part1 D13, F-7 m2)
 - [2026-07-16] Microsoft Store 실제 제출(계정·심사·identity 교체) — 앱 완성 후 사용자 수행 (출처: docs/prd.md)
 - [2026-07-16] T8 실측 3건 사용자 수행 — WACK(관리자)·대기 워킹셋(≤150MB)·콜드 스타트(≤3초), `docs/verification-2026-07.md` 체크리스트 (출처: 2026-07-15-desktube-ui-part2 T8)
