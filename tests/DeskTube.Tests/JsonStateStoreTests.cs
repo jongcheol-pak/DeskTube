@@ -149,6 +149,19 @@ public sealed class JsonStateStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task 필드가_없는_구형_설정_JSON도_기본값으로_로드된다()
+    {
+        // LastSelectedPlaylistId 도입 이전 버전이 저장한 파일과의 하위 호환 (T1 acceptance, 리뷰 M1)
+        var path = Path.Combine(_tempDir, "settings.json");
+        await File.WriteAllTextAsync(path, """{ "SchemaVersion": 1, "Volume": 60 }""");
+
+        var loaded = await _store.LoadSettingsAsync();
+
+        Assert.Equal(60, loaded.Volume);
+        Assert.Null(loaded.LastSelectedPlaylistId);
+    }
+
+    [Fact]
     public async Task 범위_밖_볼륨은_로드_시_보정된다()
     {
         var path = Path.Combine(_tempDir, "settings.json");
