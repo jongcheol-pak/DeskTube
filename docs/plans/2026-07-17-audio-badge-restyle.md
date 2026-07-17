@@ -136,7 +136,7 @@
   - **Halt Forecast**: 없음 (단일 파일 값·additive 키)
   - **Depends on**: -
 
-- [ ] T2. PlaybackCoordinator.MutedChanged 이벤트 + 테스트
+- [x] T2. PlaybackCoordinator.MutedChanged 이벤트 + 테스트
   - **Type**: C
   - **Design**: ① `Services/PlaybackCoordinator.cs` ② `public event EventHandler? MutedChanged` — 음소거 상태 변경 알림 1책임, `SetMutedAsync`에서 상태 반영 후 발생 ③ VM(MonitorPanelViewModel)이 구독하는 방향만(코디네이터는 UI 미참조 유지) ④ 인터페이스 추출·이벤트 인자 페이로드는 만들지 않음(bool은 Settings.IsMuted가 정본)
   - **Acceptance**: Given 가짜 주입 coordinator, When `SetMutedAsync(true)` 호출, Then `MutedChanged` 1회 발생 + `Settings.IsMuted == true` — 신규 단위 테스트 통과, 기존 테스트 전건 통과

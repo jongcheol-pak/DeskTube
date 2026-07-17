@@ -164,6 +164,19 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 음소거_변경_시_MutedChanged가_발생하고_설정에_반영된다()
+    {
+        var h = new Harness();
+        var raised = 0;
+        h.Coordinator.MutedChanged += (_, _) => raised++;
+
+        await h.Coordinator.SetMutedAsync(true);
+
+        Assert.Equal(1, raised);
+        Assert.True(h.Settings.IsMuted);
+    }
+
+    [Fact]
     public async Task 마스터_종료_이벤트가_모든_플레이어를_다음_곡으로_보낸다()
     {
         var h = new Harness();

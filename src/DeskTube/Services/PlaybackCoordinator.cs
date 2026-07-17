@@ -75,6 +75,9 @@ public sealed class PlaybackCoordinator : IDisposable
 
     public event EventHandler<PlaybackStatus>? StatusChanged;
 
+    /// <summary>음소거 상태 변경 알림 — 값 정본은 Settings.IsMuted (홈·설정 배지 동기화용, 배지 plan T2).</summary>
+    public event EventHandler? MutedChanged;
+
     public AppSettings Settings => _settings;
 
     /// <summary>
@@ -229,6 +232,7 @@ public sealed class PlaybackCoordinator : IDisposable
     {
         _settings.IsMuted = muted;
         ApplyAudioRouting();
+        MutedChanged?.Invoke(this, EventArgs.Empty); // 상태 반영 후·저장 전 — 구독자(배지)는 Settings.IsMuted를 읽는다
         await _store.SaveSettingsAsync(_settings);
     }
 
