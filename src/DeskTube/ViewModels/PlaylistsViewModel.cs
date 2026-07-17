@@ -114,15 +114,6 @@ public partial class PlaylistsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool HasSelection { get; set; }
 
-    [ObservableProperty]
-    public partial string? NoticeMessage { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsNoticeOpen { get; set; }
-
-    [ObservableProperty]
-    public partial InfoBarSeverity NoticeSeverity { get; set; }
-
     /// <summary>페이지 진입 시 호출 (SettingsViewModel과 동일한 지연 초기화 패턴).</summary>
     public void Load()
     {
@@ -254,7 +245,7 @@ public partial class PlaylistsViewModel : ObservableObject
             CanAddItem = playlist is not null && playlist.Items.Count < PlaylistLibrary.MaxItemsPerPlaylist;
             if (playlist is not null && playlist.Items.Count >= PlaylistLibrary.MaxItemsPerPlaylist)
             {
-                ShowNotice(
+                ToastService.Show(
                     string.Format(Loc.Get("Playlists_ItemLimit"), PlaylistLibrary.MaxItemsPerPlaylist),
                     InfoBarSeverity.Warning);
             }
@@ -372,7 +363,7 @@ public partial class PlaylistsViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            ShowNotice(Loc.Get("Playlists_NameEmpty"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Playlists_NameEmpty"), InfoBarSeverity.Error);
             return;
         }
 
@@ -382,7 +373,7 @@ public partial class PlaylistsViewModel : ObservableObject
             var message = created.Code == ErrorCode.LimitExceeded
                 ? string.Format(Loc.Get("Playlists_ListLimit"), PlaylistLibrary.MaxPlaylists)
                 : Loc.Get("Playlists_NameEmpty");
-            ShowNotice(message, InfoBarSeverity.Error);
+            ToastService.Show(message, InfoBarSeverity.Error);
             return;
         }
 
@@ -402,7 +393,7 @@ public partial class PlaylistsViewModel : ObservableObject
         var renamed = _services.Library.Rename(entry.Id, newName);
         if (!renamed.IsSuccess)
         {
-            ShowNotice(Loc.Get("Playlists_NameEmpty"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Playlists_NameEmpty"), InfoBarSeverity.Error);
             return;
         }
 
@@ -457,7 +448,7 @@ public partial class PlaylistsViewModel : ObservableObject
         var parsed = YouTubeUrlParser.Parse(NewUrl);
         if (!parsed.IsSuccess || parsed.Value is null)
         {
-            ShowNotice(Loc.Get("Playlists_InvalidUrl"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Playlists_InvalidUrl"), InfoBarSeverity.Error);
             return;
         }
 
@@ -467,12 +458,11 @@ public partial class PlaylistsViewModel : ObservableObject
             var message = added.Code == ErrorCode.LimitExceeded
                 ? string.Format(Loc.Get("Playlists_ItemLimit"), PlaylistLibrary.MaxItemsPerPlaylist)
                 : Loc.Get("Playlists_InvalidUrl");
-            ShowNotice(message, InfoBarSeverity.Error);
+            ToastService.Show(message, InfoBarSeverity.Error);
             return;
         }
 
         NewUrl = string.Empty;
-        IsNoticeOpen = false;
         await PersistItemsChangeAsync(playlist);
     }
 
@@ -592,20 +582,14 @@ public partial class PlaylistsViewModel : ObservableObject
             var message = result.Code == ErrorCode.InvalidInput
                 ? Loc.Get("Playlists_EmptyList")
                 : Loc.Get("Playlists_PlayFailed");
-            ShowNotice(message, InfoBarSeverity.Error);
+            ToastService.Show(message, InfoBarSeverity.Error);
         }
     }
 
     /// <summary>공유 팝업의 링크 복사 성공 알림 (페이지 코드비하인드 진입점 — share plan T1).</summary>
-    public void NotifyLinkCopied() => ShowNotice(Loc.Get("Playlists_LinkCopied"), InfoBarSeverity.Success);
+    public void NotifyLinkCopied() => ToastService.Show(Loc.Get("Playlists_LinkCopied"), InfoBarSeverity.Success);
 
     /// <summary>공유 팝업의 링크 복사 실패 알림 (클립보드 접근 실패 등 드문 경우).</summary>
-    public void NotifyLinkCopyFailed() => ShowNotice(Loc.Get("Playlists_ShareCopyFailed"), InfoBarSeverity.Error);
+    public void NotifyLinkCopyFailed() => ToastService.Show(Loc.Get("Playlists_ShareCopyFailed"), InfoBarSeverity.Error);
 
-    private void ShowNotice(string message, InfoBarSeverity severity)
-    {
-        NoticeMessage = message;
-        NoticeSeverity = severity;
-        IsNoticeOpen = true;
-    }
 }

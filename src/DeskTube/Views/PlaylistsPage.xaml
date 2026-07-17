@@ -17,14 +17,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <InfoBar
-            Grid.Row="0"
-            Grid.ColumnSpan="2"
-            Margin="18,12,18,0"
-            IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
-            Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}"
-            Severity="{x:Bind ViewModel.NoticeSeverity, Mode=OneWay}" />
-
         <!-- 좌측: 리스트 목록 (생성·이름변경·삭제 — 이름변경/삭제는 우클릭 메뉴 유지) -->
         <Border
             Grid.Row="1"

@@ -126,7 +126,7 @@
     - (ii-a) `MonitorPanelViewModel.NoticeCleared` 공개 이벤트 제거 (소비자 2곳 전수 확인 완료) → `## 사전 승인 항목`
   - **Depends on**: T1
 
-- [ ] T3. 플레이리스트 알림 전환
+- [x] T3. 플레이리스트 알림 전환
   - **Type**: C
   - **Design**: ① PlaylistsViewModel + PlaylistsPage.xaml ② 신규 심볼 없음 — `ShowNotice` 내부를 ToastService.Show로, Notice [ObservableProperty] 3종·`IsNoticeOpen=false`(475행) 제거, 페이지 InfoBar(20-26행) 제거 ③ VM → ToastService ④ NotifyLinkCopied/Failed 공개 시그니처 불변(내부 위임만 교체)
   - **Acceptance**: PlaylistsPage InfoBar 제거 + VM Notice 프로퍼티 잔존 0(grep), 알림 8지점(이름/URL 오류·상한 경고·복사 성공/실패·재생 실패 등) 전부 ToastService 경유, NotifyLinkCopied/Failed 시그니처 불변(호출부 PlaylistsPage 무수정). 빌드 통과
