@@ -147,7 +147,7 @@
   - **Edge Cases**: `_loading` 가드로 Populate 중 저장 루프 방지(기존 패턴) / 서비스 미준비(IsReady 전) — ContentControl IsEnabled 일괄 비활성(기존 구조)
   - **Halt Forecast**: (없음 — 기존 패턴 반복, 파괴적·의존성·외부 요소 없음)
   - **Depends on**: T3 (AutoPlayOnLaunch 필드)
-- [ ] T5. README 갱신
+- [x] T5. README 갱신
   - **Type**: A
   - **Acceptance**: 기능 목록에 "앱 시작 후 자동 재생" 항목 추가(토글 기본 꺼짐·마지막 항목 재개), 부팅 자동 시작 항목에 "마지막 재생 항목부터" 반영. 존재하지 않는 기능 서술 0.
   - **Files**: 주: `README.md`
