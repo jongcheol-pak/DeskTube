@@ -12,8 +12,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>데스크튜브</value>
+  </data>
   <data name="Tray_ToolTip" xml:space="preserve">
-    <value>DeskTube</value>
+    <value>데스크튜브</value>
   </data>
   <data name="Tray_Play" xml:space="preserve">
     <value>재생</value>
@@ -292,7 +295,7 @@
     <value>삭제</value>
   </data>
   <data name="StartupTaskDisplayName" xml:space="preserve">
-    <value>DeskTube</value>
+    <value>데스크튜브</value>
   </data>
   <data name="AutoStartCard.Header" xml:space="preserve">
     <value>Windows 시작 시 자동 실행</value>
@@ -355,7 +358,7 @@
     <value>개인정보 처리방침</value>
   </data>
   <data name="PrivacySummary.Text" xml:space="preserve">
-    <value>DeskTube는 개인정보를 수집하거나 외부로 전송하지 않습니다. 플레이리스트와 설정은 이 PC에만 저장됩니다. 유튜브에 로그인하면 세션 쿠키가 이 앱의 로컬 브라우저 프로필에만 남고 개발자에게 전송되지 않습니다. 유튜브 콘텐츠와 로그인에는 구글의 약관·개인정보 정책이 적용됩니다.</value>
+    <value>데스크튜브는 개인정보를 수집하거나 외부로 전송하지 않습니다. 플레이리스트와 설정은 이 PC에만 저장됩니다. 유튜브에 로그인하면 세션 쿠키가 이 앱의 로컬 브라우저 프로필에만 남고 개발자에게 전송되지 않습니다. 유튜브 콘텐츠와 로그인에는 구글의 약관·개인정보 정책이 적용됩니다.</value>
   </data>
   <data name="LicensesTitle.Text" xml:space="preserve">
     <value>오픈소스 라이선스</value>

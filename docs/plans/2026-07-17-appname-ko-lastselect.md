@@ -23,7 +23,7 @@
 - Microsoft Store 리스팅의 앱 이름 (Store 제출 시 별도 — deferred 대장 기존 항목)
 
 ## Deferred / Follow-up
-- (없음 — 계획 시점)
+- (참고) Package.appxmanifest는 BOM 포함 유지 — VS 생성 파일의 기존 인코딩 관례(공통 지침 "관례가 BOM 포함이면 기존 인코딩 유지"), post-write hook 경고는 의도된 예외
 
 ## Investigation Log
 - 플레이리스트 선택: `PlaylistsViewModel.SelectedPlaylist`(106행, TwoWay) — `Populate`(150-164행)가 목록 재구성 후 `ApplyPendingSelection`(칩 진입 예약)만 적용, 저장·복원 없음(기본 = 선택 없음). `OnSelectedPlaylistChanged`(194행)가 활성 표시·항목 갱신. 삭제 시 `SelectedPlaylist = null`(411-413행).
@@ -134,7 +134,7 @@
   - **Halt Forecast**: 없음 (내부 변경만 — plan에 근거 확정)
   - **Depends on**: T1
 
-- [ ] T3. 앱 이름 리소스·매니페스트 현지화
+- [x] T3. 앱 이름 리소스·매니페스트 현지화
   - **Type**: C
   - **Design**: ① resw ko/en + `Package.appxmanifest` ② resw 키 `AppDisplayName`(ko "데스크튜브"/en "DeskTube") — 앱 이름 단일 출처(D6) ③ manifest 3곳(Properties/DisplayName·VisualElements DisplayName·Description)이 `ms-resource:///Resources/AppDisplayName` 참조(D5), ko `Tray_ToolTip`·`StartupTaskDisplayName` 값만 "데스크튜브"로(en 불변) ④ PublisherDisplayName·개발자명은 건드리지 않음
   - **Acceptance**: 빌드 통과 + resw 양 언어에 AppDisplayName 존재 + manifest 3곳이 D5 형식 참조(리터럴 "DeskTube" 잔존 0 — Name/Publisher/PublisherDisplayName·Executable 제외) + ko Tray_ToolTip·StartupTaskDisplayName = "데스크튜브" + ko PrivacySummary 첫머리 "데스크튜브는…"(리뷰 m1, en 불변). 시작메뉴 한글 표시는 ⏳ HUMAN-VERIFY(재배포 후)
