@@ -60,6 +60,9 @@ public sealed partial class PlaylistsPage : Page
     public static Windows.UI.Text.FontWeight ActiveWeight(bool isActive) =>
         isActive ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
 
+    /// <summary>x:Bind 함수 — 재생 중 글리프의 접근성 이름·툴팁 (다국어, MonitorCardsControl BadgeToggleName 선례).</summary>
+    public static string NowPlayingLabel() => Loc.Get("NowPlayingIndicator");
+
     // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
     // PointerEntered/Exited는 IsEnabled=False에도 발생하므로 비활성 버튼 강조 방지 가드 필수 (리뷰 M1)
 

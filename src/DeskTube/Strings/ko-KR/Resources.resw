@@ -405,4 +405,7 @@
   <data name="Language_English" xml:space="preserve">
     <value>English</value>
   </data>
+  <data name="NowPlayingIndicator" xml:space="preserve">
+    <value>재생 중</value>
+  </data>
 </root>

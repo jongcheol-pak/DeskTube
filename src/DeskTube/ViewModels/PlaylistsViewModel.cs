@@ -28,6 +28,10 @@ public partial class PlaylistEntry : ObservableObject
     /// <summary>현재 선택된 리스트 — 시안 활성 표시(코럴 인디케이터·텍스트 강조)용 (restyle T6).</summary>
     [ObservableProperty]
     public partial bool IsActive { get; set; }
+
+    /// <summary>지금 배경 재생 중인 리스트 — 스피커 글리프 표시용 (선택 IsActive와 별개 상태).</summary>
+    [ObservableProperty]
+    public partial bool IsNowPlaying { get; set; }
 }
 
 /// <summary>
@@ -82,6 +86,7 @@ public partial class PlaylistsViewModel : ObservableObject
     private const int MetadataConcurrency = 4;
 
     private AppServices? _services;
+    private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcher;
 
     /// <summary>드래그 정렬 동기화 중 재진입 억제 (뷰 컬렉션 재구성 시).</summary>
     private bool _syncingItems;
@@ -129,6 +134,11 @@ public partial class PlaylistsViewModel : ObservableObject
     public void Detach()
     {
         App.ServicesInitialized -= OnServicesInitialized;
+        if (_services is not null)
+        {
+            _services.Coordinator.StatusChanged -= OnStatusChanged;
+        }
+
         CancelMetadataBackfill(); // 페이지 이탈 — 늦은 응답 반영 방지 (plan D10)
     }
 
@@ -141,6 +151,12 @@ public partial class PlaylistsViewModel : ObservableObject
     private void Populate(AppServices services)
     {
         _services = services;
+        _dispatcher ??= Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
+        // 재진입마다 해제 후 재구독 (Detach와 대칭 — HomeViewModel과 동일 멱등 패턴)
+        services.Coordinator.StatusChanged -= OnStatusChanged;
+        services.Coordinator.StatusChanged += OnStatusChanged;
+
         Playlists.Clear();
         foreach (var playlist in services.Library.Playlists)
         {
@@ -159,6 +175,22 @@ public partial class PlaylistsViewModel : ObservableObject
             var lastId = services.Settings.LastSelectedPlaylistId;
             SelectedPlaylist = (lastId is Guid id ? Playlists.FirstOrDefault(p => p.Id == id) : null)
                 ?? Playlists[0];
+        }
+
+        UpdateNowPlaying(); // 재생 중 페이지 진입 — 초기 상태 반영 (now-playing plan T2)
+    }
+
+    /// <summary>StatusChanged는 발생 스레드가 보장되지 않아 UI로 마셜링 (HomeViewModel과 동일 패턴).</summary>
+    private void OnStatusChanged(object? sender, PlaybackStatus status) =>
+        _dispatcher?.TryEnqueue(UpdateNowPlaying);
+
+    /// <summary>재생 중 리스트 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).</summary>
+    private void UpdateNowPlaying()
+    {
+        var currentId = _services?.Coordinator.CurrentPlaylistId;
+        foreach (var entry in Playlists)
+        {
+            entry.IsNowPlaying = entry.Id == currentId;
         }
     }
 

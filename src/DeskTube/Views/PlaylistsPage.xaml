@@ -88,6 +88,7 @@
                                     <ColumnDefinition Width="3" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <!-- 활성 인디케이터 (시안 — 좌측 3px 코럴, 상하 12 인셋은 컨테이너 패딩이 담당) -->
                                 <Rectangle
@@ -107,8 +108,19 @@
                                     Foreground="{x:Bind local:PlaylistsPage.ActiveNameBrush(IsActive), Mode=OneWay}"
                                     VerticalAlignment="Center"
                                     TextTrimming="CharacterEllipsis" />
-                                <TextBlock
+                                <!-- 재생 중 표시 (코럴 스피커 — 소리 배지와 동일 글리프, now-playing plan T2) -->
+                                <FontIcon
                                     Grid.Column="2"
+                                    Margin="0,0,10,0"
+                                    Glyph="&#xE767;"
+                                    FontSize="13"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource AppAccentBrush}"
+                                    AutomationProperties.Name="{x:Bind local:PlaylistsPage.NowPlayingLabel()}"
+                                    ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.NowPlayingLabel()}"
+                                    Visibility="{x:Bind IsNowPlaying, Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="3"
                                     Margin="0,0,14,0"
                                     Text="{x:Bind ItemCount, Mode=OneWay}"
                                     FontSize="13"

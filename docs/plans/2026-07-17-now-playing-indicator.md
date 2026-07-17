@@ -126,13 +126,13 @@
   - **Halt Forecast**:
     - (ii-a) 공개 API 추가(CurrentPlaylistId) → `## 사전 승인 항목`에 등록
   - **Depends on**: -
-- [ ] T2. 플레이리스트 페이지 좌측 목록에 재생 중 글리프 표시
+- [x] T2. 플레이리스트 페이지 좌측 목록에 재생 중 글리프 표시
   - **Type**: C
   - **Design**: ① ViewModels/PlaylistsViewModel.cs + Views/PlaylistsPage.xaml ② `PlaylistEntry.IsNowPlaying`(observable bool — IsActive 선례) + `PlaylistsViewModel.UpdateNowPlaying()`(전 entry에 CurrentPlaylistId 비교 반영) ③ Populate가 초기 1회 호출, StatusChanged 구독(HomeViewModel 패턴: DispatcherQueue 마셜링·Populate 멱등 재구독·Detach 해제)이 이후 갱신. XAML은 이름/곡수 사이 Auto 열에 FontIcon E767(AppAccentBrush, Visibility=IsNowPlaying OneWay, AutomationProperties.Name+ToolTip=resw) ④ 항목 단위 표시·애니메이션은 하지 않음.
   - **Acceptance**: Given 페이지 표시 중, When 어떤 리스트 재생 시작(페이지 내 버튼·홈·트레이 무관), Then 해당 행에만 코럴 스피커 글리프 표시 / When 정지(전곡 실패·리스트 삭제 포함), Then 글리프 제거 / Given 재생 중 페이지 진입, Then 진입 즉시 표시. 빌드 경고 0. (시각 표시는 HUMAN-VERIFY)
   - **Files**:
     - 주: `src/DeskTube/ViewModels/PlaylistsViewModel.cs`, `src/DeskTube/Views/PlaylistsPage.xaml`
-    - 동반: `src/DeskTube/Strings/ko-KR/Resources.resw`, `src/DeskTube/Strings/en-US/Resources.resw` (NowPlayingIndicator 키)
+    - 동반: `src/DeskTube/Strings/ko-KR/Resources.resw`, `src/DeskTube/Strings/en-US/Resources.resw` (NowPlayingIndicator 키), `src/DeskTube/Views/PlaylistsPage.xaml.cs` (NowPlayingLabel 정적 헬퍼 — 구현 중 추가, spec 리뷰 범위 정합 판정)
   - **Edge Cases**:
     - StatusChanged가 UI 스레드 밖 발화 → TryEnqueue 마셜링 (HomeViewModel.cs:131 선례)
     - 페이지 이탈 후 이벤트 → Detach 해제로 미수신 (구독 누수 방지 — deferred 대장 AccountPanel 함정 선례)
