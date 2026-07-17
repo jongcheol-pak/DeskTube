@@ -1,3 +1,4 @@
+using DeskTube.Services;
 using DeskTube.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -23,7 +24,10 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "DeskTube";
+
+        // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 창 재생성(App.ApplyLanguageChange)이 재배정한다.
+        Title = Loc.Get("AppDisplayName");
+        AppTitleText.Text = Loc.Get("AppDisplayName");
 
         // 창 상태 저장·복원 + 최소 크기 (T5/D4 — 패키지 앱은 WinUIEx가 ApplicationData에 자동 저장)
         _manager = WinUIEx.WindowManager.Get(this);

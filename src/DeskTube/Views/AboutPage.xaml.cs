@@ -13,6 +13,7 @@ public sealed partial class AboutPage : Page
     {
         InitializeComponent();
         NavigationCacheMode = NavigationCacheMode.Required; // 전환 시 재생성 방지 (NFR-3, 내용은 정적이라 1회 로드로 충분)
+        AppNameText.Text = Loc.Get("AppDisplayName"); // 앱 이름 — 언어별 표기 (ko 데스크튜브, appname plan T4)
         ViewModel.Load();
     }
 

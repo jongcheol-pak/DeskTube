@@ -27,7 +27,7 @@
                     <StackPanel Spacing="2" VerticalAlignment="Center">
                         <!-- 앱명(브랜드명)은 번역 대상이 아니라 직접 표기 -->
                         <TextBlock
-                            Text="DeskTube"
+                            x:Name="AppNameText"
                             Style="{StaticResource BodyStrongTextBlockStyle}"
                             FontSize="17"
                             FontWeight="Bold"
