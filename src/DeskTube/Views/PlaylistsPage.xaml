@@ -133,12 +133,12 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <!-- WinUI TextBox 템플릿은 VerticalContentAlignment를 무시하므로 세로 패딩으로 중앙 정렬 -->
                 <TextBox
                     x:Uid="ItemUrlBox"
                     Grid.Column="0"
                     Height="42"
-                    VerticalContentAlignment="Center"
-                    Padding="16,0"
+                    Padding="16,10"
                     Background="{ThemeResource AppInputBackgroundBrush}"
                     BorderBrush="{ThemeResource AppInputBorderBrush}"
                     CornerRadius="{StaticResource AppCardCornerRadius}"

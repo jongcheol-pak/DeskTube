@@ -38,14 +38,14 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <!-- WinUI TextBox 템플릿은 VerticalContentAlignment를 무시하므로 세로 패딩으로 중앙 정렬 -->
                 <TextBox
                     x:Uid="HomeUrlBox"
                     x:Name="UrlBox"
                     Grid.Column="0"
                     Height="48"
                     MinWidth="480"
-                    VerticalContentAlignment="Center"
-                    Padding="18,0"
+                    Padding="18,13"
                     Background="{ThemeResource AppInputBackgroundBrush}"
                     BorderBrush="{ThemeResource AppInputBorderBrush}"
                     CornerRadius="{StaticResource AppCardCornerRadius}"
