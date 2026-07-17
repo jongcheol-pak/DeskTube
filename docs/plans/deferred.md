@@ -24,6 +24,8 @@
 - [2026-07-16] VideoMetadataService 클래스 요약 주석에 "취소는 예외로 전파" 구절 보강 (출처: 2026-07-16-melon-playlist-style T2 quality m1)
 - [2026-07-16] VideoMetadataService Result.Fail 메시지를 서술형 한글로 통일 — 현재 로그 전용이라 무해, UI 노출 시 필수 (출처: 2026-07-16-melon-playlist-style T2 quality m2)
 - [2026-07-17] "전체듣기 모드 명시"(PlaylistsViewModel 1줄) 단위테스트 — VM 테스트 인프라 부재(서비스 계층만 테스트 관례), 인프라 도입 시 재검토 (출처: 2026-07-17-tray-repeat-license T4 spec M1)
+- [2026-07-17] 설정 음소거 ToggleSwitch가 트레이/홈 배지 토글을 실시간 반영하지 않음(재진입 시 동기화) — MutedChanged 이벤트 신설로 SettingsViewModel 구독 해결 가능 (출처: 2026-07-17-audio-badge-restyle Deferred)
+- [2026-07-17] [SUGGEST] 배지 토글 버튼 접근성 이름 상태 반영형 — BadgeToggleName(bool muted)로 "음소거로 전환"/"소리로 전환" + Mode=OneWay (출처: 2026-07-17-audio-badge-restyle T4 quality m1)
 
 ## 종결
 - [2026-07-17 → 2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 (PRD FR 신설 합의 필요) — 반영 (2026-07-17-autoplay-on-launch T1~T5: FR-19 신설, 항목 단위 재개 + 부팅 경로 통일)
