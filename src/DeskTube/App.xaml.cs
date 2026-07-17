@@ -157,7 +157,7 @@ public partial class App : Application
         }
     }
 
-    /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 InfoBar 안내 표시).</summary>
+    /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 토스트로 안내 — toast plan T1).</summary>
     internal void ShowMainWindow(string? notice)
     {
         if (_window is not MainWindow window)
