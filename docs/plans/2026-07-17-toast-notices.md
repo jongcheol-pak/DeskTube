@@ -111,7 +111,7 @@
     - (ii-a) `MainWindow.ShowNotice`(internal) 제거 + `ToastService` 공개 심볼 신설 → `## 사전 승인 항목`
   - **Depends on**: -
 
-- [ ] T2. 홈·설정 알림 전환 + NoticeCleared 제거
+- [x] T2. 홈·설정 알림 전환 + NoticeCleared 제거
   - **Type**: D
   - **Design**: ① ViewModels(Home·Settings·MonitorPanel) + Views(HomePage·SettingsPage) ② 신규 심볼 없음 — Home·Settings의 `ShowNotice`/`OnPanelNoticeRequested` 내부를 `ToastService.Show`로, Notice [ObservableProperty] 3종·`OnPanelNoticeCleared` 제거, MonitorPanelViewModel `NoticeCleared` 이벤트·발화 제거(소비자 2곳 전수 — 원자) ③ VM → ToastService ④ Notice 프로퍼티를 감싸는 어댑터 안 만듦(완전 제거)
   - **Acceptance**: HomePage 124-130행·SettingsPage 19-26행 InfoBar 제거, Home·Settings VM에서 NoticeMessage/IsNoticeOpen/NoticeSeverity·OnPanelNoticeCleared 잔존 0(grep), MonitorPanelViewModel NoticeCleared 참조 전수 0, 기존 알림 지점(URL 오류·재생 실패/시작·모니터 최소1·자동실행 실패 등)이 전부 ToastService 경유. 빌드 통과 + 테스트 전건 통과
@@ -156,6 +156,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료: ToastService+MainWindow 하단 토스트 호스트(3/5초·교체·클릭 통과, NoticeBar/ShowNotice 제거) / 홈·설정 전환(Notice 프로퍼티·NoticeCleared 전수 제거, ToastService 직접 호출 — ShowNotice 위임 없앰). 함정: SettingsViewModel은 InfoBarSeverity using이 없었음(신규 추가 — C# 실패가 XAML 컴파일러 WMC9999 연쇄 오류로 위장됨).
 
 ## Next Steps
 
