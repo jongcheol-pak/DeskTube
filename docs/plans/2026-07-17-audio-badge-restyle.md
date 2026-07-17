@@ -207,6 +207,8 @@
 - 수동 검증 (HUMAN-VERIFY): ① 홈 배지 클릭 → 음소거 전환 + 배지 상태 전환 + 카드 선택 불변 ② 설정 배지 클릭 → 카드 선택만(기존) ③ 트레이 볼륨 on/off → 열린 홈/설정 배지 즉시 갱신 ④ 배지 모양·색 가독성 확인
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 9bd9dc3) — F-2 테스트 105/105, F-7 plan-completion-reviewer OK (BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 재루프 0회, G-1은 F-7 PRD 대조 재사용 (FR-5·FR-4 충족, 나머지 active Must는 범위 외 명시)
 
 ## Retry Ledger
 
@@ -217,6 +219,8 @@
   - 참고: BadgeGlyph는 소스에 PUA 리터럴(E74F/E767)로 저장 — 에디터에서 빈 문자열처럼 보여도 정상(바이트 검증 완료).
 
 ## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4건 확인(홈 배지 클릭 토글·설정 배지 표시 전용·트레이 토글 즉시 갱신·배지 모양/색) 후 필요 시 main 병합 결정
+- Suggested skills: 공식 /code-review (선택), pjc:llm-wiki (프로젝트 등록 시 반영 — vault 미설정 이력으로 이번엔 생략)
 
 ## Open Questions
 - [x] Q1. 음소거 상태 배지 표시 — **A) 항상 표시 + 상태 구분(홈·설정 공통, 클릭은 홈만)** (사용자 확정)
