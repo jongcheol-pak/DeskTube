@@ -95,6 +95,12 @@ public partial class HomeViewModel : ObservableObject
         services.Coordinator.StatusChanged -= OnStatusChanged;
         services.Coordinator.StatusChanged += OnStatusChanged;
 
+        // 마지막 재생 URL 복원 표시 (FR-1) — 입력 중인 값은 덮지 않는다
+        if (Url.Length == 0 && services.Settings.LastHomeUrl is { Length: > 0 } lastUrl)
+        {
+            Url = lastUrl;
+        }
+
         MonitorPanel.Attach(services);
         RefreshChips();
         UpdatePlaybackState(services.Coordinator.Status);
@@ -204,6 +210,14 @@ public partial class HomeViewModel : ObservableObject
             AppLog.Write($"즉시 재생 시작 실패: {startResult.Message}");
             ToastService.Show(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
             return;
+        }
+
+        // 재생 성공 시에만 마지막 URL 기록 — 재실행 시 입력란 복원 표시 (FR-1)
+        services.Settings.LastHomeUrl = Url.Trim();
+        var saved = await services.Store.SaveSettingsAsync(services.Settings);
+        if (!saved.IsSuccess)
+        {
+            AppLog.Write($"마지막 홈 URL 저장 실패: {saved.Message}"); // 재생은 이미 시작 — 표시 복원만 손실
         }
 
         RefreshChips(); // "빠른 재생" 리스트 생성·곡 교체가 칩 표시에 반영되게

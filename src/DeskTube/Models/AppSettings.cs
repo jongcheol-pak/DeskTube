@@ -47,6 +47,9 @@ public sealed class AppSettings
     /// <summary>플레이리스트 화면에서 마지막에 선택한 리스트 (재생 이력 LastPlaylistId와 별개 — FR-18 기본 선택용).</summary>
     public Guid? LastSelectedPlaylistId { get; set; }
 
+    /// <summary>홈에서 마지막으로 재생한 URL — 재실행 시 입력란 복원 표시용 (PRD FR-1, 재생 성공 시에만 기록).</summary>
+    public string? LastHomeUrl { get; set; }
+
     /// <summary>자동 일시정지 정책 (PRD NFR-1 — 기본 모두 켬).</summary>
     public bool PauseOnFullscreen { get; set; } = true;
 

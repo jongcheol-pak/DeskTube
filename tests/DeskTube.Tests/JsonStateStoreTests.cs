@@ -48,6 +48,7 @@ public sealed class JsonStateStoreTests : IDisposable
             LastItemId = Guid.NewGuid(),
             AutoPlayOnLaunch = false, // 기본 true (FR-19)
             LastSelectedPlaylistId = Guid.NewGuid(),
+            LastHomeUrl = "https://youtu.be/abc123def45",
             PauseOnFullscreen = false,
             Language = "ko",
         };
@@ -68,6 +69,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(settings.LastPlaylistId, loaded.LastPlaylistId);
         Assert.Equal(settings.LastItemId, loaded.LastItemId);
         Assert.Equal(settings.LastSelectedPlaylistId, loaded.LastSelectedPlaylistId);
+        Assert.Equal(settings.LastHomeUrl, loaded.LastHomeUrl);
         Assert.Equal(settings.AutoPlayOnLaunch, loaded.AutoPlayOnLaunch);
         Assert.Equal(settings.PauseOnFullscreen, loaded.PauseOnFullscreen);
         Assert.Equal(settings.Language, loaded.Language);
@@ -137,6 +139,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.True(settings.AutoPlayOnLaunch); // FR-19 — 기본 켜짐 (2026-07-17)
         Assert.Null(settings.LastItemId);
         Assert.Null(settings.LastSelectedPlaylistId); // 구형 JSON·첫 실행 — 기본 null (하위 호환)
+        Assert.Null(settings.LastHomeUrl); // 구형 JSON·첫 실행 — 기본 null (FR-1 홈 URL 복원)
         Assert.Empty(playlists);
     }
 

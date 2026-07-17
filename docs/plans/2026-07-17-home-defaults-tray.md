@@ -164,7 +164,7 @@
   - **Halt Forecast**:
     - (i) manifest 스키마 검증 실패 가능성 → 빌드가 manifest 검증 포함(dotnet build로 즉시 검출), Enabled 속성은 uap5:StartupTask 스키마에 존재(현재 파일에 이미 `Enabled="false"`로 사용 중 — 값만 변경)
   - **Depends on**: T1
-- [ ] T3. 홈 URL 저장·복원 표시
+- [x] T3. 홈 URL 저장·복원 표시
   - **Type**: C
   - **Design**: ① `AppSettings.LastHomeUrl`(string?, additive)에 저장, 소비는 HomeViewModel만 ② 신규 심볼: LastHomeUrl 필드 1개(4-D 표) ③ HomeViewModel → Store.SaveSettingsAsync(기존 저장 패턴) ④ 별도 서비스·이벤트 도입 안 함(표시 복원은 페이지 진입 시 1회 읽기로 충분 — YAGNI).
   - **Acceptance**: Given 홈에서 URL 재생 성공, When 앱 재시작 후 홈 진입, Then URL 텍스트박스에 마지막 재생 URL 표시. Given 사용자가 입력 중(Url 비어 있지 않음), When 페이지 재진입, Then 입력 값 유지(복원이 덮지 않음). 저장 왕복·구형 JSON null 테스트 통과.
@@ -263,6 +263,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 ad37199, deaffa0): PRD 7건 보강 + 기본값 3종(Contain/음소거 켬/자동 재생 켬) + manifest StartupTask Enabled=true. 테스트 108/108, spec·quality OK.
+  - 결정: 왕복 테스트 값은 기본값과 다르게 유지(직렬화 누락 감지), Harness IsMuted=false 고정(라우팅 테스트 전제), diff 밖 FR-19 stale 주석 2곳 동기화.
 
 ## Next Steps
 
