@@ -178,7 +178,7 @@
     - 저장 실패(디스크) — 기존 SaveSettingsAsync Result 로그 패턴 따름, 재생은 이미 시작됨(무영향)
   - **Halt Forecast**: (i) 저장 시점에 Store 접근 경로 불명 → Investigation Log에 확인 완료(`_services.Store.SaveSettingsAsync` 선례 SettingsViewModel:443)
   - **Depends on**: T2
-- [ ] T4. 홈 즉시 재생은 자동 재생 대상에서 제외 (일반 실행·부팅 공통)
+- [x] T4. 홈 즉시 재생은 자동 재생 대상에서 제외 (일반 실행·부팅 공통)
   - **Type**: B
   - **Acceptance**: Given LastPlaylistId가 "빠른 재생" 리스트, When 앱 시작(일반 실행 AutoPlayOnLaunch=true 또는 부팅 autoPlay), Then 자동 재생 생략 + AppLog 사유 기록. Given 마지막 재생이 일반 플레이리스트, Then 기존대로 자동 재생. 빌드 통과(로직은 App 계층 — 단위 테스트 인프라 없음, HUMAN-VERIFY).
   - **Files**:

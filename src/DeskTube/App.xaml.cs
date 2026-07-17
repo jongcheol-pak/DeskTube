@@ -149,6 +149,14 @@ public partial class App : Application
             return;
         }
 
+        // 마지막 재생이 홈 즉시 재생("빠른 재생")이면 자동 재생 생략 (FR-8·FR-19 예외 — 일반 실행·부팅 공통).
+        // 이름 기반 식별은 HomeViewModel의 리스트 식별 방식과 동일 (언어 전환 시 한계도 동일 — plan T4 Edge)
+        if (playlist.Name == Loc.Get("Home_QuickPlaylistName"))
+        {
+            AppLog.Write("자동 시작: 마지막 재생이 홈 즉시 재생이라 자동 재생을 생략합니다.");
+            return;
+        }
+
         // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
         var result = await services.Coordinator.StartAsync(playlist.Id, services.Settings.LastItemId);
         if (!result.IsSuccess)
