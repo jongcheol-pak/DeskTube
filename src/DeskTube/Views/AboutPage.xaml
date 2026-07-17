@@ -56,12 +56,6 @@
                         LineHeight="21"
                         Foreground="{ThemeResource AppTextSecondaryBrush}"
                         TextWrapping="Wrap" />
-                    <TextBlock
-                        x:Uid="PrivacyDocNote"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        FontSize="12"
-                        Foreground="{ThemeResource AppTextTertiaryBrush}"
-                        TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

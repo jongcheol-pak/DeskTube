@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-17: **정보 화면 개인정보 처리방침 전문 안내 삭제** — 사용자 요청. AboutPage의 `PrivacyDocNote` TextBlock + ko/en resw 키 제거(요지 `PrivacySummary`는 유지, `docs/privacy-policy.md` 파일 자체는 보존). 검증: 잔존 참조 0건·빌드 경고 0. 화면 표시는 HUMAN-VERIFY.
 - 2026-07-17: **소리 배지 리스타일 + 홈 배지 클릭 음소거 토글 (T1~T5, FR-5 보강)** — plan: `docs/plans/2026-07-17-audio-badge-restyle.md`, 브랜치 `task/audio-badge-restyle`
   - **무엇을**: ① T1 토큰 — `AppBadgeCornerRadius` 20→4(알약→사각), 배지 전경 `#1A1A1C`·음소거 배경 `#3A3A40`/전경 `#B8B8BE` 토큰 3쌍 + HC 사전 매핑 ② T2 `PlaybackCoordinator.MutedChanged` 공개 이벤트(additive — SetMutedAsync에서 상태 반영 후 발생, 값 정본은 Settings.IsMuted) + 단위 테스트 ③ T3 배지 식 변경 `ShowAudioBadge = 선택∧오디오 대상`(비음소거 조건 제거) + `MonitorChoice.IsAudioMuted` + `MonitorPanelViewModel.ToggleMuteCommand` + Attach/Detach에서 MutedChanged 구독/해제(디스패처 마셜링) + SettingsViewModel 중복 배지 갱신 제거 ④ T4 두 템플릿 배지 재작성 — 컬러 이모지 🔊 제거, FontIcon 글리프(E767 소리/E74F 음소거) + 상태별 토큰 브러시, 홈(Large) 배지만 Button화(`MuteToggleCommand` DP — HomePage만 바인딩, 설정은 Border 표시 전용), resw 키 교체(`MonitorAudioBadge` → `Monitor_AudioBadgeOn/Muted/ToggleName`) + 홈 힌트 문구 갱신 ⑤ T5 PRD FR-5 문구·검증 보강 + README
   - **왜**: 사용자 요청 — 배지 가독성(흰 글자 대비 3.3:1)·이모지 뭉개짐·모양 개선 + 홈에서 배지 클릭 음소거. 기존 "음소거 시 배지 숨김" 규칙은 클릭 해제 불가 모순 → 배지 상시 표시 + 소리/음소거 상태 구분으로 확정(질문 Q1·Q2, 코럴 배경+진한 글자 채택)

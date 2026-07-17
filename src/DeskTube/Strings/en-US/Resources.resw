@@ -357,9 +357,6 @@
   <data name="PrivacySummary.Text" xml:space="preserve">
     <value>DeskTube does not collect or transmit any personal data. Playlists and settings are stored only on this PC. If you sign in to YouTube, the session cookies stay in this app's local browser profile and are never sent to the developer. YouTube content and sign-in are governed by Google's terms and privacy policy.</value>
   </data>
-  <data name="PrivacyDocNote.Text" xml:space="preserve">
-    <value>Full text: docs/privacy-policy.md in the project repository.</value>
-  </data>
   <data name="LicensesTitle.Text" xml:space="preserve">
     <value>Open-source licenses</value>
   </data>
