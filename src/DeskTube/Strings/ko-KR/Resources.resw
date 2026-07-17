@@ -96,9 +96,6 @@
   <data name="SettingsGroupSound.Text" xml:space="preserve">
     <value>소리</value>
   </data>
-  <data name="SettingsGroupPlayback.Text" xml:space="preserve">
-    <value>재생</value>
-  </data>
   <data name="SettingsGroupGeneral.Text" xml:space="preserve">
     <value>일반</value>
   </data>
@@ -144,9 +141,6 @@
   <data name="MuteCard.Description" xml:space="preserve">
     <value>켜면 모든 모니터의 소리를 끕니다</value>
   </data>
-  <data name="ModeCard.Header" xml:space="preserve">
-    <value>재생 순서</value>
-  </data>
   <data name="FitModeCard.Header" xml:space="preserve">
     <value>동영상 크기</value>
   </data>
@@ -167,21 +161,6 @@
   </data>
   <data name="ReduceMirrorCard.Description" xml:space="preserve">
     <value>소리가 나지 않는 모니터의 화질을 낮춰 컴퓨터 부담을 줄입니다</value>
-  </data>
-  <data name="Mode_Sequential" xml:space="preserve">
-    <value>순서대로</value>
-  </data>
-  <data name="Mode_Shuffle" xml:space="preserve">
-    <value>셔플 (전곡 1회)</value>
-  </data>
-  <data name="Mode_Random" xml:space="preserve">
-    <value>무작위</value>
-  </data>
-  <data name="Mode_RepeatOne" xml:space="preserve">
-    <value>한 곡 반복</value>
-  </data>
-  <data name="Mode_RepeatAll" xml:space="preserve">
-    <value>전체 반복</value>
   </data>
   <data name="QualityCard.Header" xml:space="preserve">
     <value>화질</value>

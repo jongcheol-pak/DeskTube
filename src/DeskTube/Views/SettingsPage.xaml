@@ -114,17 +114,6 @@
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsMuted, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
-                <!-- ═ 재생 ═ -->
-                <TextBlock x:Uid="SettingsGroupPlayback" Style="{StaticResource AppGroupHeaderTextStyle}" />
-
-                <!-- 재생 순서 -->
-                <controls:SettingsCard x:Uid="ModeCard">
-                    <ComboBox
-                        MinWidth="150"
-                        ItemsSource="{x:Bind ViewModel.ModeOptions}"
-                        SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}" />
-                </controls:SettingsCard>
-
                 <!-- ═ 일반 ═ -->
                 <TextBlock x:Uid="SettingsGroupGeneral" Style="{StaticResource AppGroupHeaderTextStyle}" />
 

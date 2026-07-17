@@ -96,9 +96,6 @@
   <data name="SettingsGroupSound.Text" xml:space="preserve">
     <value>Sound</value>
   </data>
-  <data name="SettingsGroupPlayback.Text" xml:space="preserve">
-    <value>Playback</value>
-  </data>
   <data name="SettingsGroupGeneral.Text" xml:space="preserve">
     <value>General</value>
   </data>
@@ -144,9 +141,6 @@
   <data name="MuteCard.Description" xml:space="preserve">
     <value>Silences sound on all monitors</value>
   </data>
-  <data name="ModeCard.Header" xml:space="preserve">
-    <value>Playback order</value>
-  </data>
   <data name="FitModeCard.Header" xml:space="preserve">
     <value>Video size</value>
   </data>
@@ -167,21 +161,6 @@
   </data>
   <data name="ReduceMirrorCard.Description" xml:space="preserve">
     <value>Reduces video quality on monitors without sound to ease system load</value>
-  </data>
-  <data name="Mode_Sequential" xml:space="preserve">
-    <value>In order</value>
-  </data>
-  <data name="Mode_Shuffle" xml:space="preserve">
-    <value>Shuffle (each video once)</value>
-  </data>
-  <data name="Mode_Random" xml:space="preserve">
-    <value>Random</value>
-  </data>
-  <data name="Mode_RepeatOne" xml:space="preserve">
-    <value>Repeat one</value>
-  </data>
-  <data name="Mode_RepeatAll" xml:space="preserve">
-    <value>Repeat all</value>
   </data>
   <data name="QualityCard.Header" xml:space="preserve">
     <value>Video quality</value>

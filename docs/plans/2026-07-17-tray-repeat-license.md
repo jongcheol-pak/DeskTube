@@ -141,7 +141,7 @@
   - **Edge Cases**: loose 배포 자산 캐시 → 검증 시 Remove-AppxPackage 후 재등록 (Risks 표)
   - **Halt Forecast**: (ii-a) 파일 삭제(tray.ico)·csproj Content 항목 교체 → `## 사전 승인 항목`에 등록
   - **Depends on**: -
-- [ ] T3. 설정 화면 "재생 순서" 항목 제거
+- [x] T3. 설정 화면 "재생 순서" 항목 제거
   - **Type**: C
   - **Acceptance**: Given 설정 화면, When 화면 표시, Then "재생 순서" 카드와 "재생" 그룹 헤더가 없다(그룹의 유일 항목이었음). 빌드 경고 0(미사용 심볼·resw 고아 키 없음) + 기존 테스트 전건 통과. `AppSettings.Mode`·`SetModeAsync`는 잔존(D7).
   - **Files**:

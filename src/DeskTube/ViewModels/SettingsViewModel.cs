@@ -39,20 +39,11 @@ public partial class SettingsViewModel : ObservableObject
         MonitorPanel.NoticeCleared += OnPanelNoticeCleared;
 
         // partial property 초기값 (콤보 미선택 = -1, 변경 콜백은 음수 가드로 무시됨)
-        ModeIndex = -1;
         QualityIndex = -1;
         AudioIndex = -1;
         LanguageIndex = -1;
         FitModeIndex = -1;
 
-        ModeOptions =
-        [
-            Loc.Get("Mode_Sequential"),
-            Loc.Get("Mode_Shuffle"),
-            Loc.Get("Mode_Random"),
-            Loc.Get("Mode_RepeatOne"),
-            Loc.Get("Mode_RepeatAll"),
-        ];
         QualityOptions =
         [
             Loc.Get("Quality_Original"),
@@ -79,8 +70,6 @@ public partial class SettingsViewModel : ObservableObject
 
     public ObservableCollection<string> AudioOptions { get; } = [];
 
-    public IReadOnlyList<string> ModeOptions { get; }
-
     public IReadOnlyList<string> QualityOptions { get; }
 
     /// <summary>크기 모드 콤보 — 인덱스가 FitMode enum 값과 일치 (채움/맞춤/늘리기, FR-16).</summary>
@@ -99,9 +88,6 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsMuted { get; set; }
-
-    [ObservableProperty]
-    public partial int ModeIndex { get; set; }
 
     [ObservableProperty]
     public partial int QualityIndex { get; set; }
@@ -223,7 +209,6 @@ public partial class SettingsViewModel : ObservableObject
 
             Volume = settings.Volume;
             IsMuted = settings.IsMuted;
-            ModeIndex = (int)settings.Mode;
 
             var qualityIdx = Array.IndexOf(QualityHeights, settings.QualityScaleHeight);
             QualityIndex = qualityIdx >= 0 ? qualityIdx : 0;
@@ -421,14 +406,6 @@ public partial class SettingsViewModel : ObservableObject
                 await _services!.Coordinator.SetAudioMonitorAsync(_audioIds[value]);
                 MonitorPanel.UpdateAudioBadges(); // 소리 배지 위치 즉시 이동 (시안)
             }, "오디오 대상 적용");
-        }
-    }
-
-    partial void OnModeIndexChanged(int value)
-    {
-        if (value >= 0)
-        {
-            Apply(() => _services!.Coordinator.SetModeAsync((PlaybackMode)value), "재생 모드 적용");
         }
     }
 
