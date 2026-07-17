@@ -263,6 +263,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T3-T4 완료 (커밋 ee03c55, 703abc8): LastHomeUrl 저장·복원(성공 시 기록, 빈 입력란만 복원) + TryAutoPlayLastAsync 빠른 재생 생략 분기. 테스트 108/108, 리뷰 첫 판 OK·prefilter PASS.
 - T1-T2 완료 (커밋 ad37199, deaffa0): PRD 7건 보강 + 기본값 3종(Contain/음소거 켬/자동 재생 켬) + manifest StartupTask Enabled=true. 테스트 108/108, spec·quality OK.
   - 결정: 왕복 테스트 값은 기본값과 다르게 유지(직렬화 누락 감지), Harness IsMuted=false 고정(라우팅 테스트 전제), diff 밖 FR-19 stale 주석 2곳 동기화.
 
