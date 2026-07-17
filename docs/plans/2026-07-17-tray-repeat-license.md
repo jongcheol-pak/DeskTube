@@ -194,6 +194,8 @@
 - 수동 검증 (HUMAN-VERIFY): ① 트레이 아이콘이 앱 아이콘으로 표시(재등록 후) ② 설정 화면에 재생 순서 없음 ③ 마지막 곡 종료 후 첫 곡 재생(실청취) ④ 라이선스 항목 클릭 시 브라우저 열림
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 805b6cd) — F-2 테스트 102/102, F-7 plan-completion-reviewer OK (0/0/0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-7·FR-9·FR-10·FR-12 전건 충족 (F-7 대조 재사용, 재루프 0회), HUMAN-VERIFY 3건 잔여
 
 ## Retry Ledger
 
@@ -202,7 +204,8 @@
 - T4~T5 완료 (커밋 bcea806, 74dac6a): 순차 모드 끝 순환 + 진입점 모드 명시(D2 — 셔플 고착 방지, 테스트 101→102) / 라이선스 클릭→공식 사이트(LicenseEntry Url 전환, SettingsCard IsClickEnabled — 계획의 IsClickable은 오기로 정정, url 검증 테스트 신규). spec/quality 전건 OK.
 
 ## Next Steps
-- 승인 시 `pjc:implement-task`로 T1부터 자율 실행
+- 전 task 완료 + Phase F/G 통과. 남은 것은 HUMAN-VERIFY 3건(트레이 아이콘 실표시 — loose 배포는 Remove-AppxPackage 후 재등록 필요, 라이선스 클릭 브라우저 열림, 반복 재생 실청취)과 main 병합/push(별도 승인).
+- Suggested skills: 공식 /code-review (선택), 위키 반영은 vault 미설정으로 해당 없음
 
 ## Open Questions
 - [x] Q1: 설정 재생 순서 제거 후 전체듣기·행 재생의 순서 → **항상 순서대로 (사용자 확정, D2 반영)**
