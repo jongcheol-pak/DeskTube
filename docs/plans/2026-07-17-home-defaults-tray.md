@@ -220,7 +220,7 @@
     - Ended 정상 진행 경로(`_suppressEnded`)는 기존 동작 불변(가드 분리의 목적)
   - **Halt Forecast**: (i) 큐 항목 수 접근 방법 → PlaybackQueue에 Count 노출 여부 구현 시 확인 — 없으면 큐 생성 시점의 항목 수를 코디네이터가 보관(둘 다 내부 구현, 계약 불변이라 성립에 영향 없음)
   - **Depends on**: T2
-- [ ] T7. 트레이 메뉴 재작성 — PopupMenu 모드 + 토글 2항목 + 항목 재개
+- [x] T7. 트레이 메뉴 재작성 — PopupMenu 모드 + 토글 2항목 + 항목 재개
   - **Type**: C
   - **Design**: ① TrayIconService 내부 재구성(파일 이동 없음) — 메뉴 [재생|정지 토글][음소거|음소거 해제 토글][구분선][설정 열기][종료] ② 신규 심볼 없음(내부 필드 `_playStopItem`·`_muteItem`·`_dispatcher`) ③ Coordinator.StatusChanged·MutedChanged 구독(Initialize에서 DispatcherQueue 캡처 → TryEnqueue로 Text 갱신, Dispose에서 구독 해제) ④ 비추상화: 메뉴 상태 VM 분리 안 함(서비스 내 국소 갱신으로 충분), Opening 이벤트 의존 제거.
   - **Acceptance**: Given 정지·일시정지 상태, Then 첫 항목 문구 "재생"(클릭 시 재개/마지막 리스트 재생 — 마지막 항목부터, D8), Given 재생 중, Then "정지"(클릭 시 정지). Given 비음소거, Then "음소거"(클릭 시 음소거), Given 음소거, Then "음소거 해제". ContextMenuMode=PopupMenu. Tray_Volume 키 잔존 0(grep). 빌드 경고 0 — 메뉴 실표시(스크롤 없음·문구 전환)는 HUMAN-VERIFY.

@@ -1,13 +1,19 @@
 using CommunityToolkit.Mvvm.Input;
 using H.NotifyIcon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace DeskTube.Services;
 
 /// <summary>
-/// 트레이 아이콘 (PRD FR-9, plan T1·D2). App 수명으로 소유 — 설정 창이 닫혀도(숨김)
-/// 트레이 메뉴(재생/정지/볼륨/설정 열기/종료)로 앱을 제어한다.
+/// 트레이 아이콘 (PRD FR-9, plan T1·D2 — 2026-07-17 토글 2항목 재구성).
+/// App 수명으로 소유 — 설정 창이 닫혀도(숨김) 트레이 메뉴로 앱을 제어한다.
+/// 메뉴는 재생/정지·음소거의 상태 연동 토글 2항목 + 설정 열기·종료.
+/// 렌더링은 PopupMenu(Win32 네이티브) 모드 — SecondWindow(preview)의 스크롤·
+/// 동적 문구 미반영 버그(H.NotifyIcon #21/#97)를 원천 회피한다 (plan D6).
+/// 문구 갱신은 Opening이 아니라 StatusChanged/MutedChanged 이벤트 시점에 선반영
+/// — 메뉴를 열기 전에 항상 최신 문구가 준비된다.
 /// 셸 재시작(TaskbarCreated) 시 아이콘 재등록은 H.NotifyIcon이 자동 처리한다.
 /// </summary>
 public sealed class TrayIconService : IDisposable
@@ -17,7 +23,9 @@ public sealed class TrayIconService : IDisposable
     private readonly Action _exitApp;
 
     private TaskbarIcon? _icon;
-    private ToggleMenuFlyoutItem? _volumeItem;
+    private MenuFlyoutItem? _playStopItem;
+    private MenuFlyoutItem? _muteItem;
+    private DispatcherQueue? _dispatcher;
 
     /// <param name="showSettings">설정 창 표시 (인자: 표시할 안내 메시지, null이면 창만)</param>
     /// <param name="exitApp">앱 종료 (배경 복구 포함 정리는 호출측 책임)</param>
@@ -31,19 +39,17 @@ public sealed class TrayIconService : IDisposable
     /// <summary>UI 스레드에서 호출 — 메뉴 구성 후 트레이 아이콘을 즉시 등록한다.</summary>
     public void Initialize()
     {
+        _dispatcher = DispatcherQueue.GetForCurrentThread();
+
         var menu = new MenuFlyout();
 
-        var play = new MenuFlyoutItem { Text = Loc.Get("Tray_Play") };
-        play.Click += OnPlayClick;
-        menu.Items.Add(play);
+        _playStopItem = new MenuFlyoutItem();
+        _playStopItem.Click += OnPlayStopClick;
+        menu.Items.Add(_playStopItem);
 
-        var stop = new MenuFlyoutItem { Text = Loc.Get("Tray_Stop") };
-        stop.Click += OnStopClick;
-        menu.Items.Add(stop);
-
-        _volumeItem = new ToggleMenuFlyoutItem { Text = Loc.Get("Tray_Volume") };
-        _volumeItem.Click += OnVolumeClick;
-        menu.Items.Add(_volumeItem);
+        _muteItem = new MenuFlyoutItem();
+        _muteItem.Click += OnMuteClick;
+        menu.Items.Add(_muteItem);
 
         menu.Items.Add(new MenuFlyoutSeparator());
 
@@ -55,14 +61,17 @@ public sealed class TrayIconService : IDisposable
         exit.Click += (_, _) => _exitApp();
         menu.Items.Add(exit);
 
-        // 열릴 때마다 현재 설정으로 체크 상태 동기화 (설정 화면에서 바뀔 수 있음)
-        menu.Opening += (_, _) => _volumeItem.IsChecked = !_services.Settings.IsMuted;
+        // 상태 연동 문구 — 초기값은 현재 상태로, 이후는 이벤트가 갱신 (Dispose에서 해제)
+        UpdatePlayStopText();
+        UpdateMuteText();
+        _services.Coordinator.StatusChanged += OnStatusChanged;
+        _services.Coordinator.MutedChanged += OnMutedChanged;
 
         _icon = new TaskbarIcon
         {
             ToolTipText = Loc.Get("Tray_ToolTip"),
             IconSource = new BitmapImage(new Uri("ms-appx:///Assets/AppIcon.ico")),
-            ContextMenuMode = ContextMenuMode.SecondWindow,
+            ContextMenuMode = ContextMenuMode.PopupMenu,
             // MenuActivation 기본값이 RightClick — 명시 불필요
             DoubleClickCommand = new RelayCommand(() => _showSettings(null)),
             ContextFlyout = menu,
@@ -70,49 +79,66 @@ public sealed class TrayIconService : IDisposable
         _icon.ForceCreate();
     }
 
-    private async void OnPlayClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    /// <summary>재생 상태 변경 — 발생 스레드가 보장되지 않아 UI로 마셜링 후 문구 갱신.</summary>
+    private void OnStatusChanged(object? sender, PlaybackStatus status) =>
+        _dispatcher?.TryEnqueue(UpdatePlayStopText);
+
+    private void OnMutedChanged(object? sender, EventArgs e) =>
+        _dispatcher?.TryEnqueue(UpdateMuteText);
+
+    /// <summary>재생 중이면 "정지", 정지·일시정지면 "재생" (FR-9 상태 연동 문구).</summary>
+    private void UpdatePlayStopText()
     {
-        try
+        if (_playStopItem is not null)
         {
-            await PlayAsync();
-        }
-        catch (Exception ex)
-        {
-            AppLog.Write($"트레이 재생 처리 중 오류: {ex.GetType().Name} {ex.Message}");
+            _playStopItem.Text = Loc.Get(
+                _services.Coordinator.Status == PlaybackStatus.Playing ? "Tray_Stop" : "Tray_Play");
         }
     }
 
-    private async void OnStopClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    /// <summary>비음소거면 "음소거", 음소거면 "음소거 해제" (FR-9 상태 연동 문구).</summary>
+    private void UpdateMuteText()
     {
-        try
+        if (_muteItem is not null)
         {
-            await _services.Coordinator.StopAsync();
-        }
-        catch (Exception ex)
-        {
-            AppLog.Write($"트레이 정지 처리 중 오류: {ex.GetType().Name} {ex.Message}");
+            _muteItem.Text = Loc.Get(_services.Settings.IsMuted ? "Tray_Unmute" : "Tray_Mute");
         }
     }
 
-    private async void OnVolumeClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void OnPlayStopClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         try
         {
-            var mute = !_services.Settings.IsMuted;
-            await _services.Coordinator.SetMutedAsync(mute);
-            if (_volumeItem is not null)
+            if (_services.Coordinator.Status == PlaybackStatus.Playing)
             {
-                _volumeItem.IsChecked = !mute;
+                await _services.Coordinator.StopAsync();
+            }
+            else
+            {
+                await PlayAsync();
             }
         }
         catch (Exception ex)
         {
-            AppLog.Write($"트레이 볼륨 전환 중 오류: {ex.GetType().Name} {ex.Message}");
+            AppLog.Write($"트레이 재생/정지 처리 중 오류: {ex.GetType().Name} {ex.Message}");
+        }
+    }
+
+    private async void OnMuteClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        try
+        {
+            // 문구 갱신은 SetMutedAsync가 발화하는 MutedChanged 구독이 처리
+            await _services.Coordinator.SetMutedAsync(!_services.Settings.IsMuted);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"트레이 음소거 전환 중 오류: {ex.GetType().Name} {ex.Message}");
         }
     }
 
     /// <summary>
-    /// 재생 — 일시정지면 재개, 정지면 마지막 플레이리스트 재생.
+    /// 재생 — 일시정지면 재개, 정지면 마지막 플레이리스트를 마지막 항목부터 재생 (FR-19 재개 방식 통일, plan D8).
     /// 재생할 리스트가 없으면 조용히 무시하지 않고 설정 창을 열어 안내한다 (plan T1 Edge).
     /// </summary>
     private async Task PlayAsync()
@@ -139,7 +165,8 @@ public sealed class TrayIconService : IDisposable
             return;
         }
 
-        var result = await coordinator.StartAsync(playlist.Id);
+        // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
+        var result = await coordinator.StartAsync(playlist.Id, _services.Settings.LastItemId);
         if (!result.IsSuccess)
         {
             // 서비스 오류 문구는 미로컬라이즈(내부용) — 사용자에겐 리소스 문구, 상세는 로그로
@@ -150,6 +177,8 @@ public sealed class TrayIconService : IDisposable
 
     public void Dispose()
     {
+        _services.Coordinator.StatusChanged -= OnStatusChanged;
+        _services.Coordinator.MutedChanged -= OnMutedChanged;
         _icon?.Dispose();
         _icon = null;
     }
