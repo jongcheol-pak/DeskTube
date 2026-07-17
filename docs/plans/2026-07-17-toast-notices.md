@@ -95,7 +95,7 @@
 - **Source**: 기존 토큰 팔레트 + 공유 팝업 선례 (자체 확정 — 가역)
 
 ## Tasks
-- [ ] T1. ToastService + MainWindow 토스트 호스트
+- [x] T1. ToastService + MainWindow 토스트 호스트
   - **Type**: C
   - **Design**: ① `Services/ToastService.cs`(신규) + `MainWindow.xaml(.cs)` + `App.xaml.cs` ② `ToastService`(static) — `Attach(Action<string, InfoBarSeverity> presenter, DispatcherQueue)`·`Show(message, severity)` 라우팅 1책임(마셜링 포함, presenter 미등록 시 무시) / MainWindow `PresentToast` — 호스트 표시 + DispatcherTimer(3초, 오류/경고 5초) + 교체·리셋(D3) ③ VM·App → ToastService(정적) → MainWindow presenter (VM은 창 미참조 유지) ④ 큐·애니메이션 라이브러리·인터페이스 추출 안 함(정적 1개 — 창이 하나뿐)
   - **Acceptance**: MainWindow에 하단 중앙 토스트 호스트(토큰 스타일 바 + 심각도 아이콘, `IsHitTestVisible=False`) 신설, 기존 NoticeBar(68-76행)·`ShowNotice`(156행) 제거, App.xaml.cs 172행 호출을 `ToastService.Show(notice, Informational)`로 교체. `ToastService.Show`는 성공/정보 3초·오류/경고 5초 후 자동 숨김(⏳ HUMAN-VERIFY), 연속 호출 시 교체+리셋. 빌드 통과
