@@ -16,7 +16,7 @@
 - [2026-07-16] 단일 인스턴스 보장 (Named Mutex + 창 전면화 — 위키 single-instance 패턴): 트레이 상주 + 재실행으로 2인스턴스 공존 관찰 (출처: 2026-07-16-wallpaper-win32-host, debug 부수 관찰)
 - [2026-07-16] 전역 예외 훅(UnhandledException 로깅) 상시 탑재 검토 — 위키 global-exception-handling 패턴, AV 조사에서 진단 유효성 확인 (출처: 2026-07-16-wallpaper-win32-host)
 - [2026-07-16] 홈 화면 현재 재생 정보에 제목·썸네일 표시 — FR-18 메타 인프라(VideoMetadataService·PlaylistItem 캐시) 재사용 (출처: 2026-07-16-melon-playlist-style Deferred)
-- [2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 — 시안에는 있으나 기능 신설이라 제외, 추가하려면 PRD FR 신설 합의 필요 (출처: 2026-07-16-design-1a-restyle Q4)
+- [2026-07-17] 트레이 메뉴 "재생"(정지 상태 → 마지막 리스트 재생)도 마지막 항목부터 재개하도록 통일 — TrayIconService.PlayAsync가 항목 미지정 호출, 일관성 개선 후보 (출처: 2026-07-17-autoplay-on-launch Deferred)
 - [2026-07-17] HighContrast 모드의 시안 색 정밀 정합 검토 — 현재 HC 사전은 시스템 색 매핑만 (출처: 2026-07-16-design-1a-restyle D11)
 - [2026-07-17] [SUGGEST] 직접 FontSize 지정 TextBlock의 텍스트 램프 스타일 일괄 점검 — T7 리뷰가 SettingsPage 2곳 수정, T3~T6 화면(홈 제목·모니터 카드 등)에 같은 패턴 잔존 가능 (출처: 2026-07-16-design-1a-restyle T7 quality M1)
 - [2026-07-17] [SUGGEST] ListView lightweight 3키(hover·선택 배경)가 전역 Default 사전 스코프 — 다른 화면에 ListView 추가 시 의도치 않은 상속 유의 (출처: 2026-07-16-design-1a-restyle T6 quality m2)
@@ -25,6 +25,7 @@
 - [2026-07-17] "전체듣기 모드 명시"(PlaylistsViewModel 1줄) 단위테스트 — VM 테스트 인프라 부재(서비스 계층만 테스트 관례), 인프라 도입 시 재검토 (출처: 2026-07-17-tray-repeat-license T4 spec M1)
 
 ## 종결
+- [2026-07-17 → 2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 (PRD FR 신설 합의 필요) — 반영 (2026-07-17-autoplay-on-launch T1~T5: FR-19 신설, 항목 단위 재개 + 부팅 경로 통일)
 - [2026-07-16 → 2026-07-17] MainWindow 커스텀 타이틀바 Grid 높이 48px 고정 검토 — 반영 (2026-07-16-design-1a-restyle T3: 시안 확정값 44px을 AppTitleBarHeight 토큰으로 교체, 캡션 버튼 색도 토큰 정합)
 - [2026-07-16 → 2026-07-16] 유휴 워킹셋 ~208MB 관찰 → NFR-2 대조 — 반영 (2026-07-16-ui-perf-batch T7: 트림 도입 + 자동 실측 2경로, 유휴 약 27MB로 목표 150MB 충족)
 - [2026-07-16 → 2026-07-16] part2 plan 실행 — 트레이·설정 UI·플레이리스트 UI·자동 시작·로그인·정보 화면·다국어·최종 검증 — 반영 (2026-07-15-desktube-ui-part2 T1~T8 완료, 실측 3건은 별도 대기 항목으로 분리)
