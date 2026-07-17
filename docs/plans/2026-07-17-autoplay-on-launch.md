@@ -117,7 +117,7 @@
   - **Edge Cases**: (Type A — 해당 없음)
   - **Halt Forecast**: (i) PRD는 승인 후 고정 → 이 plan 승인이 FR-19 신설·FR-8/10 보강안 승인을 포함함을 승인 프롬프트에 명시
   - **Depends on**: -
-- [ ] T2. LastItemId 추적 (Coordinator + AppSettings)
+- [x] T2. LastItemId 추적 (Coordinator + AppSettings)
   - **Type**: C
   - **Design**: ① `AppSettings.LastItemId`(Guid?, 기본 null — LastPlaylistId 아래, FR-19 doc 주석) ② `PlaybackCoordinator.LoadAll`에서 `_settings.LastItemId = item.Id` 기록(D3), `AdvanceAsync`의 `LoadAll(next)` 뒤 `await _store.SaveSettingsAsync(_settings)` 추가 ③ 의존 방향 불변(Coordinator→settings/store 기존 경로) ④ 이번에 추상화하지 않음: 저장 디바운스/배칭(곡당 1회 쓰기는 미미 — Risks 표)
   - **Acceptance**: Given 재생 중, When 곡이 넘어감(Ended→Advance), Then settings의 LastItemId가 새 곡 Id로 저장된다. Given StartAsync(리스트, 항목 지정), Then LastItemId가 그 항목으로 저장된다. 단위테스트 2건 신규 + 구형 JSON(필드 부재) 로드 시 null 기본값 왕복 테스트. 기존 테스트 전건 통과.
