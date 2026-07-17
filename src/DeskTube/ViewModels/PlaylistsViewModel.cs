@@ -403,9 +403,7 @@ public partial class PlaylistsViewModel : ObservableObject
 
     /// <summary>삭제 여부 사전 판단 — 재생 중인 리스트인지 (View가 확인 문구를 고르는 데 사용).</summary>
     public bool IsPlaying(PlaylistEntry entry) =>
-        _services is not null &&
-        _services.Coordinator.Status != PlaybackStatus.Stopped &&
-        _services.Settings.LastPlaylistId == entry.Id;
+        _services is not null && _services.Coordinator.CurrentPlaylistId == entry.Id;
 
     /// <summary>삭제 — 재생 중이면 정지 후 삭제 (plan T3 Edge, 확인은 View에서 완료된 상태).</summary>
     public async Task DeleteAsync(PlaylistEntry entry)

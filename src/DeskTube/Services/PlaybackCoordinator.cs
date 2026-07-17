@@ -84,6 +84,11 @@ public sealed class PlaybackCoordinator : IDisposable
 
     public PlaybackStatus Status { get; private set; } = PlaybackStatus.Stopped;
 
+    /// <summary>지금 재생(일시정지 포함) 중인 플레이리스트 ID — 정지 상태면 null (재생 중 표시 정본).
+    /// LastPlaylistId는 정지 후에도 남는 재개용 이력이라 별개다. StatusChanged 발화 전에 확정되므로
+    /// 핸들러가 이벤트 시점에 항상 현재 값을 읽는다.</summary>
+    public Guid? CurrentPlaylistId { get; private set; }
+
     public event EventHandler<PlaybackStatus>? StatusChanged;
 
     /// <summary>음소거 상태 변경 알림 — 값 정본은 Settings.IsMuted (홈·설정 배지 동기화용, 배지 plan T2).</summary>
@@ -166,6 +171,7 @@ public sealed class PlaybackCoordinator : IDisposable
         _failedItemIds.Clear();
         _errorAdvancePending = false;
         _advanceAfterResume = false;
+        CurrentPlaylistId = playlistId; // StatusChanged(Playing) 핸들러가 읽으므로 발화 전에 확정
         SetStatus(PlaybackStatus.Playing);
 
         _settings.LastPlaylistId = playlistId;
@@ -197,6 +203,7 @@ public sealed class PlaybackCoordinator : IDisposable
     {
         CleanupAll();
         _queue = null;
+        CurrentPlaylistId = null; // StatusChanged(Stopped) 핸들러가 읽으므로 발화 전에 해제
         SetStatus(PlaybackStatus.Stopped);
         Interop.ProcessInterop.TrimWorkingSet(); // 유휴 진입 — 워킹셋 OS 반환 (NFR-2, plan D6)
         return Task.CompletedTask;

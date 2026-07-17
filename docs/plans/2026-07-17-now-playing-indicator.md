@@ -111,7 +111,7 @@
 - **Source**: PlaylistsViewModel.cs:11~31 (PlaylistEntry 선례)
 
 ## Tasks
-- [ ] T1. 코디네이터 정본 속성 `CurrentPlaylistId` 신설 + IsPlaying 전환 + 테스트
+- [x] T1. 코디네이터 정본 속성 `CurrentPlaylistId` 신설 + IsPlaying 전환 + 테스트
   - **Type**: C
   - **Design**: ① Services/PlaybackCoordinator.cs ② `public Guid? CurrentPlaylistId { get; private set; }` — "지금 재생(또는 일시정지) 중인 리스트 ID, 정지 시 null" 책임 1개 (D1 참조) ③ StartAsync 성공 경로가 `SetStatus(Playing)` **직전**에 설정(:169 앞), StopAsync가 `SetStatus(Stopped)` **직전**에 null(:200 앞) — 이벤트 핸들러가 항상 확정된 값을 읽는다. 소비자: PlaylistsViewModel.IsPlaying(판정식 교체)·T2·T3 ④ 인터페이스 추출·이벤트 신설은 하지 않음(StatusChanged로 충분 — D4).
   - **Acceptance**: Given 정지 상태, When StartAsync 성공, Then CurrentPlaylistId == 시작한 리스트 ID (StatusChanged(Playing) 발화 시점에 이미 설정됨) / When StopAsync 또는 전곡 재생 불가 정지, Then null / When Pause, Then 값 유지. 기존 테스트 116건 통과 유지 + 신규 단언 테스트 통과.

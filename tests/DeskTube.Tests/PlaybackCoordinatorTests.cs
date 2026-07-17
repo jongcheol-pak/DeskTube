@@ -166,6 +166,32 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task CurrentPlaylistId는_시작에_설정_일시정지에_유지_정지에_해제된다()
+    {
+        var h = new Harness();
+        Guid? atPlayingEvent = null;
+        h.Coordinator.StatusChanged += (_, status) =>
+        {
+            if (status == PlaybackStatus.Playing && atPlayingEvent is null)
+            {
+                atPlayingEvent = h.Coordinator.CurrentPlaylistId; // 발화 시점에 이미 확정돼야 한다 (표시 레이스 방지)
+            }
+        };
+
+        Assert.Null(h.Coordinator.CurrentPlaylistId);
+
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        Assert.Equal(h.Playlist.Id, h.Coordinator.CurrentPlaylistId);
+        Assert.Equal(h.Playlist.Id, atPlayingEvent);
+
+        h.Coordinator.Pause();
+        Assert.Equal(h.Playlist.Id, h.Coordinator.CurrentPlaylistId);
+
+        await h.Coordinator.StopAsync();
+        Assert.Null(h.Coordinator.CurrentPlaylistId);
+    }
+
+    [Fact]
     public async Task 음소거_변경_시_MutedChanged가_발생하고_설정에_반영된다()
     {
         var h = new Harness();
