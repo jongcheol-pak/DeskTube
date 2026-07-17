@@ -24,7 +24,8 @@
 - 성능 검토의 "관찰(조치 불요)" 항목 전부
 
 ## Deferred / Follow-up
-- (없음)
+- [T2 quality m1] `_volumeSaveCts` 미Dispose — CancelMetadataBackfill 관례(경합 방지, GC 수거) 승계로 판정. CTS 수명 관리 컨벤션을 바꾸게 되면 함께 정리
+- [T2 quality m2] 볼륨 디바운스 테스트가 실시간 `Task.Delay(1200)` 의존 — 가상 시계 인프라 도입 시 전환 검토 (현재 여유폭 2.4배)
 
 ## Investigation Log
 - 위키 참조: 관련 위키 자료 없음 — 코드 1차 출처로 진행 (vault 미설정 확인 — 세션 내 Test-Path)
@@ -130,7 +131,7 @@
   - **Halt Forecast**:
     - (ii-a) IPlayerHost 공개 인터페이스 확장(계획된 변경 — 구현체 2곳 전수 확인) → `## 사전 승인 항목`
   - **Depends on**: -
-- [ ] T2. 볼륨 영속화 디바운스
+- [x] T2. 볼륨 영속화 디바운스
   - **Type**: C
   - **Design**: ① Services/PlaybackCoordinator.cs 단독 ② 신규 private `ScheduleVolumeSave()`(CTS 교체 + Task.Delay(500) 후 SaveSettingsAsync — 취소는 정상 경로, 예외는 AppLog) ③ SetVolumeAsync가 ApplyAudioRouting 즉시 수행 + 저장 예약 후 즉시 반환, Dispose에서 pending CTS 취소 + fire-and-forget 최종 저장(D5) ④ 범용 디바운스 헬퍼·다른 Set* 확대는 하지 않음(호출 빈도 문제는 볼륨뿐).
   - **Acceptance**: Given 연속 SetVolumeAsync N회, Then 볼륨 명령은 N회 즉시 적용(기존 테스트 :348 통과 유지) + 저장은 마지막 값 1회(신규 테스트 — FakeStore 저장 카운트/값 단언, 지연 경과 대기) / 빌드 경고 0.
