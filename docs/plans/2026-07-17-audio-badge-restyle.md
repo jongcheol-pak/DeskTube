@@ -213,6 +213,8 @@
 ## Progress Log
 - T1-T2 완료 (커밋 208d593, 51e9170): 배지 토큰(radius 4 + 상태 색 3쌍 + HC) / MutedChanged 이벤트 + 테스트(105/105). T1은 prefilter ESCALATE(플랫폼 미명시 빌드 오탐)로 C 격상 처리.
   - 참고: dotnet test는 `-p:Platform=x64` 필수 (deferred 대장 기지 항목과 동일 원인).
+- T3-T4 완료 (커밋 183f5c4, 003bbca): 배지 2상태 로직(표시 조건에서 음소거 제거 + IsAudioMuted + ToggleMuteCommand + MutedChanged 구독, 설정 VM 중복 갱신 제거) / 배지 시각·클릭(사각 4px + FontIcon E767/E74F + 상태색, 홈 Button + MuteToggleCommand DP, resw 키 교체·홈 힌트 갱신). T4 quality MINOR 1건 follow-up 등록.
+  - 참고: BadgeGlyph는 소스에 PUA 리터럴(E74F/E767)로 저장 — 에디터에서 빈 문자열처럼 보여도 정상(바이트 검증 완료).
 
 ## Next Steps
 
