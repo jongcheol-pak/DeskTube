@@ -459,12 +459,13 @@ public sealed class PlaybackCoordinator : IDisposable
         _monitors.MonitorsChanged -= OnMonitorsChanged;
 
         // 디바운스 대기 중인 볼륨 저장이 있으면 종료 전 최종 저장 시도 — 실패·미완은 수용
-        // (`.Wait()` 금지 규칙상 동기 대기 안 함, 다음 설정 저장에 자연 회복 — perf plan D5).
-        // 이미 저장이 끝난 예약도 토큰이 미취소로 남아 중복 저장 1회가 가능하나 멱등이라 무해.
+        // (`.Wait()` 금지 규칙상 동기 대기 안 함, 실패해도 다음 설정 저장에 자연 회복 — perf plan D5).
+        // 이미 저장이 끝난 예약도 토큰이 미취소로 남아 중복 저장 1회가 가능하나 같은 값 재기록이라 무해
+        // (드물게 진행 중 저장과 임시 파일이 겹치면 한쪽이 IOException으로 실패할 수 있고, 그 경우도 수용).
         if (_volumeSaveCts is { IsCancellationRequested: false } pendingSave)
         {
             pendingSave.Cancel();
-            _ = _store.SaveSettingsAsync(_settings);
+            FireAndForget(() => _store.SaveSettingsAsync(_settings), "종료 시 최종 볼륨 저장");
         }
 
         CleanupAll();
