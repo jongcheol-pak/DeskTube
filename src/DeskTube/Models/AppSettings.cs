@@ -12,7 +12,8 @@ public sealed class AppSettings
     /// <summary>볼륨 0~100 (PRD FR-5).</summary>
     public int Volume { get; set; } = 50;
 
-    public bool IsMuted { get; set; }
+    /// <summary>음소거 (PRD FR-5 — 기본 켬, 2026-07-17).</summary>
+    public bool IsMuted { get; set; } = true;
 
     public PlaybackMode Mode { get; set; } = PlaybackMode.Sequential;
 
@@ -25,8 +26,8 @@ public sealed class AppSettings
     /// <summary>화질 간접 제어 — 플레이어 렌더 세로 해상도 (PRD FR-13). 0 = 원본(스케일 없음).</summary>
     public int QualityScaleHeight { get; set; }
 
-    /// <summary>동영상 크기 모드 (PRD FR-16). 기본 채움(Cover).</summary>
-    public FitMode FitMode { get; set; } = FitMode.Cover;
+    /// <summary>동영상 크기 모드 (PRD FR-16). 기본 맞춤(Contain — 2026-07-17 채움에서 변경).</summary>
+    public FitMode FitMode { get; set; } = FitMode.Contain;
 
     /// <summary>자막 표시 (PRD FR-20 — 기본 끔). 켜면 강제 표시, 끄면 계정 선호와 무관하게 숨김.</summary>
     public bool CaptionsEnabled { get; set; }
@@ -40,8 +41,8 @@ public sealed class AppSettings
     /// <summary>마지막 재생 항목 — 앱 시작·부팅 자동 재생의 항목 단위 재개용 (PRD FR-19·FR-8).</summary>
     public Guid? LastItemId { get; set; }
 
-    /// <summary>앱 시작 후 자동 재생 (PRD FR-19 — 기본 꺼짐). 켜면 일반 실행 시 마지막 항목부터 재생.</summary>
-    public bool AutoPlayOnLaunch { get; set; }
+    /// <summary>앱 시작 후 자동 재생 (PRD FR-19 — 기본 켜짐, 2026-07-17). 켜면 일반 실행 시 마지막 항목부터 재생.</summary>
+    public bool AutoPlayOnLaunch { get; set; } = true;
 
     /// <summary>플레이리스트 화면에서 마지막에 선택한 리스트 (재생 이력 LastPlaylistId와 별개 — FR-18 기본 선택용).</summary>
     public Guid? LastSelectedPlaylistId { get; set; }
@@ -66,7 +67,7 @@ public sealed class AppSettings
         }
         if (!Enum.IsDefined(FitMode))
         {
-            FitMode = FitMode.Cover;
+            FitMode = FitMode.Contain; // 손상 값 폴백은 기본값과 동일하게 (FR-16)
         }
         SelectedMonitorIds ??= [];
     }

@@ -122,6 +122,7 @@ public sealed class PlaybackCoordinatorTests
             }
 
             Settings.SelectedMonitorIds = [.. Monitors.Monitors.Select(m => m.Id)];
+            Settings.IsMuted = false; // 오디오 라우팅 테스트는 비음소거 전제 — 기본값(켬)과 무관하게 고정
 
             Coordinator = new PlaybackCoordinator(
                 Monitors, Wallpaper, CreatePlayerAsync, Library, new FakeStore(), Settings);

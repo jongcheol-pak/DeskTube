@@ -32,10 +32,11 @@ public sealed class JsonStateStoreTests : IDisposable
     [Fact]
     public async Task 설정_저장_후_재로드하면_왕복_일치한다()
     {
+        // 왕복 검증력 유지를 위해 전 필드를 기본값과 다른 값으로 설정 (직렬화 누락 감지)
         var settings = new AppSettings
         {
             Volume = 73,
-            IsMuted = true,
+            IsMuted = false, // 기본 true (FR-5)
             Mode = PlaybackMode.Shuffle,
             SelectedMonitorIds = ["MON-A", "MON-B"],
             AudioMonitorId = "MON-B",
@@ -45,7 +46,7 @@ public sealed class JsonStateStoreTests : IDisposable
             ReduceMirrorQuality = true,
             LastPlaylistId = Guid.NewGuid(),
             LastItemId = Guid.NewGuid(),
-            AutoPlayOnLaunch = true,
+            AutoPlayOnLaunch = false, // 기본 true (FR-19)
             LastSelectedPlaylistId = Guid.NewGuid(),
             PauseOnFullscreen = false,
             Language = "ko",
@@ -131,7 +132,9 @@ public sealed class JsonStateStoreTests : IDisposable
 
         Assert.Equal(50, settings.Volume);
         Assert.Equal(PlaybackMode.Sequential, settings.Mode);
-        Assert.False(settings.AutoPlayOnLaunch); // FR-19 — 기본 꺼짐
+        Assert.Equal(FitMode.Contain, settings.FitMode); // FR-16 — 기본 맞춤 (2026-07-17)
+        Assert.True(settings.IsMuted); // FR-5 — 음소거 기본 켬 (2026-07-17)
+        Assert.True(settings.AutoPlayOnLaunch); // FR-19 — 기본 켜짐 (2026-07-17)
         Assert.Null(settings.LastItemId);
         Assert.Null(settings.LastSelectedPlaylistId); // 구형 JSON·첫 실행 — 기본 null (하위 호환)
         Assert.Empty(playlists);
