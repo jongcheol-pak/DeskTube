@@ -66,6 +66,13 @@ public interface IPlayerHost : IDisposable
     /// <summary>자막 표시 — 켜면 강제 표시, 끄면 강제 숨김 (PRD FR-20).</summary>
     void SetCaptionsEnabled(bool enabled);
 
+    /// <summary>렌더링 중단 + 렌더러 절전 요청(best-effort) — 정책 일시정지 중 CPU·메모리 회수 (NFR-1·NFR-2).
+    /// 절전 중에는 배경이 검게 보인다 (렌더링 중단 — 정책 일시정지는 배경이 가려지거나 절전 상황이라 수용).</summary>
+    void Suspend();
+
+    /// <summary>절전 해제 — 절전 상태가 아니면 아무 효과 없다 (모든 재개 경로에서 호출해도 안전).</summary>
+    void ResumeFromSuspend();
+
     /// <summary>최근 시각 이벤트 캐시 (초). 아직 보고 없으면 0.</summary>
     double CurrentTime { get; }
 }

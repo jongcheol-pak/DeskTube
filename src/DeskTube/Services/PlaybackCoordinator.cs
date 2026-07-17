@@ -236,13 +236,15 @@ public sealed class PlaybackCoordinator : IDisposable
         SetStatus(PlaybackStatus.Playing);
     }
 
-    /// <summary>정책 일시정지 (NFR-1 — T8 PowerPolicyService가 호출). 사용자 정지와 독립 상태.</summary>
+    /// <summary>정책 일시정지 (NFR-1 — T8 PowerPolicyService가 호출). 사용자 정지와 독립 상태.
+    /// 배경이 가려지거나 절전 상황이므로 플레이어를 절전시켜 CPU·메모리를 회수한다 (perf plan D1).</summary>
     public void PolicyPause()
     {
         _policyPaused = true;
         if (Status == PlaybackStatus.Playing)
         {
             PauseAll();
+            SuspendAll();
             SetStatus(PlaybackStatus.Paused);
         }
     }
@@ -263,9 +265,11 @@ public sealed class PlaybackCoordinator : IDisposable
         }
     }
 
-    /// <summary>재개 공통 — 일시정지 중 재생 불가 오류가 있었으면 에러 난 곡 재생 대신 다음 곡으로 스킵한다.</summary>
+    /// <summary>재개 공통 — 일시정지 중 재생 불가 오류가 있었으면 에러 난 곡 재생 대신 다음 곡으로 스킵한다.
+    /// 초입에서 절전을 해제한다 — 사용자 Resume·PolicyResume 둘 다 이 경로를 경유한다 (perf plan D4).</summary>
     private void ResumeOrSkipFailed()
     {
+        ResumeAllFromSuspend();
         if (_advanceAfterResume)
         {
             _advanceAfterResume = false;
@@ -596,6 +600,23 @@ public sealed class PlaybackCoordinator : IDisposable
         foreach (var entry in _players.Values)
         {
             entry.Player.Pause();
+        }
+    }
+
+    private void SuspendAll()
+    {
+        foreach (var entry in _players.Values)
+        {
+            entry.Player.Suspend();
+        }
+    }
+
+    /// <summary>절전 해제 — 미절전 플레이어에는 no-op (IPlayerHost 계약).</summary>
+    private void ResumeAllFromSuspend()
+    {
+        foreach (var entry in _players.Values)
+        {
+            entry.Player.ResumeFromSuspend();
         }
     }
 

@@ -79,6 +79,8 @@ public sealed class PlaybackCoordinatorTests
         public void SetQualityScale(int height) => Commands.Add($"scale:{height}");
         public void SetFitMode(FitMode mode) => Commands.Add($"fit:{(int)mode}");
         public void SetCaptionsEnabled(bool enabled) => Commands.Add($"captions:{enabled}");
+        public void Suspend() => Commands.Add("suspend");
+        public void ResumeFromSuspend() => Commands.Add("resume-suspend");
         public void Dispose() => Commands.Add("dispose");
 
         public void RaiseState(PlayerState state) => StateChanged?.Invoke(this, state);
@@ -189,6 +191,57 @@ public sealed class PlaybackCoordinatorTests
 
         await h.Coordinator.StopAsync();
         Assert.Null(h.Coordinator.CurrentPlaylistId);
+    }
+
+    [Fact]
+    public async Task 정책_일시정지는_일시정지_후_절전하고_해제는_절전_해제_후_재생한다()
+    {
+        var h = new Harness(monitorCount: 2);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Coordinator.PolicyPause();
+
+        // 전 플레이어 절전 + pause가 suspend보다 먼저 (영상 정지 후 절전)
+        foreach (var player in h.Players.Values)
+        {
+            Assert.Contains("suspend", player.Commands);
+            Assert.True(player.Commands.IndexOf("pause") < player.Commands.IndexOf("suspend"));
+        }
+
+        h.Coordinator.PolicyResume();
+
+        // 절전 해제가 재생 재개보다 먼저 (절전 중 play는 처리가 보장되지 않음)
+        foreach (var player in h.Players.Values)
+        {
+            Assert.Contains("resume-suspend", player.Commands);
+            Assert.True(player.Commands.IndexOf("resume-suspend") < player.Commands.LastIndexOf("play"));
+        }
+
+        Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status);
+    }
+
+    [Fact]
+    public async Task 사용자_일시정지는_절전하지_않는다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Coordinator.Pause();
+
+        Assert.DoesNotContain("suspend", h.Master.Commands);
+    }
+
+    [Fact]
+    public async Task 정책_일시정지_중_사용자가_직접_재개해도_절전이_해제된다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        h.Coordinator.PolicyPause();
+
+        h.Coordinator.Resume();
+
+        Assert.Contains("resume-suspend", h.Master.Commands);
+        Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status);
     }
 
     [Fact]

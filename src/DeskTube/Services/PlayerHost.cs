@@ -107,6 +107,52 @@ public sealed class PlayerHost : IPlayerHost
 
     public void SetCaptionsEnabled(bool enabled) => PostCommand(new PlayerCommand("captions", Enabled: enabled));
 
+    /// <summary>절전 — 렌더링 중단(IsVisible=false) 후 렌더러 절전 요청.
+    /// TrySuspendAsync는 IsVisible=false 선행이 필수이며 best-effort다(거부돼도 렌더링 중단 효과는 유지 — plan D7).</summary>
+    public void Suspend()
+    {
+        if (_controller is not { } controller)
+        {
+            return;
+        }
+
+        controller.IsVisible = false;
+        _ = TrySuspendCoreAsync(controller);
+    }
+
+    private static async Task TrySuspendCoreAsync(CoreWebView2Controller controller)
+    {
+        try
+        {
+            var suspended = await controller.CoreWebView2.TrySuspendAsync();
+            if (!suspended)
+            {
+                AppLog.Write("플레이어 절전 요청 거부(렌더링 중단만 적용) — best-effort");
+            }
+        }
+        catch (Exception ex)
+        {
+            // 절전 실패는 재생 동작에 영향 없음 — 기록만 (plan D7)
+            AppLog.Write($"플레이어 절전 요청 실패(렌더링 중단만 적용): {ex.GetType().Name}");
+        }
+    }
+
+    /// <summary>절전 해제 — 명시 Resume 후 가시화 (가시화만으로도 자동 재개되지만 순서를 못박아 결정적으로).</summary>
+    public void ResumeFromSuspend()
+    {
+        if (_controller is not { } controller)
+        {
+            return;
+        }
+
+        if (controller.CoreWebView2 is { IsSuspended: true } core)
+        {
+            core.Resume();
+        }
+
+        controller.IsVisible = true;
+    }
+
     public void Dispose()
     {
         _retryTimer?.Stop();
@@ -132,6 +178,13 @@ public sealed class PlayerHost : IPlayerHost
         // 초기화 전·파괴 후 명령은 무시 (ready 전 큐잉은 JS 측이 담당)
         if (_controller?.CoreWebView2 is { } core)
         {
+            // 절전 중엔 페이지 스크립트가 정지라 메시지 처리가 보장되지 않음 — 명시 해제 후 전송.
+            // 재절전은 하지 않는다 (드문 경로 — 다음 정책 일시정지에서 회복, plan D3)
+            if (core.IsSuspended)
+            {
+                ResumeFromSuspend();
+            }
+
             core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand));
         }
     }
