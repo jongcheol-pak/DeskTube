@@ -171,7 +171,7 @@
   - **Edge Cases**: url 누락·파손 index.json → 기존 catch 로그 방어 유지 / `LaunchUriAsync` 실패(기본 브라우저 없음 등) → 예외 삼키지 않고 로그(AppLog) / 전문 txt 5개는 배포물에 잔존(D3 — csproj `Assets\licenses\**` Content 글롭 불변)
   - **Halt Forecast**: (ii-a) `LicenseEntry` record 시그니처 변경(계획된 내부 시그니처 변경, 사용처 2파일 전수 갱신) → `## 사전 승인 항목`에 등록
   - **Depends on**: -
-- [ ] T6. README 갱신
+- [x] T6. README 갱신
   - **Type**: A
   - **Acceptance**: 설정 화면 항목 목록에서 재생 순서 제거, 재생 동작(끝나면 처음부터 반복) 반영, 정보 화면 라이선스 설명을 "클릭 시 공식 사이트 이동"으로 갱신. 존재하지 않는 기능 서술 0.
   - **Files**: 주: `README.md`
@@ -199,6 +199,7 @@
 
 ## Progress Log
 - T1~T3 완료 (커밋 0dca573, 46e1991, 691a9e7): PRD 3건 갱신 / 트레이 아이콘 Assets/AppIcon.ico 교체(tray.ico 삭제) / 설정 재생 순서 카드·그룹 헤더·VM 심볼·resw 7키×2 제거. 빌드 경고 0·테스트 100/100 유지.
+- T4~T5 완료 (커밋 bcea806, 74dac6a): 순차 모드 끝 순환 + 진입점 모드 명시(D2 — 셔플 고착 방지, 테스트 101→102) / 라이선스 클릭→공식 사이트(LicenseEntry Url 전환, SettingsCard IsClickEnabled — 계획의 IsClickable은 오기로 정정, url 검증 테스트 신규). spec/quality 전건 OK.
 
 ## Next Steps
 - 승인 시 `pjc:implement-task`로 T1부터 자율 실행
