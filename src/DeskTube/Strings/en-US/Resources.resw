@@ -96,6 +96,9 @@
   <data name="Home_QuickPlaylistName" xml:space="preserve">
     <value>Quick play</value>
   </data>
+  <data name="HomePremiumHint.Text" xml:space="preserve">
+    <value>Sign in with a YouTube Premium account to play without ads.</value>
+  </data>
   <data name="SettingsHeader.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
