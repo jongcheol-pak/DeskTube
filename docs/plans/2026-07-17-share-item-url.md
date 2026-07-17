@@ -132,12 +132,16 @@
 - 수동 검증 (HUMAN-VERIFY): ① 우클릭 메뉴 구조(구분선 2·공유 아이콘) ② 공유 팝업 표시·스타일(어두운 라운드 바, URL+복사) ③ 복사 → 클립보드 값 = 원본 URL + 성공 알림 ④ 기존 이동/삭제 동작 불변
 
 ## Phase Ledger
+- Phase F 통과 (HEAD fe6d807) — F-2 테스트 106/106, F-7 plan-completion-reviewer OK (BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 재루프 0회, G-1은 F-7 PRD 대조 재사용 (FR-18 공유 보강 충족, 나머지 active Must 범위 외 명시)
 
 ## Retry Ledger
 
 ## Progress Log
 
 ## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4건 확인(메뉴 구조·공유 팝업 표시/스타일·복사 동작·기존 메뉴 불변) 후 main 병합 결정
+- Suggested skills: 공식 /code-review (선택)
 
 ## Open Questions
 - (없음 — 갈림길은 코드 근거·사용자 명시 구조로 자체 확정, D1~D4)
