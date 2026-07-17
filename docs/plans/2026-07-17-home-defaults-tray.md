@@ -236,7 +236,7 @@
     - Dispose 후 늦게 도착하는 이벤트 — 구독 해제 + null 가드
   - **Halt Forecast**: (i) PopupMenu 모드에서 ToggleMenuFlyoutItem 체크 표시 지원 불확실 → 체크 미사용 설계로 회피(문구가 상태 표현 — D6), 항목은 일반 MenuFlyoutItem로 전환
   - **Depends on**: T6 (resw 같은 파일 순차 수정)
-- [ ] T8. README 갱신
+- [x] T8. README 갱신
   - **Type**: A
   - **Acceptance**: 기본값 표(맞춤·음소거 켬·자동 실행 켬·자동 재생 켬), 홈 URL 기억·자동 재생 예외, 홈 로그인 상태 표시, 재생 불가 연속 스킵·전곡 정지, 트레이 메뉴 구성(토글 2항목) 반영 — 존재하지 않는 기능 기재 0.
   - **Files**:
