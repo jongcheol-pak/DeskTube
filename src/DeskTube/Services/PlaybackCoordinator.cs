@@ -27,6 +27,9 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>미러 화질 하향 상한 — 렌더 세로 해상도 (NFR-2, plan D5).</summary>
     private const int MirrorQualityCapHeight = 720;
 
+    /// <summary>볼륨 저장 디바운스 — 슬라이더 드래그의 연속 변경을 마지막 1회 저장으로 합침 (perf plan D5).</summary>
+    private const int VolumeSaveDebounceMs = 500;
+
     private sealed record PlayerEntry(MonitorInfo Monitor, IPlayerHost Player);
 
     private readonly IMonitorService _monitors;
@@ -56,6 +59,9 @@ public sealed class PlaybackCoordinator : IDisposable
 
     /// <summary>에러 스킵 예약됨 — 같은 곡의 중복 에러 이벤트로 다중 스킵 방지 (다음 곡 로드 시 해제).</summary>
     private bool _errorAdvancePending;
+
+    /// <summary>볼륨 저장 디바운스 예약 취소 — 새 변경이 이전 예약을 교체한다 (perf plan D5).</summary>
+    private CancellationTokenSource? _volumeSaveCts;
 
     private int _timeTicks;
     private int _healthFailures;
@@ -280,11 +286,35 @@ public sealed class PlaybackCoordinator : IDisposable
         PlayAll();
     }
 
-    public async Task SetVolumeAsync(int volume)
+    /// <summary>볼륨 적용 (PRD FR-5) — 플레이어 반영은 즉시, 저장은 디바운스 예약 후 즉시 반환한다
+    /// (슬라이더 드래그가 틱마다 settings.json을 쓰는 것 방지 — perf plan D5).</summary>
+    public Task SetVolumeAsync(int volume)
     {
         _settings.Volume = Math.Clamp(volume, 0, 100);
         ApplyAudioRouting();
-        await _store.SaveSettingsAsync(_settings);
+
+        _volumeSaveCts?.Cancel();
+        _volumeSaveCts = new CancellationTokenSource();
+        _ = SaveVolumeAfterDelayAsync(_volumeSaveCts.Token);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>디바운스 저장 본체 — 취소(예약 교체·종료)는 정상 경로라 로그하지 않는다.</summary>
+    private async Task SaveVolumeAfterDelayAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(VolumeSaveDebounceMs, token);
+            await _store.SaveSettingsAsync(_settings);
+        }
+        catch (OperationCanceledException)
+        {
+            // 새 변경으로 예약 교체 또는 Dispose — 정상 경로
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"볼륨 저장 중 오류: {ex.GetType().Name} {ex.Message}");
+        }
     }
 
     public async Task SetMutedAsync(bool muted)
@@ -427,6 +457,16 @@ public sealed class PlaybackCoordinator : IDisposable
     public void Dispose()
     {
         _monitors.MonitorsChanged -= OnMonitorsChanged;
+
+        // 디바운스 대기 중인 볼륨 저장이 있으면 종료 전 최종 저장 시도 — 실패·미완은 수용
+        // (`.Wait()` 금지 규칙상 동기 대기 안 함, 다음 설정 저장에 자연 회복 — perf plan D5).
+        // 이미 저장이 끝난 예약도 토큰이 미취소로 남아 중복 저장 1회가 가능하나 멱등이라 무해.
+        if (_volumeSaveCts is { IsCancellationRequested: false } pendingSave)
+        {
+            pendingSave.Cancel();
+            _ = _store.SaveSettingsAsync(_settings);
+        }
+
         CleanupAll();
     }
 

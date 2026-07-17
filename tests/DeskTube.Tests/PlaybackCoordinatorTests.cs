@@ -91,8 +91,20 @@ public sealed class PlaybackCoordinatorTests
 
     private sealed class FakeStore : IStateStore
     {
+        /// <summary>설정 저장 호출 기록 — 볼륨 디바운스 검증용 (perf plan T2).</summary>
+        public int SettingsSaveCount { get; private set; }
+
+        public int LastSavedVolume { get; private set; }
+
         public Task<AppSettings> LoadSettingsAsync() => Task.FromResult(new AppSettings());
-        public Task<Result> SaveSettingsAsync(AppSettings settings) => Task.FromResult(Result.Ok());
+
+        public Task<Result> SaveSettingsAsync(AppSettings settings)
+        {
+            SettingsSaveCount++;
+            LastSavedVolume = settings.Volume; // settings는 공유 참조라 값을 캡처해 둔다
+            return Task.FromResult(Result.Ok());
+        }
+
         public Task<List<Playlist>> LoadPlaylistsAsync() => Task.FromResult(new List<Playlist>());
         public Task<Result> SavePlaylistsAsync(List<Playlist> playlists) => Task.FromResult(Result.Ok());
     }
@@ -106,6 +118,7 @@ public sealed class PlaybackCoordinatorTests
         public Dictionary<string, FakePlayer> Players { get; } = [];
         public HashSet<string> FailPlayerMonitorIds { get; } = [];
         public PlaylistLibrary Library { get; } = new(new FakeStore());
+        public FakeStore Store { get; } = new();
         public AppSettings Settings { get; } = new();
         public PlaybackCoordinator Coordinator { get; }
         public Playlist Playlist { get; }
@@ -127,7 +140,7 @@ public sealed class PlaybackCoordinatorTests
             Settings.IsMuted = false; // 오디오 라우팅 테스트는 비음소거 전제 — 기본값(켬)과 무관하게 고정
 
             Coordinator = new PlaybackCoordinator(
-                Monitors, Wallpaper, CreatePlayerAsync, Library, new FakeStore(), Settings);
+                Monitors, Wallpaper, CreatePlayerAsync, Library, Store, Settings);
         }
 
         private Task<Result<IPlayerHost>> CreatePlayerAsync(MonitorInfo monitor)
@@ -218,6 +231,26 @@ public sealed class PlaybackCoordinatorTests
         }
 
         Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status);
+    }
+
+    [Fact]
+    public async Task 연속_볼륨_변경은_즉시_적용되고_저장은_마지막_값_1회다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        var savesBefore = h.Store.SettingsSaveCount; // StartAsync 자체 저장분 제외
+
+        await h.Coordinator.SetVolumeAsync(10);
+        await h.Coordinator.SetVolumeAsync(20);
+        await h.Coordinator.SetVolumeAsync(80);
+
+        // 플레이어 반영은 즉시 3회, 저장은 디바운스 대기 중이라 아직 0회
+        Assert.Contains("volume:80", h.Master.Commands);
+        Assert.Equal(savesBefore, h.Store.SettingsSaveCount);
+
+        await Task.Delay(1200); // 디바운스(500ms) 경과 — CI 지연 감안 여유
+        Assert.Equal(savesBefore + 1, h.Store.SettingsSaveCount);
+        Assert.Equal(80, h.Store.LastSavedVolume);
     }
 
     [Fact]
