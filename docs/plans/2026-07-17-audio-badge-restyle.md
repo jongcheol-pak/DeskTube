@@ -25,6 +25,7 @@
 
 ## Deferred / Follow-up
 - 설정 화면 음소거 ToggleSwitch가 트레이/홈 배지 토글을 실시간 반영하지 않는 문제(화면 재진입 시에만 동기화) — 기존 동작이며 이번 범위 밖. MutedChanged 이벤트가 생기므로 SettingsViewModel 구독으로 해결 가능 (후속)
+- [SUGGEST] 배지 토글 버튼 접근성 이름을 상태 반영형으로 — BadgeToggleName(bool muted)로 "음소거로 전환"/"소리로 전환" 구분 + Mode=OneWay (출처: T4 quality m1)
 
 ## Investigation Log
 - 배지 구현 위치: `Controls/MonitorCardsControl.xaml` 두 템플릿(Large 36-49행 / Compact 94-107행)의 Border+TextBlock, 텍스트는 resw `MonitorAudioBadge.Text`("🔊 소리"/"🔊 Sound") — Read로 확인. 아이콘은 이미지가 아니라 문구 내 컬러 이모지.
@@ -166,7 +167,7 @@
     - (ii-a) MonitorPanelViewModel 공개 멤버 추가 → `## 사전 승인 항목`
   - **Depends on**: T2
 
-- [ ] T4. 배지 시각·클릭 — 템플릿·DP·문구
+- [x] T4. 배지 시각·클릭 — 템플릿·DP·문구
   - **Type**: C
   - **Design**: ① `Controls/MonitorCardsControl.xaml(.cs)` + `Views/HomePage.xaml` + resw ② `MuteToggleCommand` DP(ICommand) — 배지 클릭 실행 위임 1책임 / x:Bind 정적 함수 `BadgeBackground/BadgeForeground/BadgeGlyph/BadgeText(bool muted)` — 상태별 브러시·글리프·문구(기존 `Lookup`·`Loc.Get` 재사용) ③ 컨트롤 → 토큰·Loc만 참조(서비스 미참조 유지), HomePage → `ViewModel.MonitorPanel.ToggleMuteCommand` 바인딩. 배지 Button은 DataTemplate(`x:DataType=MonitorChoice`) 안이라 UserControl DP에 x:Bind로 직접 도달 불가 — 기존 `OnCardClick`과 동형의 Click 핸들러(코드비하인드)에서 DP 커맨드를 Execute(무인자 전역 토글)로 위임 (리뷰 m2) ④ 배지를 별도 UserControl로 추출하지 않음(두 템플릿 내 인라인 유지 — 기존 "템플릿 2벌 명시" 방침)
   - **Acceptance**: Given 홈(Large), When 배지 클릭, Then 음소거 토글되고 배지가 소리(코럴 바탕+#1A1A1C 글자·E767)↔음소거(#3A3A40 바탕+#B8B8BE 글자·E74F)로 전환되며 카드 선택 상태는 불변. Given 설정(Compact), Then 배지는 표시만(Border 유지, 클릭 시 기존 카드 선택 동작). 두 템플릿 모두 radius 토큰=4 적용, 이모지 없음. resw: `MonitorAudioBadge` grep 0건, `Monitor_AudioBadgeOn`("소리"/"Sound")·`Monitor_AudioBadgeMuted`("음소거"/"Muted")·`Monitor_AudioBadgeToggleName`("음소거 전환"/"Toggle mute") ko/en 존재, `HomeMonitorsHint.Text` D7 문구. 배지 Button에 AutomationProperties.Name·ToolTip(ToggleName) 설정. 빌드 통과

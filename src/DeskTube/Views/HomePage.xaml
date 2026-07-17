@@ -114,7 +114,10 @@
                         VerticalAlignment="Bottom"
                         Foreground="{ThemeResource AppTextTertiaryBrush}" />
                 </StackPanel>
-                <ctrls:MonitorCardsControl Monitors="{x:Bind ViewModel.MonitorPanel.Monitors}" IsLarge="True" />
+                <ctrls:MonitorCardsControl
+                    Monitors="{x:Bind ViewModel.MonitorPanel.Monitors}"
+                    IsLarge="True"
+                    MuteToggleCommand="{x:Bind ViewModel.MonitorPanel.ToggleMuteCommand}" />
             </StackPanel>
 
             <!-- 안내 InfoBar (URL 오류·재생 실패 등 — 기존 기능 유지) -->

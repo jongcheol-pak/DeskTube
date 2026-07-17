@@ -1,3 +1,5 @@
+using System.Windows.Input;
+using DeskTube.Services;
 using DeskTube.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,8 +40,24 @@ public sealed partial class MonitorCardsControl : UserControl
         set => SetValue(IsLargeProperty, value);
     }
 
+    /// <summary>
+    /// 홈 배지 클릭 → 음소거 토글 커맨드 (배지 plan T4·D5).
+    /// 바인딩된 화면(홈)만 동작 — 미바인딩(null)이면 배지 클릭은 no-op (설정 소형 템플릿은 애초에 Border 표시 전용).
+    /// </summary>
+    public static readonly DependencyProperty MuteToggleCommandProperty = DependencyProperty.Register(
+        nameof(MuteToggleCommand), typeof(ICommand), typeof(MonitorCardsControl), new PropertyMetadata(null));
+
+    public ICommand? MuteToggleCommand
+    {
+        get => (ICommand?)GetValue(MuteToggleCommandProperty);
+        set => SetValue(MuteToggleCommandProperty, value);
+    }
+
     private void ApplyTemplateChoice() =>
         Cards.ItemTemplate = (DataTemplate)Resources[IsLarge ? "LargeCardTemplate" : "CompactCardTemplate"];
+
+    /// <summary>배지 Button은 DataTemplate 안이라 DP에 x:Bind로 직접 닿지 못한다 — OnCardClick과 동형의 핸들러로 위임.</summary>
+    private void OnBadgeClick(object sender, RoutedEventArgs e) => MuteToggleCommand?.Execute(null);
 
     private void OnCardClick(object sender, RoutedEventArgs e)
     {
@@ -76,6 +94,18 @@ public sealed partial class MonitorCardsControl : UserControl
     internal static Brush SubBrush(bool selected) => Lookup(selected ? "AppMonitorSubSelectedBrush" : "AppMonitorSubBrush");
 
     internal static Visibility BadgeVisibility(bool show) => show ? Visibility.Visible : Visibility.Collapsed;
+
+    // 배지 x:Bind 함수 — 소리/음소거 상태별 시각 (배지 plan T4, D2 색·D3 글리프)
+    internal static Brush BadgeBackground(bool muted) => Lookup(muted ? "AppBadgeMutedBackgroundBrush" : "AppAccentBrush");
+
+    internal static Brush BadgeForeground(bool muted) => Lookup(muted ? "AppBadgeMutedForegroundBrush" : "AppBadgeForegroundBrush");
+
+    /// <summary>Segoe Fluent Icons 글리프 — E767 Volume(소리) / E74F Mute(음소거).</summary>
+    internal static string BadgeGlyph(bool muted) => muted ? "" : "";
+
+    internal static string BadgeText(bool muted) => Loc.Get(muted ? "Monitor_AudioBadgeMuted" : "Monitor_AudioBadgeOn");
+
+    internal static string BadgeToggleName() => Loc.Get("Monitor_AudioBadgeToggleName");
 
     private static Brush Lookup(string key) => (Brush)Application.Current.Resources[key];
 }

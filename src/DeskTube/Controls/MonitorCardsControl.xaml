@@ -33,20 +33,41 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Foreground="{x:Bind local:MonitorCardsControl.NumberBrush(IsSelected), Mode=OneWay}" />
-                        <Border
+                        <!-- 소리 배지 (홈 전용 클릭 — 음소거 토글, 배지 plan T4·D5). 내부 Button이 pointer를
+                             자체 처리해 카드 선택 클릭과 분리된다. 시각은 카드 버튼과 동일하게 내용 Border가 담당. -->
+                        <Button
                             Visibility="{x:Bind local:MonitorCardsControl.BadgeVisibility(ShowAudioBadge), Mode=OneWay}"
-                            Background="{ThemeResource AppAccentBrush}"
+                            Padding="0"
+                            MinWidth="0"
+                            MinHeight="0"
+                            Background="Transparent"
+                            BorderThickness="0"
                             CornerRadius="{StaticResource AppBadgeCornerRadius}"
-                            Padding="9,3"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
-                            Margin="0,10,10,0">
-                            <TextBlock
-                                x:Uid="MonitorAudioBadge"
-                                FontSize="11"
-                                FontWeight="Bold"
-                                Foreground="{ThemeResource AppTextStrongBrush}" />
-                        </Border>
+                            Margin="0,10,10,0"
+                            Click="OnBadgeClick"
+                            AutomationProperties.Name="{x:Bind local:MonitorCardsControl.BadgeToggleName()}"
+                            ToolTipService.ToolTip="{x:Bind local:MonitorCardsControl.BadgeToggleName()}">
+                            <Border
+                                Background="{x:Bind local:MonitorCardsControl.BadgeBackground(IsAudioMuted), Mode=OneWay}"
+                                CornerRadius="{StaticResource AppBadgeCornerRadius}"
+                                Padding="9,3">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon
+                                        Glyph="{x:Bind local:MonitorCardsControl.BadgeGlyph(IsAudioMuted), Mode=OneWay}"
+                                        FontSize="12"
+                                        VerticalAlignment="Center"
+                                        Foreground="{x:Bind local:MonitorCardsControl.BadgeForeground(IsAudioMuted), Mode=OneWay}" />
+                                    <TextBlock
+                                        Text="{x:Bind local:MonitorCardsControl.BadgeText(IsAudioMuted), Mode=OneWay}"
+                                        FontSize="11"
+                                        FontWeight="Bold"
+                                        VerticalAlignment="Center"
+                                        Foreground="{x:Bind local:MonitorCardsControl.BadgeForeground(IsAudioMuted), Mode=OneWay}" />
+                                </StackPanel>
+                            </Border>
+                        </Button>
                         <TextBlock
                             Text="{x:Bind ResolutionLabel}"
                             FontSize="12"
@@ -91,19 +112,28 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Foreground="{x:Bind local:MonitorCardsControl.NumberBrush(IsSelected), Mode=OneWay}" />
+                        <!-- 소리 배지 (설정 — 표시 전용, 클릭은 카드 선택 그대로) -->
                         <Border
                             Visibility="{x:Bind local:MonitorCardsControl.BadgeVisibility(ShowAudioBadge), Mode=OneWay}"
-                            Background="{ThemeResource AppAccentBrush}"
+                            Background="{x:Bind local:MonitorCardsControl.BadgeBackground(IsAudioMuted), Mode=OneWay}"
                             CornerRadius="{StaticResource AppBadgeCornerRadius}"
                             Padding="8,2"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             Margin="0,7,7,0">
-                            <TextBlock
-                                x:Uid="MonitorAudioBadge"
-                                FontSize="10"
-                                FontWeight="Bold"
-                                Foreground="{ThemeResource AppTextStrongBrush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon
+                                    Glyph="{x:Bind local:MonitorCardsControl.BadgeGlyph(IsAudioMuted), Mode=OneWay}"
+                                    FontSize="11"
+                                    VerticalAlignment="Center"
+                                    Foreground="{x:Bind local:MonitorCardsControl.BadgeForeground(IsAudioMuted), Mode=OneWay}" />
+                                <TextBlock
+                                    Text="{x:Bind local:MonitorCardsControl.BadgeText(IsAudioMuted), Mode=OneWay}"
+                                    FontSize="10"
+                                    FontWeight="Bold"
+                                    VerticalAlignment="Center"
+                                    Foreground="{x:Bind local:MonitorCardsControl.BadgeForeground(IsAudioMuted), Mode=OneWay}" />
+                            </StackPanel>
                         </Border>
                         <TextBlock
                             Text="{x:Bind ResolutionLabel}"

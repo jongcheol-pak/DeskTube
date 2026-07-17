@@ -67,7 +67,7 @@
     <value>Playback monitors</value>
   </data>
   <data name="HomeMonitorsHint.Text" xml:space="preserve">
-    <value>Click to select · Sound plays only on the speaker-marked monitor</value>
+    <value>Click to select · Sound plays only on the badged monitor · Click the badge to toggle mute</value>
   </data>
   <data name="HomeQuickPlayTitle.Text" xml:space="preserve">
     <value>Quick play</value>
@@ -105,8 +105,14 @@
   <data name="MonitorsCardDescription.Text" xml:space="preserve">
     <value>Click to choose which monitors show the background video</value>
   </data>
-  <data name="MonitorAudioBadge.Text" xml:space="preserve">
-    <value>🔊 Sound</value>
+  <data name="Monitor_AudioBadgeOn" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="Monitor_AudioBadgeMuted" xml:space="preserve">
+    <value>Muted</value>
+  </data>
+  <data name="Monitor_AudioBadgeToggleName" xml:space="preserve">
+    <value>Toggle mute</value>
   </data>
   <data name="Monitor_ResolutionFormat" xml:space="preserve">
     <value>{0}×{1}</value>
