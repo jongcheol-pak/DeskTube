@@ -204,7 +204,7 @@
   - **Halt Forecast**:
     - (ii-a) 구조 변경(계정 로직을 SettingsViewModel → 신규 AccountPanelViewModel로 이동, SettingsViewModel 공개 멤버 제거) → `## 사전 승인 항목`에 등록
   - **Depends on**: T2
-- [ ] T6. 재생 불가 스킵 가드 분리 + 전곡 재생 불가 정지
+- [x] T6. 재생 불가 스킵 가드 분리 + 전곡 재생 불가 정지
   - **Type**: C
   - **Design**: ① PlaybackCoordinator 내부 필드 2개 — 연속 에러 카운터(Playing 도달 시 0 리셋)·에러 스킵 pending 플래그(중복 에러 이벤트 무시용, LoadAll에서 해제) ② OnPlayerError의 스킵 조건을 `_suppressEnded` 공유에서 분리(D7) ③ 카운터가 현재 큐 항목 수 이상이면 StopAsync + `ToastService.Show`(전곡 재생 불가 안내 — ToastService는 마셜링 내장·미등록 무시로 서비스 계층 호출 안전) ④ 비추상화: 에러 정책 클래스 분리 안 함(코디네이터 국소 상태 2개로 충분).
   - **Acceptance**: Given 재생 시작 직후 첫 곡이 재생 불가(Playing 이전 onError), When 마스터 에러 수신, Then 다음 곡 로드(신규 테스트). Given 연속 2곡 재생 불가, Then 3곡째 로드(신규 테스트). Given 전 곡 재생 불가, Then StopAsync로 정지 + 안내 토스트(신규 테스트 — Status Stopped 단언). 기존 스킵·Ended 테스트 전체 통과(회귀 0).
