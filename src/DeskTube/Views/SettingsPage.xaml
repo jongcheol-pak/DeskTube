@@ -16,11 +16,6 @@
                 Foreground="{ThemeResource AppTextStrongBrush}"
                 Margin="0,0,0,14" />
 
-            <InfoBar
-                IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}"
-                Severity="Warning" />
-
             <!-- StackPanel엔 IsEnabled가 없어 Control 래퍼로 일괄 비활성 (서비스 준비 전) -->
             <ContentControl
                 IsEnabled="{x:Bind ViewModel.IsReady, Mode=OneWay}"

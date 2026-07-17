@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DeskTube.Models;
 using DeskTube.Services;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube.ViewModels;
 
@@ -36,7 +37,6 @@ public partial class SettingsViewModel : ObservableObject
     {
         MonitorPanel.MonitorsRefreshed += OnMonitorsRefreshed;
         MonitorPanel.NoticeRequested += OnPanelNoticeRequested;
-        MonitorPanel.NoticeCleared += OnPanelNoticeCleared;
 
         // partial property 초기값 (콤보 미선택 = -1, 변경 콜백은 음수 가드로 무시됨)
         QualityIndex = -1;
@@ -113,12 +113,6 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool PauseOnSessionLock { get; set; }
-
-    [ObservableProperty]
-    public partial string? NoticeMessage { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsNoticeOpen { get; set; }
 
     [ObservableProperty]
     public partial bool AutoStartEnabled { get; set; }
@@ -273,15 +267,9 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>패널의 사용자 안내(최소 1개 차단 등)를 이 페이지 InfoBar로 표시.</summary>
-    private void OnPanelNoticeRequested(object? sender, string message)
-    {
-        NoticeMessage = message;
-        IsNoticeOpen = true;
-    }
-
-    /// <summary>유효 선택 처리됨 — 떠 있던 안내 닫기 (구 동작 보존, 리뷰 m1).</summary>
-    private void OnPanelNoticeCleared(object? sender, EventArgs e) => IsNoticeOpen = false;
+    /// <summary>패널의 사용자 안내(최소 1개 차단 등)를 공용 토스트로 표시 (toast plan T2 — 자동 소멸).</summary>
+    private void OnPanelNoticeRequested(object? sender, string message) =>
+        ToastService.Show(message, InfoBarSeverity.Warning);
 
     /// <summary>로그인 상태 갱신 — 페이지 로드·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>
     public async Task RefreshSessionAsync()

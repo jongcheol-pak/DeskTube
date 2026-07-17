@@ -120,14 +120,6 @@
                     MuteToggleCommand="{x:Bind ViewModel.MonitorPanel.ToggleMuteCommand}" />
             </StackPanel>
 
-            <!-- 안내 InfoBar (URL 오류·재생 실패 등 — 기존 기능 유지) -->
-            <InfoBar
-                Grid.Row="4"
-                VerticalAlignment="Top"
-                IsOpen="{x:Bind ViewModel.IsNoticeOpen, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.NoticeMessage, Mode=OneWay}"
-                Severity="{x:Bind ViewModel.NoticeSeverity, Mode=OneWay}" />
-
             <!-- 빠른 재생 칩 (시안 — 페이지 하단 정렬, 리스트 없으면 섹션 숨김) -->
             <StackPanel
                 Grid.Row="5"

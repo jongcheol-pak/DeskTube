@@ -24,11 +24,9 @@ public partial class HomeViewModel : ObservableObject
         MonitorPanel.MonitorsRefreshed += OnMonitorStateChanged;
         MonitorPanel.SelectionChanged += OnMonitorStateChanged;
         MonitorPanel.NoticeRequested += OnPanelNoticeRequested;
-        MonitorPanel.NoticeCleared += OnPanelNoticeCleared;
 
         // partial property는 초기화 식을 못 가짐 (MVVMTK0045 대응으로 필드 대신 채택)
         Url = string.Empty;
-        NoticeSeverity = InfoBarSeverity.Informational;
         PlayingLabel = string.Empty;
     }
 
@@ -40,15 +38,6 @@ public partial class HomeViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string Url { get; set; }
-
-    [ObservableProperty]
-    public partial string? NoticeMessage { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsNoticeOpen { get; set; }
-
-    [ObservableProperty]
-    public partial InfoBarSeverity NoticeSeverity { get; set; }
 
     /// <summary>재생 중 pill 표시 (Stopped 외 상태 — 일시정지 중에도 정지 가능해야 함).</summary>
     [ObservableProperty]
@@ -162,9 +151,7 @@ public partial class HomeViewModel : ObservableObject
     }
 
     private void OnPanelNoticeRequested(object? sender, string message) =>
-        ShowNotice(message, InfoBarSeverity.Warning);
-
-    private void OnPanelNoticeCleared(object? sender, EventArgs e) => IsNoticeOpen = false;
+        ToastService.Show(message, InfoBarSeverity.Warning);
 
     [RelayCommand]
     private async Task PlayAsync()
@@ -172,7 +159,7 @@ public partial class HomeViewModel : ObservableObject
         var services = App.Services;
         if (services is null)
         {
-            ShowNotice(Loc.Get("Common_NotReady"), InfoBarSeverity.Warning);
+            ToastService.Show(Loc.Get("Common_NotReady"), InfoBarSeverity.Warning);
             return;
         }
 
@@ -180,7 +167,7 @@ public partial class HomeViewModel : ObservableObject
         if (!parsed.IsSuccess || parsed.Value is null)
         {
             // 입력은 유지 — 사용자가 고쳐서 재시도 (plan T2 Edge)
-            ShowNotice(Loc.Get("Home_InvalidUrl"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Home_InvalidUrl"), InfoBarSeverity.Error);
             return;
         }
 
@@ -192,7 +179,7 @@ public partial class HomeViewModel : ObservableObject
             if (!created.IsSuccess || created.Value is null)
             {
                 AppLog.Write($"빠른 재생 리스트 생성 실패: {created.Message}");
-                ShowNotice(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
+                ToastService.Show(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
                 return;
             }
 
@@ -205,7 +192,7 @@ public partial class HomeViewModel : ObservableObject
         if (!added.IsSuccess)
         {
             AppLog.Write($"빠른 재생 항목 추가 실패: {added.Message}");
-            ShowNotice(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
             return;
         }
 
@@ -215,18 +202,12 @@ public partial class HomeViewModel : ObservableObject
         if (!startResult.IsSuccess)
         {
             AppLog.Write($"즉시 재생 시작 실패: {startResult.Message}");
-            ShowNotice(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
+            ToastService.Show(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
             return;
         }
 
         RefreshChips(); // "빠른 재생" 리스트 생성·곡 교체가 칩 표시에 반영되게
-        ShowNotice(Loc.Get("Home_PlayStarted"), InfoBarSeverity.Success);
+        ToastService.Show(Loc.Get("Home_PlayStarted"), InfoBarSeverity.Success);
     }
 
-    private void ShowNotice(string message, InfoBarSeverity severity)
-    {
-        NoticeMessage = message;
-        NoticeSeverity = severity;
-        IsNoticeOpen = true;
-    }
 }
