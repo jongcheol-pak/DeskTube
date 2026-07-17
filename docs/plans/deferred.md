@@ -22,6 +22,7 @@
 - [2026-07-17] [SUGGEST] ListView lightweight 3키(hover·선택 배경)가 전역 Default 사전 스코프 — 다른 화면에 ListView 추가 시 의도치 않은 상속 유의 (출처: 2026-07-16-design-1a-restyle T6 quality m2)
 - [2026-07-16] VideoMetadataService 클래스 요약 주석에 "취소는 예외로 전파" 구절 보강 (출처: 2026-07-16-melon-playlist-style T2 quality m1)
 - [2026-07-16] VideoMetadataService Result.Fail 메시지를 서술형 한글로 통일 — 현재 로그 전용이라 무해, UI 노출 시 필수 (출처: 2026-07-16-melon-playlist-style T2 quality m2)
+- [2026-07-17] "전체듣기 모드 명시"(PlaylistsViewModel 1줄) 단위테스트 — VM 테스트 인프라 부재(서비스 계층만 테스트 관례), 인프라 도입 시 재검토 (출처: 2026-07-17-tray-repeat-license T4 spec M1)
 
 ## 종결
 - [2026-07-16 → 2026-07-17] MainWindow 커스텀 타이틀바 Grid 높이 48px 고정 검토 — 반영 (2026-07-16-design-1a-restyle T3: 시안 확정값 44px을 AppTitleBarHeight 토큰으로 교체, 캡션 버튼 색도 토큰 정합)
