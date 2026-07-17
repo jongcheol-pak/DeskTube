@@ -128,13 +128,14 @@ public partial class App : Application
 
         ServicesInitialized?.Invoke(this, EventArgs.Empty);
 
-        if (autoPlay)
+        // FR-19 토글은 일반 실행에만 의미가 있고, 부팅 자동 시작(autoPlay)은 FR-8로 항상 재생한다
+        if (autoPlay || Services.Settings.AutoPlayOnLaunch)
         {
             await TryAutoPlayLastAsync();
         }
     }
 
-    /// <summary>자동 시작 — 마지막 재생 리스트로 조용히 재생 시작 (PRD Q8). 리스트가 없으면 생략하고 트레이만 상주 (plan T4 Edge).</summary>
+    /// <summary>자동 시작·앱 시작 자동 재생 (PRD FR-8·FR-19) — 마지막 재생 항목부터 조용히 재생 시작. 리스트가 없으면 생략하고 트레이만 상주 (plan T4 Edge).</summary>
     private async Task TryAutoPlayLastAsync()
     {
         var services = Services!;
@@ -148,7 +149,8 @@ public partial class App : Application
             return;
         }
 
-        var result = await services.Coordinator.StartAsync(playlist.Id);
+        // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
+        var result = await services.Coordinator.StartAsync(playlist.Id, services.Settings.LastItemId);
         if (!result.IsSuccess)
         {
             AppLog.Write($"자동 시작 재생 실패: {result.Message}");

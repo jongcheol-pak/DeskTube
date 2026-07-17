@@ -127,6 +127,8 @@ public sealed class JsonStateStoreTests : IDisposable
 
         Assert.Equal(50, settings.Volume);
         Assert.Equal(PlaybackMode.Sequential, settings.Mode);
+        Assert.False(settings.AutoPlayOnLaunch); // FR-19 — 기본 꺼짐
+        Assert.Null(settings.LastItemId);
         Assert.Empty(playlists);
     }
 

@@ -127,7 +127,7 @@
   - **Edge Cases**: 빈 목록 Advance(null)→StopAsync 경로는 LastItemId 기록 없음(정상 — 마지막 곡 유지) / 정지 후 재시작 시 LastItemId는 새 시작 곡으로 갱신 / 임베드 금지 스킵도 AdvanceAsync 경유라 자동 기록
   - **Halt Forecast**: (i) 직렬화 additive 필드 — 4-B에서 하위 호환 확인 완료(구형 JSON 기본값), 마이그레이션 불요
   - **Depends on**: -
-- [ ] T3. 앱 시작 자동 재생 분기 + 마지막 항목 재개 (App)
+- [x] T3. 앱 시작 자동 재생 분기 + 마지막 항목 재개 (App)
   - **Type**: C
   - **Design**: ① `AppSettings.AutoPlayOnLaunch`(bool, 기본 false — FR-19 doc 주석) ② `App.InitializeServicesAsync` 131행 분기를 `if (autoPlay || Services.Settings.AutoPlayOnLaunch)`로 확장(D5), `TryAutoPlayLastAsync`가 `StartAsync(playlist.Id, services.Settings.LastItemId)`로 항목 전달(D1·D2 — 부팅·일반 공용) + doc 주석 갱신(방향 고정: TryAutoPlayLastAsync 요약을 "자동 시작·앱 시작 자동 재생(FR-8·FR-19) — 마지막 재생 항목부터"로, 131행 분기 주석에 "FR-19 토글은 일반 실행에만, 부팅은 FR-8로 항상" 명시) ③ 의존 방향 불변 ④ 이번에 추상화하지 않음: Tray PlayAsync와의 공통 헬퍼(2곳 — 3회 규칙 미달, Deferred 유지)
   - **Acceptance**: Given 토글 켬 + 마지막 재생 기록 존재, When 앱 일반 실행, Then 마지막 항목부터 배경 재생 자동 시작(⏳ HUMAN-VERIFY — App 계층 단위테스트 불가). Given 토글 끔, When 일반 실행, Then 재생 시작 없음(기존 동작). Given 부팅 자동 시작, Then 토글과 무관하게 마지막 항목부터 재생. 재개 항목 삭제 시 리스트 기본 시작(기존 테스트 보장). 빌드 경고 0.
@@ -173,6 +173,7 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1~T2 완료 (커밋 d8aab80, 17e2541): PRD FR-19 신설·FR-8/10 보강 / AppSettings LastItemId·AutoPlayOnLaunch additive + LoadAll 기록·AdvanceAsync 저장(D3). 테스트 104/104. T2 spec MAJOR 1(왕복 Assert 누락) 수정 후 OK.
 
 ## Next Steps
 - 승인 시 `pjc:implement-task`로 T1부터 자율 실행
