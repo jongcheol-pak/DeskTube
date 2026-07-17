@@ -159,7 +159,7 @@
   - **Halt Forecast**: 없음 (내부 표시 변경만)
   - **Depends on**: T3
 
-- [ ] T5. 문서 — PRD·README 갱신
+- [x] T5. 문서 — PRD·README 갱신
   - **Type**: A
   - **Acceptance**: docs/prd.md — FR-18에 "화면 진입 시 마지막 선택 리스트 기본 선택(없으면 첫 리스트)" 보강, NFR-4에 "앱 이름 현지화(ko 데스크튜브 — 시작메뉴 포함)" 보강, 변경 이력 1줄. README — 다국어 항목에 앱 이름 현지화, 플레이리스트 항목에 마지막 선택 기억 반영
   - **Files**:
