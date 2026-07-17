@@ -259,6 +259,9 @@
 - 수동 검증 (HUMAN-VERIFY): ① 설정 파일 삭제 후 실행 → 기본값 확인(맞춤·음소거·자동 재생) ② 신규 설치 후 Windows 시작 앱에 데스크튜브 켬 상태 ③ 홈 URL 재생 → 재시작 → URL 표시 + 자동 재생 안 됨 ④ 플레이리스트 재생 → 재시작 → 자동 재생 됨 ⑤ 홈 로그인 상태·버튼 동작 ⑥ 재생 불가 영상 스킵·전곡 불가 정지 토스트 ⑦ 트레이 메뉴 스크롤 없음·문구 전환·음소거 토글·마지막 항목 재개 (참고: 일시정지 중엔 토글이 "재생"이라 트레이 직접 정지는 불가 — 토글 2항목 설계의 의도된 동작)
 
 ## Phase Ledger
+- 전 task 완료 (T1~T8, HEAD c4d10cf)
+- Phase F 통과 (HEAD 021c634) — F-1~F-7 전체, plan-completion-reviewer BLOCKER/MAJOR/MINOR 0
+- Phase G 통과 (Must 100%) — 커버 대상 FR-1·5·8·9·15·16·19 기계 검증 충족(F-7 대조 재사용), 실동작 7항목 HUMAN-VERIFY 대기
 
 ## Retry Ledger
 
@@ -270,6 +273,8 @@
   - 결정: 왕복 테스트 값은 기본값과 다르게 유지(직렬화 누락 감지), Harness IsMuted=false 고정(라우팅 테스트 전제), diff 밖 FR-19 stale 주석 2곳 동기화.
 
 ## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 7항목 확인(Verification Strategy 수동 검증 목록) 후 필요 시 main 병합·배포 — push·병합은 별도 승인 대상
+- Suggested skills: 공식 /code-review (선택), pjc:plan-feature (다음 기능)
 
 ## Open Questions
 - [x] Q1: 새 기본값을 기존 저장 파일에도 강제? → **신규 설치만** (D1)
