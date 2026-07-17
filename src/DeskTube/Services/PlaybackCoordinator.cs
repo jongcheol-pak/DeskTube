@@ -132,6 +132,7 @@ public sealed class PlaybackCoordinator : IDisposable
             Subscribe(player);
             player.SetQualityScale(EffectiveScaleFor(target.Id));
             player.SetFitMode(_settings.FitMode);
+            player.SetCaptionsEnabled(_settings.CaptionsEnabled);
             _players[target.Id] = new PlayerEntry(target, player);
         }
 
@@ -353,6 +354,18 @@ public sealed class PlaybackCoordinator : IDisposable
         await _store.SaveSettingsAsync(_settings);
     }
 
+    /// <summary>자막 표시 변경 (PRD FR-20) — 전 플레이어 즉시 적용 + 저장. 정지 상태면 저장만.</summary>
+    public async Task SetCaptionsEnabledAsync(bool enabled)
+    {
+        _settings.CaptionsEnabled = enabled;
+        foreach (var entry in _players.Values)
+        {
+            entry.Player.SetCaptionsEnabled(enabled);
+        }
+
+        await _store.SaveSettingsAsync(_settings);
+    }
+
     public void Dispose()
     {
         _monitors.MonitorsChanged -= OnMonitorsChanged;
@@ -552,6 +565,7 @@ public sealed class PlaybackCoordinator : IDisposable
         Subscribe(player);
         player.SetQualityScale(EffectiveScaleFor(monitorId));
         player.SetFitMode(_settings.FitMode);
+        player.SetCaptionsEnabled(_settings.CaptionsEnabled);
         _players[monitorId] = old with { Player = player };
 
         ResumeCurrentTrack(player);
@@ -637,6 +651,7 @@ public sealed class PlaybackCoordinator : IDisposable
             Subscribe(player);
             player.SetQualityScale(EffectiveScaleFor(target.Id));
             player.SetFitMode(_settings.FitMode);
+            player.SetCaptionsEnabled(_settings.CaptionsEnabled);
             _players[target.Id] = new PlayerEntry(target, player);
             ResumeCurrentTrack(player);
         }

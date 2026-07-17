@@ -78,6 +78,7 @@ public sealed class PlaybackCoordinatorTests
         public void Seek(double seconds) => Commands.Add($"seek:{seconds:F1}");
         public void SetQualityScale(int height) => Commands.Add($"scale:{height}");
         public void SetFitMode(FitMode mode) => Commands.Add($"fit:{(int)mode}");
+        public void SetCaptionsEnabled(bool enabled) => Commands.Add($"captions:{enabled}");
         public void Dispose() => Commands.Add("dispose");
 
         public void RaiseState(PlayerState state) => StateChanged?.Invoke(this, state);
@@ -458,5 +459,31 @@ public sealed class PlaybackCoordinatorTests
         Assert.Equal(FitMode.Stretch, h.Settings.FitMode);
         Assert.Contains("fit:2", h.Players["MON-0"].Commands);
         Assert.Contains("fit:2", h.Players["MON-1"].Commands);
+    }
+
+    [Fact]
+    public async Task 재생_시작_시_자막_설정이_모든_플레이어에_초기_적용된다()
+    {
+        var h = new Harness(monitorCount: 2); // 기본값 끔 (FR-20)
+
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        // FR-20: 켬/끔 어느 상태든 항상 명시 전송 (계정 자막 선호를 덮어야 하므로)
+        Assert.Contains("captions:False", h.Players["MON-0"].Commands);
+        Assert.Contains("captions:False", h.Players["MON-1"].Commands);
+    }
+
+    [Fact]
+    public async Task 자막_변경은_모든_플레이어에_전송되고_설정에_저장된다()
+    {
+        var h = new Harness(monitorCount: 2);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        await h.Coordinator.SetCaptionsEnabledAsync(true);
+
+        // FR-20: 재생 중 변경 즉시 반영 + 설정 반영 (저장은 in-memory Settings로 확인 — FakeStore는 기록 없음)
+        Assert.True(h.Settings.CaptionsEnabled);
+        Assert.Contains("captions:True", h.Players["MON-0"].Commands);
+        Assert.Contains("captions:True", h.Players["MON-1"].Commands);
     }
 }

@@ -105,6 +105,8 @@ public sealed class PlayerHost : IPlayerHost
 
     public void SetFitMode(FitMode mode) => PostCommand(new PlayerCommand("fit", Mode: (int)mode));
 
+    public void SetCaptionsEnabled(bool enabled) => PostCommand(new PlayerCommand("captions", Enabled: enabled));
+
     public void Dispose()
     {
         _retryTimer?.Stop();
@@ -215,7 +217,8 @@ public sealed record PlayerCommand(
     double? Seconds = null,
     int? Height = null,
     bool? Muted = null,
-    int? Mode = null);
+    int? Mode = null,
+    bool? Enabled = null);
 
 /// <summary>플레이어 명령 직렬화 컨텍스트 (리플렉션 회피 — D5와 동일 방침).</summary>
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]

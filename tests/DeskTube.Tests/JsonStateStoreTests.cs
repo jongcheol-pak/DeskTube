@@ -41,6 +41,7 @@ public sealed class JsonStateStoreTests : IDisposable
             AudioMonitorId = "MON-B",
             QualityScaleHeight = 720,
             FitMode = FitMode.Stretch,
+            CaptionsEnabled = true,
             ReduceMirrorQuality = true,
             LastPlaylistId = Guid.NewGuid(),
             LastItemId = Guid.NewGuid(),
@@ -61,6 +62,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(settings.AudioMonitorId, loaded.AudioMonitorId);
         Assert.Equal(settings.QualityScaleHeight, loaded.QualityScaleHeight);
         Assert.Equal(settings.FitMode, loaded.FitMode);
+        Assert.Equal(settings.CaptionsEnabled, loaded.CaptionsEnabled);
         Assert.Equal(settings.ReduceMirrorQuality, loaded.ReduceMirrorQuality);
         Assert.Equal(settings.LastPlaylistId, loaded.LastPlaylistId);
         Assert.Equal(settings.LastItemId, loaded.LastItemId);

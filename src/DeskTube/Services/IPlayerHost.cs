@@ -63,6 +63,9 @@ public interface IPlayerHost : IDisposable
     /// <summary>동영상 크기 모드 — 채움/맞춤/늘리기 (PRD FR-16).</summary>
     void SetFitMode(FitMode mode);
 
+    /// <summary>자막 표시 — 켜면 강제 표시, 끄면 강제 숨김 (PRD FR-20).</summary>
+    void SetCaptionsEnabled(bool enabled);
+
     /// <summary>최근 시각 이벤트 캐시 (초). 아직 보고 없으면 0.</summary>
     double CurrentTime { get; }
 }

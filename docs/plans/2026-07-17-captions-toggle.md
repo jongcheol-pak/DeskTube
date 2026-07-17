@@ -137,7 +137,7 @@
   - **Halt Forecast**: (i) PRD는 승인 후 고정 문서 → plan 승인이 이 갱신(질문 라운드 확정분)의 승인을 포함 — `## 사전 승인 항목` 등록
   - **Depends on**: -
 
-- [ ] T2. 자막 명령 파이프라인 (설정 모델 → 코디네이터 → 플레이어 → JS)
+- [x] T2. 자막 명령 파이프라인 (설정 모델 → 코디네이터 → 플레이어 → JS)
   - **Type**: D
   - **Design**: ① 배치 — 기존 명령 파이프라인 그대로: Models(AppSettings)·Services(IPlayerHost/PlayerHost/PlaybackCoordinator)·Assets(player.html), 새 파일 없음. ② 신규 심볼 — `AppSettings.CaptionsEnabled`(bool, 기본 false — 영속 상태 정본), `IPlayerHost.SetCaptionsEnabled(bool)`(자막 명령 전송), `PlaybackCoordinator.SetCaptionsEnabledAsync(bool)`(설정 갱신+전 플레이어 전파+저장 — SetFitModeAsync 동형), JS `desiredCaptions`+`applyCaptions()`(상태 보관·재적용). ③ 의존 방향 — Coordinator→IPlayerHost→player.html 단방향(기존과 동일), VM은 T3에서 Coordinator만 참조. ④ 비추상화 — 자막 언어·3상태 확장 대비 추상화 없음(bool 직결), 명령 공통화 리팩토링 없음.
   - **Acceptance**: Given 자막 끔(기본) 설정으로 StartAsync 재생 시작, When 플레이어 생성, Then 각 FakePlayer Commands에 `captions:False` 기록. Given 재생 중, When `SetCaptionsEnabledAsync(true)`, Then 전 플레이어에 `captions:True` + `h.Settings.CaptionsEnabled == true`로 저장 확인(SetFitModeAsync "설정에_저장된다" 테스트와 동형 — FakeStore는 호출 기록 없음). Given `CaptionsEnabled=true` 저장, When 재로드, Then 왕복 일치(JsonStateStoreTests). 빌드 경고/에러 0 + 전 테스트 통과. (실제 자막 표시/숨김·곡 전환 후 유지는 HUMAN-VERIFY — T3 완료 후 일괄)

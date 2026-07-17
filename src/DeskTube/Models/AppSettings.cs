@@ -28,6 +28,9 @@ public sealed class AppSettings
     /// <summary>동영상 크기 모드 (PRD FR-16). 기본 채움(Cover).</summary>
     public FitMode FitMode { get; set; } = FitMode.Cover;
 
+    /// <summary>자막 표시 (PRD FR-20 — 기본 끔). 켜면 강제 표시, 끄면 계정 선호와 무관하게 숨김.</summary>
+    public bool CaptionsEnabled { get; set; }
+
     /// <summary>미러 모니터 화질 하향 (NFR-2 부하 절감 — 기본 꺼짐, 사용자 opt-in).</summary>
     public bool ReduceMirrorQuality { get; set; }
 
