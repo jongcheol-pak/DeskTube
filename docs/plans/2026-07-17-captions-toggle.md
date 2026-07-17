@@ -192,6 +192,8 @@
 - 수동 검증 (HUMAN-VERIFY — 사용자): 자막 있는 영상 재생 → ① 기본(끔)에서 자막 미표시 ② 토글 켬 → 즉시 자막 표시 ③ 곡 전환 후에도 유지 ④ 앱 재시작 후 설정 유지
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 75982c6) — F-1~F-7 전체, plan-completion-reviewer BLOCKER/MAJOR/MINOR 0
+- Phase G 통과 (Must 100%) — 커버 대상 FR-20·FR-10(자막 추가분) 기계 검증 충족, 실동작 4항목 HUMAN-VERIFY 대기
 
 ## Retry Ledger
 
@@ -200,7 +202,9 @@
   - 참고: `dotnet test`는 `-p:Platform=x64` 필수 (미지정 시 MSIX AnyCPU 에러 — Deferred 대장 기지 이슈).
 
 ## Next Steps
-- plan 승인 후 pjc:implement-task로 T1부터 자율 실행
+- T1~T3 완료 + Phase F/G 통과 (브랜치 task/captions-toggle, HEAD 75982c6 이후 문서 커밋 1개)
+- 권장 다음 액션: HUMAN-VERIFY 4항목 사용자 확인(기본 끔 미표시 / 켬 즉시 표시 / 곡 전환 후 유지 / 재시작 후 유지) → 확인 후 main 병합(별도 승인)
+- Suggested skills: 공식 /code-review (선택)
 
 ## Open Questions
 - [x] Q1: 토글 기본값? → **끔** (배경화면 용도 부합, 현재 문제 즉시 해결 — 사용자 확정 2026-07-17)
