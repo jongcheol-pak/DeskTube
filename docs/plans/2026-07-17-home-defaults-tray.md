@@ -28,7 +28,7 @@
 - 재생 위치(초 단위) 복원 (FR-19 기존 결정 유지 — 항목 단위 재개)
 
 ## Deferred / Follow-up
-- (없음 — 계획 시점)
+- [MINOR] AccountPanelViewModel에 Detach()가 없음(내부 이벤트 구독이 없어 실질 누수 없음 — spec 리뷰 M1 확인). 향후 패널이 외부 이벤트를 구독하게 되면 MonitorPanel처럼 Detach 대칭 추가 (출처: T5 spec MINOR)
 
 ## Investigation Log
 - 위키 참조: 관련 위키 자료 없음 — 코드 1차 출처로 진행 (직전 plan들에서 vault 무매칭 이력, 프로젝트 국소 변경).
@@ -188,7 +188,7 @@
     - 언어 전환으로 리스트 이름과 Loc 값이 어긋나는 경우 제외 미적용 가능 — 기존 HomeViewModel 동일 한계(새 언어로 새 리스트 생성), 수용·주석 기록
   - **Halt Forecast**: (없음 — 단일 파일 국소 분기, 파괴적·외부 요소 없음)
   - **Depends on**: T3
-- [ ] T5. 계정 패널 공용화 + 홈 로그인 상태 표시
+- [x] T5. 계정 패널 공용화 + 홈 로그인 상태 표시
   - **Type**: D
   - **Design**: ① `ViewModels/AccountPanelViewModel.cs` 신설 — SettingsViewModel의 계정 로직(RefreshSessionAsync·AccountActionAsync·상태/버튼 프로퍼티·SignInRequested 이벤트) 이동, MonitorPanelViewModel과 동형의 공유 패널 VM(각 소유 VM이 `public AccountPanelViewModel Account { get; } = new()` 보유, Attach(services)/Detach 대칭) ② 책임: 로그인 상태 조회·표시 문구·로그인 요청 발화·로그아웃 실행(ReloadCurrentTrack 포함) ③ 의존: YouTubeSessionService·PlaybackCoordinator(AppServices 경유) — 참조자는 SettingsViewModel·HomeViewModel ④ 비추상화 선언: 인터페이스 추출·상태 공유 이벤트 버스 도입 안 함(두 페이지 인스턴스는 각자 Refresh — 캐시 페이지 재진입 갱신으로 충분).
   - **Acceptance**: Given 홈 화면 진입, When 로그인 상태 확인 완료, Then 제목 행 우측에 "로그인됨/로그인 안 됨" 상태 + 로그인/로그아웃 버튼 표시, 버튼 클릭 → LoginWindow(로그인) 또는 로그아웃+상태 갱신. 설정 화면 계정 카드는 기존과 동일 동작(위임 전환 후 회귀 없음 — 문구·버튼·비활성 방어 유지). 빌드 경고 0, 기존 테스트 전체 통과. 실표시는 HUMAN-VERIFY.
