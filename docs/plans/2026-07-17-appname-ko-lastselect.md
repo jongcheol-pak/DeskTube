@@ -120,7 +120,7 @@
     - (ii-a) 직렬화 필드 추가(additive) → `## 사전 승인 항목`
   - **Depends on**: -
 
-- [ ] T2. 플레이리스트 화면 — 마지막 선택 저장·기본 선택
+- [x] T2. 플레이리스트 화면 — 마지막 선택 저장·기본 선택
   - **Type**: C
   - **Design**: ① `ViewModels/PlaylistsViewModel.cs` 내부 ② 신규 공개 심볼 없음 — `OnSelectedPlaylistChanged`에서 비null 선택을 `LastSelectedPlaylistId`에 기록 + fire-and-forget 저장(MonitorPanelViewModel.ApplyAsync 선례), `Populate`의 기본 선택을 pending > 저장값 > 첫 리스트로 확장(D3) ③ VM → AppSettings·Store만 ④ 선택 이력 스택·MRU 목록은 만들지 않음(마지막 1개만)
   - **Acceptance**: Given 리스트 B 선택 후 앱 재시작(또는 화면 재진입), When 플레이리스트 화면 진입, Then B가 기본 선택·우측 항목 표시(⏳ HUMAN-VERIFY — VM 테스트 인프라 부재). Given 저장된 리스트 삭제 후 재진입, Then 첫 리스트 선택. Given 목록 빔, Then 선택 없음. 칩 진입은 기존대로 해당 리스트 선택(pending 우선). 빌드 통과

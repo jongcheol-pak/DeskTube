@@ -161,6 +161,14 @@ public partial class PlaylistsViewModel : ObservableObject
         // 칩 진입 등으로 예약된 선택 적용 — 목록 재구성이 선택을 비우므로 여기서 소비 (restyle T5)
         ApplyPendingSelection();
         _pendingSelectionId = null;
+
+        // 기본 선택 — 칩 예약 > 마지막 선택 > 첫 리스트 (FR-18 보강, 배지 후속 plan T2·D3)
+        if (SelectedPlaylist is null && Playlists.Count > 0)
+        {
+            var lastId = services.Settings.LastSelectedPlaylistId;
+            SelectedPlaylist = (lastId is Guid id ? Playlists.FirstOrDefault(p => p.Id == id) : null)
+                ?? Playlists[0];
+        }
     }
 
     /// <summary>홈 빠른 재생 칩 진입 시 예약할 선택 (Populate가 소비 — restyle T5·D5).</summary>
@@ -199,7 +207,28 @@ public partial class PlaylistsViewModel : ObservableObject
             entry.IsActive = ReferenceEquals(entry, value);
         }
 
+        // 마지막 선택 기억 — null(목록 재구성·삭제 중 일시 해제)은 기록하지 않는다 (plan T2·D3)
+        if (value is not null && _services is not null
+            && _services.Settings.LastSelectedPlaylistId != value.Id)
+        {
+            _services.Settings.LastSelectedPlaylistId = value.Id;
+            _ = SaveLastSelectionAsync();
+        }
+
         RefreshItems();
+    }
+
+    /// <summary>마지막 선택 영속화 — 실패해도 화면 동작에 영향 없음 (MonitorPanelViewModel.ApplyAsync 선례).</summary>
+    private async Task SaveLastSelectionAsync()
+    {
+        try
+        {
+            await _services!.Store.SaveSettingsAsync(_services.Settings);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"마지막 선택 저장 중 오류: {ex.GetType().Name} {ex.Message}");
+        }
     }
 
     /// <summary>우측 항목 컬렉션을 모델에서 다시 채운다 (선택 변경·항목 조작 후). 메타 누락분은 백그라운드 채움.</summary>
