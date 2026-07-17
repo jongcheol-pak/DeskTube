@@ -182,6 +182,8 @@
 - 수동 검증 (HUMAN-VERIFY): ① 플레이리스트 화면 재진입·재시작 시 마지막 선택 복원(삭제 시 첫 리스트) ② 한글 환경: 시작메뉴(재배포 후)·창 제목·타이틀바·정보 화면·트레이 툴팁 "데스크튜브" / 영어 환경 DeskTube ③ 언어 전환 직후 창 제목 갱신 ④ 홈 즉시 재생 반복(FR-7 기구현 확인 — 안 되면 별도 버그 보고)
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 3fe5283) — F-2 테스트 106/106, F-7 plan-completion-reviewer OK (BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 재루프 0회, G-1은 F-7 PRD 대조 재사용 (FR-18·NFR-4 충족, FR-7 기구현 확인, 나머지 active Must 범위 외 명시)
 
 ## Retry Ledger
 
@@ -189,6 +191,8 @@
 - T1-T2 완료 (커밋 6b68458, cf76bcc): LastSelectedPlaylistId 필드+왕복·하위호환 테스트(106/106, spec MINOR 1 즉시 반영 — 구형 JSON 테스트 추가) / VM 선택 기록+기본 선택(칩 예약 > 저장값 > 첫 리스트, 비null만 저장).
 
 ## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4건 확인(시작메뉴·앱 내 한글 이름 / 언어 전환 / 플레이리스트 선택 복원 / 홈 즉시 재생 반복 — 시작메뉴는 MSIX 재배포 필요) 후 main 병합 결정
+- Suggested skills: 공식 /code-review (선택)
 
 ## Open Questions
 - [x] Q1. 홈 즉시 재생 반복 처리 — **확인만, 코드 변경 없음** (사용자 확정)
