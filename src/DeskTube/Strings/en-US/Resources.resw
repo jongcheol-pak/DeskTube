@@ -117,6 +117,18 @@
   <data name="Monitor_AudioBadgeToggleName" xml:space="preserve">
     <value>Toggle mute</value>
   </data>
+  <data name="ItemShareMenuItem.Text" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="Playlists_ShareCopy.Content" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Playlists_LinkCopied" xml:space="preserve">
+    <value>Link copied.</value>
+  </data>
+  <data name="Playlists_ShareCopyFailed" xml:space="preserve">
+    <value>Couldn't copy the link. Please try again.</value>
+  </data>
   <data name="Monitor_ResolutionFormat" xml:space="preserve">
     <value>{0}×{1}</value>
   </data>

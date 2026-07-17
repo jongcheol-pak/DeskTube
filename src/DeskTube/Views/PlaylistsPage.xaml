@@ -221,6 +221,34 @@
                 CanReorderItems="True"
                 AllowDrop="True"
                 Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay}">
+                <!-- 공유 팝업 (share plan T1·D1) — 우클릭한 행을 앵커로 ShowAt하는 페이지 단일 Flyout.
+                     어두운 라운드 바(URL 읽기 전용 + 복사) — 첨부 시안 스타일 참고, 값은 토큰만 사용. -->
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout x:Name="ShareFlyout" Placement="Bottom">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="Background" Value="{ThemeResource AppInputBackgroundBrush}" />
+                                <Setter Property="BorderBrush" Value="{ThemeResource AppInputBorderBrush}" />
+                                <Setter Property="CornerRadius" Value="{StaticResource AppPillCornerRadius}" />
+                                <Setter Property="Padding" Value="14,8" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBox
+                                x:Name="ShareUrlBox"
+                                IsReadOnly="True"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                Width="340"
+                                VerticalAlignment="Center" />
+                            <Button
+                                x:Uid="Playlists_ShareCopy"
+                                Click="OnShareCopyClick"
+                                CornerRadius="{StaticResource AppPillCornerRadius}"
+                                VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -244,6 +272,13 @@
                                             <FontIcon Glyph="&#xE74B;" />
                                         </MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
+                                    <MenuFlyoutSeparator />
+                                    <MenuFlyoutItem x:Uid="ItemShareMenuItem" Click="OnShareClick">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE72D;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutSeparator />
                                     <MenuFlyoutItem x:Uid="ItemDeleteMenuItem" Click="OnRemoveItemClick">
                                         <MenuFlyoutItem.Icon>
                                             <SymbolIcon Symbol="Delete" />

@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 
 namespace DeskTube.Views;
@@ -128,6 +129,38 @@ public sealed partial class PlaylistsPage : Page
             {
                 AppLog.Write($"드래그 정렬 반영 중 오류: {ex.GetType().Name} {ex.Message}");
             }
+        }
+    }
+
+    /// <summary>공유 메뉴 — 항목 URL을 담아 우클릭한 행 앵커로 공유 팝업 표시 (share plan T1·D1).</summary>
+    private void OnShareClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry entry)
+        {
+            return;
+        }
+
+        ShareUrlBox.Text = entry.Url;
+        // sender는 MenuFlyoutItem이라 행 시각 요소가 아님 — 컨테이너 조회, 실패 시 목록 자체 폴백 (리뷰 m1)
+        var anchor = ItemListView.ContainerFromItem(entry) as FrameworkElement ?? ItemListView;
+        ShareFlyout.ShowAt(anchor);
+    }
+
+    /// <summary>복사 버튼 — 클립보드 복사 후 팝업을 닫고 결과를 알린다 (실패해도 앱 동작 유지).</summary>
+    private void OnShareCopyClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var package = new DataPackage();
+            package.SetText(ShareUrlBox.Text);
+            Clipboard.SetContent(package);
+            ShareFlyout.Hide();
+            ViewModel.NotifyLinkCopied();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"링크 복사 중 오류: {ex.GetType().Name} {ex.Message}");
+            ViewModel.NotifyLinkCopyFailed();
         }
     }
 

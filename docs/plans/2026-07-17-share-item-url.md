@@ -94,7 +94,7 @@
 - **Source**: 사용자 요청 + 기존 FontIcon 글리프 패턴
 
 ## Tasks
-- [ ] T1. 공유 메뉴 + URL 복사 Flyout
+- [x] T1. 공유 메뉴 + URL 복사 Flyout
   - **Type**: C
   - **Design**: ① `Views/PlaylistsPage.xaml(.cs)` + `ViewModels/PlaylistsViewModel.cs` ② 신규 심볼: 페이지 리소스 `ShareFlyout`(Flyout — URL 읽기 전용 TextBox `ShareUrlBox` + "복사" Button 가로 배치) / 코드비하인드 `OnShareClick`(entry.Url 배정 + ShowAt — sender는 MenuFlyoutItem이라 행 시각 요소가 아니므로 앵커는 항목 ListView의 `ContainerFromItem(entry)`로 획득, null이면 ListView 자체에 표시 폴백 — 리뷰 m1) · `OnShareCopyClick`(클립보드 SetContent + Hide + VM 알림) / VM `NotifyLinkCopied()`·`NotifyLinkCopyFailed()` public — 내부 ShowNotice 위임 1책임 ③ 페이지 → VM 공개 메서드·Loc·WinRT Clipboard 참조 (VM은 클립보드 미참조 — View 관심사) ④ 클립보드 헬퍼·공유 서비스 추상화 안 함(사용처 1곳), OS 공유 시트 미도입
   - **Acceptance**: Given 항목 우클릭, Then 메뉴가 `위로/아래로 ─ 공유(E72D) ─ 삭제` 구조(구분선 2개 — MenuFlyoutSeparator). When 공유 클릭, Then 해당 행 앵커로 어두운 라운드 바 팝업(읽기 전용 URL 왼쪽 + "복사" 버튼 오른쪽, 앱 토큰 스타일) 표시(⏳ HUMAN-VERIFY). When 복사 클릭, Then 클립보드에 항목 원본 URL + 팝업 닫힘 + InfoBar "링크가 복사되었습니다"(실패 시 오류 알림 + AppLog). resw: ItemShareMenuItem.Text(공유/Share)·Playlists_ShareCopy(복사/Copy)·Playlists_LinkCopied·Playlists_ShareCopyFailed ko/en 존재. 기존 메뉴 3항목·핸들러 동작 불변. 빌드 통과

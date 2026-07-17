@@ -596,6 +596,12 @@ public partial class PlaylistsViewModel : ObservableObject
         }
     }
 
+    /// <summary>공유 팝업의 링크 복사 성공 알림 (페이지 코드비하인드 진입점 — share plan T1).</summary>
+    public void NotifyLinkCopied() => ShowNotice(Loc.Get("Playlists_LinkCopied"), InfoBarSeverity.Success);
+
+    /// <summary>공유 팝업의 링크 복사 실패 알림 (클립보드 접근 실패 등 드문 경우).</summary>
+    public void NotifyLinkCopyFailed() => ShowNotice(Loc.Get("Playlists_ShareCopyFailed"), InfoBarSeverity.Error);
+
     private void ShowNotice(string message, InfoBarSeverity severity)
     {
         NoticeMessage = message;
