@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-17: **자막 표시 on/off 토글 (T1~T3, FR-20 신설)** — plan: `docs/plans/2026-07-17-captions-toggle.md`, 브랜치 `task/captions-toggle`
+  - **무엇을**: ① T1 PRD FR-20 신설(자막 토글 — 켬=강제 표시/끔=강제 숨김, 기본 끔) + FR-10에 "자막" 추가 ② T2 명령 파이프라인 — `AppSettings.CaptionsEnabled`(기본 false), `IPlayerHost.SetCaptionsEnabled`(구현체 PlayerHost·FakePlayer 전수), `PlayerCommand.Enabled`(WhenWritingNull — 기존 페이로드 불변), `PlaybackCoordinator.SetCaptionsEnabledAsync`(전 플레이어 전파+저장, SetFitModeAsync 동형) + 플레이어 생성 3곳 초기 적용, player.html `captions` 명령 + `desiredCaptions`/`applyCaptions()`(loadModule/unloadModule 'captions'+'cc' 양쪽, 존재 확인+try/catch, load 시마다 재적용) ③ T3 설정 UI — SettingsViewModel.CaptionsEnabled + OnCaptionsEnabledChanged(Apply 경유), SettingsPage 화면 그룹 끝 CaptionsCard(ToggleSwitch TwoWay), resw ko/en 2키, README
+  - **왜**: 사용자 요청 — 유튜브 계정의 자막 선호(쿠키) 때문에 배경 재생에 자막이 표시됨. IFrame API 공식 playerVars에 "강제 끄기"가 없어 모듈 load/unload(비공식 API)로 제어 — 사용자 사전 고지·동의, 실패 시 재생 무영향 방어. 기본값 끔·2상태 토글·언어 선택 제외는 질문 라운드 확정
+  - **함정·결정**: `dotnet test`는 `-p:Platform=x64` 필수(미지정 시 MSIX AnyCPU 에러 — Deferred 대장 기지) / 자막 명령은 켬·끔 어느 상태든 항상 명시 전송(계정 선호를 덮어야 하므로 — 초기 적용 테스트가 `captions:False` 검증) / 곡 전환(loadVideoById) 시 자막 모듈 상태 리셋 가능성 대비 JS가 load 처리 시마다 재적용(D5 — desiredMuted 패턴 복제)
+  - **검증**: 빌드 경고 0·오류 0 / 테스트 108/108(신규 3: 시작 초기 적용·토글 전파+저장·영속 왕복) / T2·T3 spec+quality 리뷰 첫 판 전건 OK / plan-reviewer BLOCKER·MAJOR 0. **HUMAN-VERIFY 잔여**: ① 기본(끔)에서 자막 미표시 ② 토글 켬 → 즉시 표시 ③ 곡 전환 후 유지 ④ 재시작 후 설정 유지
 - 2026-07-17: **일시 알림을 자동 소멸 토스트로 전환 — 전 화면 (T1~T3)** — plan: `docs/plans/2026-07-17-toast-notices.md`, 브랜치 `task/toast-notices`
   - **무엇을**: ① T1 `ToastService`(static Attach/Show — 디스패처 마셜링·미등록 무시) + MainWindow 하단 중앙 토스트 호스트(토큰 바+심각도 글리프 E73E/E7BA/E783/E946, DispatcherTimer 성공/정보 3초·오류/경고 5초, 연속 알림 교체+리셋, IsHitTestVisible=False) — 기존 NoticeBar·ShowNotice 제거(App 호출부 교체) ② T2 홈·설정 전환 — VM Notice 프로퍼티·OnPanelNoticeCleared 제거, `MonitorPanelViewModel.NoticeCleared` 이벤트·발화·구독 2곳 원자 제거, 페이지 InfoBar 2곳 제거 ③ T3 플레이리스트 전환 — Notice 3종·ShowNotice 제거, 알림 9지점 ToastService 직접 호출(NotifyLinkCopied/Failed 시그니처 불변). 상시 안내 3곳(화질 설명·자동 실행 상태·로그인 차단 안내)은 유지(사용자 확정)
   - **왜**: 사용자 요청 — X로 닫아야 남는 상단 InfoBar를 유튜브 뮤직식 자동 소멸 토스트로. VM 3벌 중복 Notice 인프라 제거가 근본 해결(D1). 위치 하단 중앙·시간 3/5초 확정
