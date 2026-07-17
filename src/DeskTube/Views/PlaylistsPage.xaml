@@ -244,7 +244,7 @@
                             <Button
                                 x:Uid="Playlists_ShareCopy"
                                 Click="OnShareCopyClick"
-                                CornerRadius="{StaticResource AppPillCornerRadius}"
+                                CornerRadius="{StaticResource AppCardCornerRadius}"
                                 VerticalAlignment="Center" />
                         </StackPanel>
                     </Flyout>
