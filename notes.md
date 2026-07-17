@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-17: **플레이리스트 항목 공유 메뉴 + URL 복사 팝업 (T1~T2, FR-18 보강)** — plan: `docs/plans/2026-07-17-share-item-url.md`, 브랜치 `task/share-item-url`
+  - **무엇을**: ① T1 항목 우클릭 메뉴 재구성(`위로/아래로 ─ 구분선 ─ 공유(E72D) ─ 구분선 ─ 삭제`) + ItemListView AttachedFlyout로 페이지 단일 공유 팝업(FlyoutPresenter 토큰 스타일 — 어두운 라운드 바, 읽기 전용 URL TextBox + 복사 버튼) + `OnShareClick`(ContainerFromItem 앵커, null 폴백 목록)·`OnShareCopyClick`(DataPackage/Clipboard, try/catch·AppLog) + VM `NotifyLinkCopied/Failed` public(ShowNotice 위임) + resw 4키(ko/en) ② T2 PRD FR-18 보강 + README
+  - **왜**: 사용자 요청 — 유튜브 뮤직 공유 바 스타일 참고(픽셀 정합 아님), 공유 URL은 저장된 원본 그대로(D2), OS 공유 시트는 범위 외
+  - **함정·결정**: Flyout을 Page.Resources에 두면 x:Name 필드 생성이 불확실 — ItemListView `FlyoutBase.AttachedFlyout` 트리 부착으로 해결 / sender(MenuFlyoutItem)는 행 시각 요소가 아니라 `ContainerFromItem`으로 앵커 획득(plan 리뷰 m1)
+  - **검증**: 빌드 경고 0·오류 0 / 테스트 106/106 / spec+quality 리뷰 첫 판 전건 OK. **HUMAN-VERIFY 잔여**: 메뉴 구조(구분선 2), 공유 팝업 표시·스타일, 복사 → 클립보드 값+성공 알림, 기존 이동/삭제 불변
 - 2026-07-17: **작업 표시줄 미리보기 창 아이콘 수정 (버그)** — 증상: hover 썸네일 플라이아웃의 창 아이콘이 기본 아이콘(작업 표시줄 버튼은 정상). 원인: 미리보기는 패키지가 아니라 창(Win32) 아이콘을 쓰는데 WinUI 3 Window는 자동 설정 안 함 — 레포 전체 SetIcon 0건(grep 확정, 경량 단일 원인). 해결: MainWindow·LoginWindow 생성자에 `AppWindow.SetIcon("Assets/AppIcon.ico")`(Content 패키징 기확인 — 트레이 동일 파일). 검증: 빌드 경고 0·테스트 106/106·spec/quality 리뷰 OK, 플라이아웃 표시는 HUMAN-VERIFY(회귀 테스트 불가 — OS 셸). 브랜치 `task/fix-taskbar-preview-icon`.
 - 2026-07-17: **한글 앱 이름 "데스크튜브" + 플레이리스트 마지막 선택 기억 (T1~T5, FR-18·NFR-4 보강)** — plan: `docs/plans/2026-07-17-appname-ko-lastselect.md`, 브랜치 `task/appname-ko-lastselect`
   - **무엇을**: ① T1 `AppSettings.LastSelectedPlaylistId`(Guid?, additive) + 왕복·구형 JSON 하위 호환 테스트 ② T2 PlaylistsViewModel — 비null 선택만 기록·fire-and-forget 저장, Populate 기본 선택(칩 예약 > 저장값 > 첫 리스트) ③ T3 resw `AppDisplayName`(ko 데스크튜브/en DeskTube) 신설 + manifest 표시명 3곳 `ms-resource:///Resources/AppDisplayName` 전환(StartupTask 선례 형식) + ko Tray_ToolTip·StartupTaskDisplayName·PrivacySummary 첫머리 데스크튜브화 ④ T4 창 제목·타이틀바·정보 화면 앱 카드 하드코딩 제거 → `Loc.Get("AppDisplayName")` 단일 키(언어 전환은 App.ApplyLanguageChange 창 재생성이 재배정 — 코드 확인) ⑤ T5 PRD FR-18·NFR-4 보강 + README
