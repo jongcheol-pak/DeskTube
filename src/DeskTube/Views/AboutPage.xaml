@@ -3,6 +3,7 @@
     x:Class="DeskTube.Views.AboutPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:DeskTube.ViewModels">
     <!-- 시안 정보: 앱 카드(아이콘 52 + 이름 + 버전·개발자 한 줄) → 개인정보 카드 → 라이선스 카드형 expander -->
     <ScrollViewer Padding="{StaticResource AppPagePadding}">
@@ -64,7 +65,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- 오픈소스 라이선스 (FR-12 — 시안: 카드형 expander 목록) -->
+            <!-- 오픈소스 라이선스 (FR-12 — 클릭 시 공식 사이트 이동, 전문은 패키지 동봉만) -->
             <TextBlock
                 x:Uid="LicensesTitle"
                 Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -74,39 +75,16 @@
             <ItemsControl ItemsSource="{x:Bind ViewModel.Licenses}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:LicenseEntry">
-                        <!-- 접힘 기본 — 긴 전문은 펼칠 때만 렌더 (기존 동작 유지) -->
-                        <Expander
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch"
+                        <controls:SettingsCard
                             Margin="0,0,0,8"
-                            Background="{ThemeResource AppCardBackgroundBrush}"
-                            BorderBrush="{ThemeResource AppCardBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource AppCardCornerRadius}">
-                            <Expander.Header>
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <TextBlock
-                                        Text="{x:Bind Id}"
-                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                        FontSize="13.5"
-                                        VerticalAlignment="Center" />
-                                    <TextBlock
-                                        Text="{x:Bind License}"
-                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                        FontSize="12"
-                                        Foreground="{ThemeResource AppTextTertiaryBrush}"
-                                        VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Expander.Header>
-                            <TextBlock
-                                Text="{x:Bind FullText}"
-                                Style="{StaticResource BodyTextBlockStyle}"
-                                FontSize="12"
-                                LineHeight="20"
-                                Foreground="{ThemeResource AppTextTertiaryBrush}"
-                                TextWrapping="Wrap"
-                                IsTextSelectionEnabled="True" />
-                        </Expander>
+                            Header="{x:Bind Id}"
+                            Description="{x:Bind License}"
+                            IsClickEnabled="True"
+                            Click="OnLicenseCardClick">
+                            <controls:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE8A7;" FontSize="14" />
+                            </controls:SettingsCard.ActionIcon>
+                        </controls:SettingsCard>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

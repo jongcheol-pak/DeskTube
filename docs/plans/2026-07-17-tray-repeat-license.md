@@ -78,7 +78,7 @@
 ### 4-D. 재사용 확인
 | 신규 심볼 | 유사 기존 구현 검색 결과 | 재사용/신규 사유 |
 |---|---|---|
-| 라이선스 행 클릭 카드 (UI) | `SettingsCard`(CommunityToolkit SettingsControls) — SettingsPage에서 사용 중, DesignTokens lightweight 키 전역 적용 | 기존 컴포넌트 재사용 (`IsClickable` + `ActionIcon`) — 신규 스타일 없음 |
+| 라이선스 행 클릭 카드 (UI) | `SettingsCard`(CommunityToolkit SettingsControls) — SettingsPage에서 사용 중, DesignTokens lightweight 키 전역 적용 | 기존 컴포넌트 재사용 (`IsClickEnabled` + `ActionIcon`) — 신규 스타일 없음 |
 | `OnLicenseCardClick` (AboutPage code-behind 핸들러) | 유사 구현 없음 (앱 내 외부 브라우저 열기 최초) | 신규 — `Windows.System.Launcher.LaunchUriAsync` 1회 호출 수준, 공통화 대상 아님(1곳) |
 | `LicenseEntry.Url` | 기존 record 필드 확장 | 신규 필드 (FullText 대체) |
 
@@ -112,7 +112,7 @@
 - **Source**: tray.ico 참조 전수 2곳 (4-A)
 
 ### D5. 라이선스 행 클릭 UI
-- **Chosen**: `SettingsCard IsClickable="True"` 재사용 — Header=패키지명, Description=라이선스명, ActionIcon=OpenInNew(“”), Click 핸들러(code-behind)에서 `Launcher.LaunchUriAsync`
+- **Chosen**: `SettingsCard IsClickEnabled="True"` 재사용 — Header=패키지명, Description=라이선스명, ActionIcon=OpenInNew(“”), Click 핸들러(code-behind)에서 `Launcher.LaunchUriAsync` (구현 중 정정: 계획 초안의 `IsClickable`은 오기 — 실제 API는 `IsClickEnabled`, 패키지 dll에서 확인)
 - **Rationale**: 기존 컴포넌트·전역 lightweight 토큰 재사용(4-D), Expander 대비 클릭=이동 의도가 시각적으로 드러남. HyperlinkButton 단독은 카드 룩 상실이라 기각.
 - **Source**: SettingsPage.xaml의 SettingsCard 사용례, DesignTokens lightweight 키(직전 plan)
 
@@ -161,9 +161,9 @@
   - **Edge Cases**: 빈 목록 `Next()` → null 유지(AdvanceAsync 정지) / 1곡 리스트 → 같은 곡 무한 재로드(RepeatOne과 동일 패턴 — 허용) / 재생 중 전 항목 삭제 → `UpdateItems` 후 Next() null → 정지(기존 동작 유지) / 저장된 구 설정 Mode=Random·RepeatOne → 무한 재생이라 요구 위배 없음
   - **Halt Forecast**: (i) "전체듣기가 순서대로면 기존 '마지막 모드' 동작과 충돌" → Q1 사용자 확정(D2)으로 해소
   - **Depends on**: T3과 독립 (순서 무관하나 plan 순서대로 진행)
-- [ ] T5. 라이선스 항목 클릭 → 공식 사이트 이동 (FR-12)
+- [x] T5. 라이선스 항목 클릭 → 공식 사이트 이동 (FR-12)
   - **Type**: D
-  - **Design**: ① `index.json`에 `url` 필드 추가(D6 확정값 5개), 기존 id/license/file 유지 ② `LicenseEntry`를 `(Id, License, Url)`로 변경(FullText 제거 — 전문 파일 읽기 코드 삭제), AboutViewModel이 url 파싱 ③ AboutPage: Expander → `SettingsCard IsClickable` 행(D5), code-behind `OnLicenseCardClick`이 `(sender as FrameworkElement).DataContext`의 LicenseEntry.Url로 `Launcher.LaunchUriAsync` ④ 이번에 추상화하지 않음: URL 열기 공통 서비스화(사용처 1곳)
+  - **Design**: ① `index.json`에 `url` 필드 추가(D6 확정값 5개), 기존 id/license/file 유지 ② `LicenseEntry`를 `(Id, License, Url)`로 변경(FullText 제거 — 전문 파일 읽기 코드 삭제), AboutViewModel이 url 파싱 ③ AboutPage: Expander → `SettingsCard IsClickEnabled` 행(D5), code-behind `OnLicenseCardClick`이 `(sender as FrameworkElement).DataContext`의 LicenseEntry.Url로 `Launcher.LaunchUriAsync` ④ 이번에 추상화하지 않음: URL 열기 공통 서비스화(사용처 1곳)
   - **Acceptance**: Given 정보 화면, When 라이선스 항목 클릭, Then 기본 브라우저로 해당 패키지 공식 사이트가 열린다(전문 펼침 없음). 단위테스트: index.json 전 패키지에 url 존재·`https://` 시작(LicenseInventoryTests 추가), 기존 2개 테스트(참조 포함·전문 파일 존재) 불변 통과.
   - **Files**:
     - 주: `src/DeskTube/Assets/licenses/index.json`, `src/DeskTube/ViewModels/AboutViewModel.cs`, `src/DeskTube/Views/AboutPage.xaml`(67~112행), `src/DeskTube/Views/AboutPage.xaml.cs`(Click 핸들러)

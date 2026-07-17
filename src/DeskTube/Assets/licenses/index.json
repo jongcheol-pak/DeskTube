@@ -3,27 +3,32 @@
     {
       "id": "CommunityToolkit.Mvvm",
       "license": "MIT",
-      "file": "CommunityToolkit.Mvvm.txt"
+      "file": "CommunityToolkit.Mvvm.txt",
+      "url": "https://github.com/CommunityToolkit/dotnet"
     },
     {
       "id": "CommunityToolkit.WinUI.Controls.SettingsControls",
       "license": "MIT",
-      "file": "CommunityToolkit.WinUI.Controls.SettingsControls.txt"
+      "file": "CommunityToolkit.WinUI.Controls.SettingsControls.txt",
+      "url": "https://github.com/CommunityToolkit/Windows"
     },
     {
       "id": "H.NotifyIcon.WinUI",
       "license": "MIT",
-      "file": "H.NotifyIcon.WinUI.txt"
+      "file": "H.NotifyIcon.WinUI.txt",
+      "url": "https://github.com/HavenDV/H.NotifyIcon"
     },
     {
       "id": "Microsoft.WindowsAppSDK",
       "license": "Microsoft Software License Terms",
-      "file": "Microsoft.WindowsAppSDK.txt"
+      "file": "Microsoft.WindowsAppSDK.txt",
+      "url": "https://github.com/microsoft/windowsappsdk"
     },
     {
       "id": "WinUIEx",
       "license": "MIT",
-      "file": "WinUIEx.txt"
+      "file": "WinUIEx.txt",
+      "url": "https://dotmorten.github.io/WinUIEx"
     }
   ]
 }

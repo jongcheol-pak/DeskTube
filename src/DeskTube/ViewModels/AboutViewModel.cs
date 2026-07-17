@@ -5,13 +5,14 @@ using DeskTube.Services;
 
 namespace DeskTube.ViewModels;
 
-/// <summary>라이선스 화면 1행 — 패키지 ID·라이선스 종류·전문.</summary>
-public sealed record LicenseEntry(string Id, string License, string FullText);
+/// <summary>라이선스 화면 1행 — 패키지 ID·라이선스 종류·공식 사이트 URL (클릭 시 브라우저로 이동).</summary>
+public sealed record LicenseEntry(string Id, string License, string Url);
 
 /// <summary>
 /// 정보 화면 (PRD FR-11·12, plan T6·D5).
 /// 버전은 패키지 manifest에서 조회, 라이선스 목록은 Assets/licenses/index.json(수동 관리 —
 /// 누락은 LicenseInventoryTests가 빌드 게이트로 차단)을 읽는다.
+/// 라이선스 전문(txt)은 화면에 표시하지 않되 고지 의무를 위해 패키지에 동봉 유지 (FR-12, 2026-07-17).
 /// </summary>
 public partial class AboutViewModel : ObservableObject
 {
@@ -59,9 +60,8 @@ public partial class AboutViewModel : ObservableObject
             {
                 var id = package.GetProperty("id").GetString()!;
                 var license = package.GetProperty("license").GetString()!;
-                var file = package.GetProperty("file").GetString()!;
-                var fullText = File.ReadAllText(Path.Combine(dir, file));
-                Licenses.Add(new LicenseEntry(id, license, fullText));
+                var url = package.GetProperty("url").GetString()!;
+                Licenses.Add(new LicenseEntry(id, license, url));
             }
         }
         catch (Exception ex)

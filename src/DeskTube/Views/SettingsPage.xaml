@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ctrls="using:DeskTube.Controls">
-    <!-- 시안 설정: 그룹 헤더(화면/소리/재생/일반) + 카드 순서 재배열. 테마 카드는 없음 (T2 제거, 다크 고정) -->
+    <!-- 시안 설정: 그룹 헤더(화면/소리/일반) + 카드 순서 재배열. 테마 카드 없음(다크 고정), 재생 순서 카드 없음(2026-07-17 제거) -->
     <ScrollViewer Padding="{StaticResource AppPagePadding}">
         <StackPanel MaxWidth="{StaticResource AppSettingsCardMaxWidth}" Spacing="10" HorizontalAlignment="Left">
             <TextBlock

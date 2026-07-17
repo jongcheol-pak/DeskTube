@@ -32,6 +32,23 @@ public sealed class LicenseInventoryTests
     }
 
     [Fact]
+    public void 모든_패키지에_공식_사이트_url이_있다()
+    {
+        var root = FindRepoRoot();
+        var indexPath = Path.Combine(root, "src", "DeskTube", "Assets", "licenses", "index.json");
+        using var index = JsonDocument.Parse(File.ReadAllText(indexPath));
+
+        foreach (var package in index.RootElement.GetProperty("packages").EnumerateArray())
+        {
+            var id = package.GetProperty("id").GetString()!;
+            Assert.True(package.TryGetProperty("url", out var url), $"url 필드 없음: {id}");
+            var value = url.GetString();
+            Assert.False(string.IsNullOrWhiteSpace(value), $"url이 비어 있음: {id}");
+            Assert.StartsWith("https://", value, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void 라이선스_전문_파일이_모두_존재하고_비어있지_않다()
     {
         var root = FindRepoRoot();
