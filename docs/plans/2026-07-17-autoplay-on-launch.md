@@ -137,7 +137,7 @@
   - **Edge Cases**: LastPlaylistId 리스트 삭제/빈 리스트 → 기존 가드(생략+로그) / LastItemId만 있고 LastPlaylistId null → 가드가 먼저 생략 / 토글 켬 + 재생 기록 전무(첫 실행) → 생략+로그(기존 경로)
   - **Halt Forecast**: (i) "부팅 경로도 항목 재개로 바뀌는 동작 변경" → Q2 사용자 확정(D2)으로 해소
   - **Depends on**: T2 (LastItemId 필드·기록)
-- [ ] T4. 설정 UI — 토글 카드 + resw (FR-19, FR-10)
+- [x] T4. 설정 UI — 토글 카드 + resw (FR-19, FR-10)
   - **Type**: C
   - **Design**: ① `SettingsPage.xaml` — AutoStart 상태 InfoBar와 LanguageCard 사이에 `controls:SettingsCard x:Uid="AutoPlayCard"` + `ToggleSwitch IsOn="{x:Bind ViewModel.AutoPlayOnLaunch, Mode=TwoWay}"`(기존 카드 구조 재사용 — 4-D) ② `SettingsViewModel` — `[ObservableProperty] AutoPlayOnLaunch` + Populate 로드 + `OnAutoPlayOnLaunchChanged`(D4 패턴) ③ resw ko/en `AutoPlayCard.Header`·`AutoPlayCard.Description`(D6 고정 문구) ④ 이번에 추상화하지 않음: 토글 저장 공통화(각 토글 1핸들러 관례 유지)
   - **Acceptance**: Given 설정 화면, Then "자동 실행" 아래에 시안 문구의 토글 카드 표시(기본 꺼짐 — ⏳ 시각은 HUMAN-VERIFY). When 토글 변경, Then settings.json에 즉시 저장·재시작 후 유지. 설정 재진입(NavigationCache) 시 저장값 표시. 빌드 경고 0 + resw ko/en 키 정합.

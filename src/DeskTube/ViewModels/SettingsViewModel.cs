@@ -95,6 +95,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool ReduceMirrorQuality { get; set; }
 
+    /// <summary>앱 시작 후 자동 재생 토글 (FR-19 — 기본 꺼짐, 마지막 항목 재개).</summary>
+    [ObservableProperty]
+    public partial bool AutoPlayOnLaunch { get; set; }
+
     [ObservableProperty]
     public partial int FitModeIndex { get; set; }
 
@@ -214,6 +218,7 @@ public partial class SettingsViewModel : ObservableObject
             QualityIndex = qualityIdx >= 0 ? qualityIdx : 0;
 
             ReduceMirrorQuality = settings.ReduceMirrorQuality;
+            AutoPlayOnLaunch = settings.AutoPlayOnLaunch;
             FitModeIndex = (int)settings.FitMode;
 
             PauseOnFullscreen = settings.PauseOnFullscreen;
@@ -448,6 +453,18 @@ public partial class SettingsViewModel : ObservableObject
         {
             app.ApplyLanguageChange(); // 트레이·셸 재생성 (이 페이지도 새 창에서 다시 만들어짐)
         }
+    }
+
+    /// <summary>앱 시작 후 자동 재생 토글 (FR-19) — 저장만, 다음 실행부터 적용.</summary>
+    partial void OnAutoPlayOnLaunchChanged(bool value)
+    {
+        if (_loading || _services is null)
+        {
+            return;
+        }
+
+        _services.Settings.AutoPlayOnLaunch = value;
+        Apply(() => _services.Store.SaveSettingsAsync(_services.Settings), "앱 시작 자동 재생 설정 저장");
     }
 
     partial void OnPauseOnFullscreenChanged(bool value) =>

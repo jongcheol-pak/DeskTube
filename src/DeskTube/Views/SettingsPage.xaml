@@ -129,6 +129,11 @@
                     IsClosable="False"
                     Severity="Warning" />
 
+                <!-- 앱 시작 후 자동 재생 (FR-19 — 마지막 항목 재개, 기본 꺼짐) -->
+                <controls:SettingsCard x:Uid="AutoPlayCard">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.AutoPlayOnLaunch, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
                 <!-- 언어 (NFR-4 — 변경 시 셸 재생성) -->
                 <controls:SettingsCard x:Uid="LanguageCard">
                     <ComboBox

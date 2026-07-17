@@ -294,6 +294,12 @@
   <data name="AutoStartCard.Description" xml:space="preserve">
     <value>After you sign in, playback resumes quietly from the tray</value>
   </data>
+  <data name="AutoPlayCard.Header" xml:space="preserve">
+    <value>Auto-play on launch</value>
+  </data>
+  <data name="AutoPlayCard.Description" xml:space="preserve">
+    <value>When you open the app, playback resumes from the item you were last playing</value>
+  </data>
   <data name="Settings_AutoStartDisabledByUser" xml:space="preserve">
     <value>Turned off in Windows startup settings. Turn it on in Settings &gt; Apps &gt; Startup.</value>
   </data>

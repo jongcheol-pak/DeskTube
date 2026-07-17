@@ -294,6 +294,12 @@
   <data name="AutoStartCard.Description" xml:space="preserve">
     <value>로그인하면 창 없이 트레이에서 마지막 설정으로 재생을 시작합니다</value>
   </data>
+  <data name="AutoPlayCard.Header" xml:space="preserve">
+    <value>앱 시작 후 자동 재생</value>
+  </data>
+  <data name="AutoPlayCard.Description" xml:space="preserve">
+    <value>앱을 열면 마지막으로 재생하던 항목을 이어서 재생합니다</value>
+  </data>
   <data name="Settings_AutoStartDisabledByUser" xml:space="preserve">
     <value>Windows 시작 프로그램 설정에서 꺼져 있습니다. 설정 &gt; 앱 &gt; 시작 프로그램에서 켜 주세요.</value>
   </data>
