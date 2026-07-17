@@ -27,6 +27,9 @@
 - [2026-07-17] 설정 음소거 ToggleSwitch가 트레이/홈 배지 토글을 실시간 반영하지 않음(재진입 시 동기화) — MutedChanged 이벤트 신설로 SettingsViewModel 구독 해결 가능 (출처: 2026-07-17-audio-badge-restyle Deferred)
 - [2026-07-17] [SUGGEST] 배지 토글 버튼 접근성 이름 상태 반영형 — BadgeToggleName(bool muted)로 "음소거로 전환"/"소리로 전환" + Mode=OneWay (출처: 2026-07-17-audio-badge-restyle T4 quality m1)
 
+- [2026-07-17] `PlaybackCoordinator._volumeSaveCts` 미Dispose — CancelMetadataBackfill 관례(경합 방지·GC 수거) 승계, CTS 수명 관리 컨벤션 변경 시 함께 정리 (출처: 2026-07-17-perf-optimizations T2 quality m1)
+- [2026-07-17] 볼륨 디바운스 테스트가 실시간 Task.Delay(1200) 의존 — 가상 시계 인프라 도입 시 전환 검토, 현재 여유폭 2.4배 (출처: 2026-07-17-perf-optimizations T2 quality m2)
+
 ## 종결
 - [2026-07-17 → 2026-07-17] 트레이 메뉴 "재생"도 마지막 항목부터 재개하도록 통일 — 반영 (2026-07-17-home-defaults-tray T7: StartAsync(id, LastItemId) 전달, D8)
 - [2026-07-17 → 2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 (PRD FR 신설 합의 필요) — 반영 (2026-07-17-autoplay-on-launch T1~T5: FR-19 신설, 항목 단위 재개 + 부팅 경로 통일)

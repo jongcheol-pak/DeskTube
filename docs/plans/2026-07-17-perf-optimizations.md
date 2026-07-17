@@ -179,6 +179,8 @@
 - 수동 검증 (HUMAN-VERIFY): ① 재생 중 전체화면 앱 진입 → 작업 관리자에서 WebView2 CPU ~0·메모리 감소 확인, 해제 → 재생 정상 재개 ② 화면 잠금→해제 동일 ③ 배터리 세이버 중 배경 검은 화면(수용 확인) ④ 정책 일시정지 중 트레이 "재생" → 정상 재개 ⑤ 볼륨 드래그 → 소리 즉시 반영·재시작 후 마지막 값 복원 ⑥ 신규 설치(설정 삭제) 후 다중 모니터 재생 → 미러 720 하향 확인
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 78b8b6e)
+- Phase G 통과 (Must 100%)
 
 ## Retry Ledger
 
@@ -187,6 +189,8 @@
   - 결정: CTS 미Dispose는 CancelMetadataBackfill 관례 승계(follow-up 등록), 타이밍 테스트 실시간 대기 수용(가상 시계 인프라 부재).
 
 ## Next Steps
+- 권장 다음 액션: 전 task 완료 + Phase F/G 통과 — HUMAN-VERIFY 6건(절전 실효과·재개 정상·검은 배경 수용·트레이 재개·볼륨 복원·미러 하향) 사용자 확인 후, 필요 시 PR 생성·공식 /code-review 호출
+- Suggested skills: 공식 /code-review, /security-review (선택)
 
 ## Open Questions
 - [x] Q1: 서스펜션 적용 범위? → **정책 일시정지 전체(3종) 즉시** 확정 — 사용자 일시정지·사유 구분 기각 (사용자 답변 2026-07-17)
