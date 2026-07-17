@@ -61,7 +61,7 @@ public sealed class TrayIconService : IDisposable
         _icon = new TaskbarIcon
         {
             ToolTipText = Loc.Get("Tray_ToolTip"),
-            IconSource = new BitmapImage(new Uri("ms-appx:///Assets/tray.ico")),
+            IconSource = new BitmapImage(new Uri("ms-appx:///Assets/AppIcon.ico")),
             ContextMenuMode = ContextMenuMode.SecondWindow,
             // MenuActivation 기본값이 RightClick — 명시 불필요
             DoubleClickCommand = new RelayCommand(() => _showSettings(null)),

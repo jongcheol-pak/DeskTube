@@ -132,7 +132,7 @@
   - **Edge Cases**: (Type A — 해당 없음)
   - **Halt Forecast**: (i) PRD는 승인 후 고정 → 이 plan 승인이 PRD 변경안 승인을 포함함을 승인 프롬프트에 명시 (Step 10)
   - **Depends on**: -
-- [ ] T2. 트레이 아이콘을 AppIcon.ico로 교체
+- [x] T2. 트레이 아이콘을 AppIcon.ico로 교체
   - **Type**: B
   - **Acceptance**: Given 앱 실행, When 트레이 아이콘 표시, Then `Assets/AppIcon.ico`(루트 AppIcon.ico 사본)가 로드된다 — 빌드 경고 0 + ms-appx 참조·csproj Content 정합(HUMAN-VERIFY: 실제 트레이 표시).
   - **Files**:

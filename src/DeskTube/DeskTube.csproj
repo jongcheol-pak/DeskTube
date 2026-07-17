@@ -24,8 +24,8 @@
 
   <ItemGroup>
     <Content Include="Assets\**\*.png" />
-    <!-- 트레이 아이콘 (ms-appx URI로 로드 — TrayIconService) -->
-    <Content Include="Assets\tray.ico" />
+    <!-- 트레이 아이콘 (ms-appx URI로 로드 — TrayIconService, 루트 AppIcon.ico 사본) -->
+    <Content Include="Assets\AppIcon.ico" />
     <!-- 오픈소스 라이선스 전문 + 인덱스 (AboutViewModel이 출력 폴더에서 읽음 — plan D5) -->
     <Content Include="Assets\licenses\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
