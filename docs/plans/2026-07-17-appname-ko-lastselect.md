@@ -107,7 +107,7 @@
 - **Source**: MainWindow.xaml.cs 26행, Loc.cs
 
 ## Tasks
-- [ ] T1. AppSettings.LastSelectedPlaylistId + 왕복 테스트
+- [x] T1. AppSettings.LastSelectedPlaylistId + 왕복 테스트
   - **Type**: C
   - **Design**: ① `Models/AppSettings.cs` ② `public Guid? LastSelectedPlaylistId { get; set; }` — 플레이리스트 화면의 마지막 선택 기억 1책임(재생 이력 LastPlaylistId와 별개 — D2) ③ PlaylistsViewModel만 읽고 씀 ④ 별도 저장 서비스·마이그레이션 없음(JSON additive)
   - **Acceptance**: Given 신규 필드에 Guid 저장 후 JsonStateStore 저장→재로드, Then 값 왕복 일치 + 필드 없는 기존 JSON 로드 시 null — 테스트 통과, 기존 테스트 전건 통과
