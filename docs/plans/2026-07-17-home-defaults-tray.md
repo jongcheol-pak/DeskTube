@@ -150,7 +150,7 @@
     - 주: `docs/prd.md`
   - **Edge Cases**: (Type A — skip)
   - **Depends on**: -
-- [ ] T2. 기본값 변경 — AppSettings 3종 + StartupTask manifest
+- [x] T2. 기본값 변경 — AppSettings 3종 + StartupTask manifest
   - **Type**: C
   - **Acceptance**: Given 설정 파일 없음, When LoadSettingsAsync, Then FitMode=Contain·IsMuted=true·AutoPlayOnLaunch=true (JsonStateStoreTests 기본값 테스트로 검증). Normalize의 FitMode 폴백도 Contain. manifest StartupTask `Enabled="true"`. 기존 오디오 라우팅 테스트는 Harness IsMuted=false 명시 초기화로 의미 유지(전 테스트 통과).
   - **Files**:
