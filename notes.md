@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-17: **일시 알림을 자동 소멸 토스트로 전환 — 전 화면 (T1~T3)** — plan: `docs/plans/2026-07-17-toast-notices.md`, 브랜치 `task/toast-notices`
+  - **무엇을**: ① T1 `ToastService`(static Attach/Show — 디스패처 마셜링·미등록 무시) + MainWindow 하단 중앙 토스트 호스트(토큰 바+심각도 글리프 E73E/E7BA/E783/E946, DispatcherTimer 성공/정보 3초·오류/경고 5초, 연속 알림 교체+리셋, IsHitTestVisible=False) — 기존 NoticeBar·ShowNotice 제거(App 호출부 교체) ② T2 홈·설정 전환 — VM Notice 프로퍼티·OnPanelNoticeCleared 제거, `MonitorPanelViewModel.NoticeCleared` 이벤트·발화·구독 2곳 원자 제거, 페이지 InfoBar 2곳 제거 ③ T3 플레이리스트 전환 — Notice 3종·ShowNotice 제거, 알림 9지점 ToastService 직접 호출(NotifyLinkCopied/Failed 시그니처 불변). 상시 안내 3곳(화질 설명·자동 실행 상태·로그인 차단 안내)은 유지(사용자 확정)
+  - **왜**: 사용자 요청 — X로 닫아야 남는 상단 InfoBar를 유튜브 뮤직식 자동 소멸 토스트로. VM 3벌 중복 Notice 인프라 제거가 근본 해결(D1). 위치 하단 중앙·시간 3/5초 확정
+  - **함정·결정**: SettingsViewModel엔 InfoBarSeverity using이 원래 없었음(Severity 미사용 2종) — C# 컴파일 실패가 XAML 컴파일러 WMC9999/WMC1111 연쇄 오류로 위장돼 무관 파일(MonitorCardsControl)을 가리킴 / 토스트 글리프도 PUA 리터럴 저장(도구 계층이 \u 이스케이프를 문자로 변환 — 바이트 검증 필수) / ShowNotice 위임 함수는 남기지 않고 호출부 직접 전환(잉여 간접화 제거, 규칙 5-1)
+  - **검증**: 빌드 경고 0·오류 0 / 테스트 106/106 / Notice 계열 심볼 잔존 0(grep)·상시 안내 3곳 불변 / task별 spec+quality 리뷰(T1 spec MINOR 주석·T2 quality MINOR 빈 줄 — 즉시 반영, 나머지 OK). **HUMAN-VERIFY 잔여**: 복사 성공 토스트 3초 소멸, URL 오류 토스트 5초, 모니터 최소1 경고 토스트, 트레이 진입 안내 토스트, 연속 알림 교체, 상시 안내 3곳 그대로
 - 2026-07-17: **플레이리스트 항목 공유 메뉴 + URL 복사 팝업 (T1~T2, FR-18 보강)** — plan: `docs/plans/2026-07-17-share-item-url.md`, 브랜치 `task/share-item-url`
   - **무엇을**: ① T1 항목 우클릭 메뉴 재구성(`위로/아래로 ─ 구분선 ─ 공유(E72D) ─ 구분선 ─ 삭제`) + ItemListView AttachedFlyout로 페이지 단일 공유 팝업(FlyoutPresenter 토큰 스타일 — 어두운 라운드 바, 읽기 전용 URL TextBox + 복사 버튼) + `OnShareClick`(ContainerFromItem 앵커, null 폴백 목록)·`OnShareCopyClick`(DataPackage/Clipboard, try/catch·AppLog) + VM `NotifyLinkCopied/Failed` public(ShowNotice 위임) + resw 4키(ko/en) ② T2 PRD FR-18 보강 + README
   - **왜**: 사용자 요청 — 유튜브 뮤직 공유 바 스타일 참고(픽셀 정합 아님), 공유 URL은 저장된 원본 그대로(D2), OS 공유 시트는 범위 외
