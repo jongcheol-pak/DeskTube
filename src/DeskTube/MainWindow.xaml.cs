@@ -3,6 +3,7 @@ using DeskTube.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace DeskTube;
 
@@ -21,9 +22,20 @@ public sealed partial class MainWindow : Window
     /// <summary>창 상태 관리자 — 수명 보장이 문서화돼 있지 않아 방어적으로 창 수명 동안 참조를 유지.</summary>
     private readonly WinUIEx.WindowManager _manager;
 
+    /// <summary>토스트 자동 소멸 타이머 (toast plan D2 — 성공/정보 3초, 오류/경고 5초).</summary>
+    private readonly DispatcherTimer _toastTimer = new();
+
     public MainWindow()
     {
         InitializeComponent();
+
+        // 공용 토스트 호스트 등록 — 언어 전환 창 재생성 시 새 인스턴스가 덮어쓴다 (toast plan T1)
+        _toastTimer.Tick += (_, _) =>
+        {
+            _toastTimer.Stop();
+            ToastHost.Visibility = Visibility.Collapsed;
+        };
+        ToastService.Attach(PresentToast, DispatcherQueue);
 
         // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 창 재생성(App.ApplyLanguageChange)이 재배정한다.
         Title = Loc.Get("AppDisplayName");
@@ -152,10 +164,32 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>안내 메시지 표시 (트레이 진입 안내 등 — 문구는 호출측이 리소스에서 조회).</summary>
-    internal void ShowNotice(string message)
+    /// <summary>
+    /// 공용 토스트 표시 (toast plan T1) — 연속 알림은 최신 메시지로 교체 + 타이머 리셋 (D3).
+    /// 글리프: 성공 E73E 체크 / 경고 E7BA / 오류 E783 / 정보 E946 (소스에는 PUA 리터럴로 저장).
+    /// </summary>
+    private void PresentToast(string message, InfoBarSeverity severity)
     {
-        NoticeBar.Message = message;
-        NoticeBar.IsOpen = true;
+        ToastText.Text = message;
+        ToastIcon.Glyph = severity switch
+        {
+            InfoBarSeverity.Success => "",
+            InfoBarSeverity.Warning => "",
+            InfoBarSeverity.Error => "",
+            _ => "",
+        };
+        // 아이콘 색 — 성공은 코럴, 정보는 보조 텍스트, 경고/오류는 밝은 코럴 (D5 — 토큰만 사용)
+        ToastIcon.Foreground = (Brush)Application.Current.Resources[severity switch
+        {
+            InfoBarSeverity.Success => "AppAccentBrush",
+            InfoBarSeverity.Informational => "AppTextSecondaryBrush",
+            _ => "AppAccentHoverBrush",
+        }];
+
+        _toastTimer.Stop();
+        _toastTimer.Interval = TimeSpan.FromSeconds(
+            severity is InfoBarSeverity.Error or InfoBarSeverity.Warning ? 5 : 3);
+        ToastHost.Visibility = Visibility.Visible;
+        _toastTimer.Start();
     }
 }

@@ -169,7 +169,7 @@ public partial class App : Application
         window.Activate();
         if (notice is not null)
         {
-            window.ShowNotice(notice);
+            ToastService.Show(notice); // 공용 토스트 (toast plan T1 — 창 표시 후 안내)
         }
     }
 

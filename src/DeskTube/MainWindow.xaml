@@ -64,15 +64,31 @@
                 <Frame x:Name="ContentFrame" />
             </Border>
         </NavigationView>
-        <!-- 트레이 진입 안내 (재생할 리스트 없음 등 — plan T1 Edge). 셸 위 오버레이 -->
-        <InfoBar
-            x:Name="NoticeBar"
+        <!-- 공용 토스트 (toast plan T1·D2) — 하단 중앙, 자동 소멸(성공/정보 3초·오류/경고 5초),
+             클릭 통과(IsHitTestVisible=False). 전 화면 알림이 ToastService를 거쳐 여기 표시된다. -->
+        <Border
+            x:Name="ToastHost"
             Grid.Row="1"
-            IsOpen="False"
-            Severity="Informational"
-            VerticalAlignment="Top"
+            Visibility="Collapsed"
+            IsHitTestVisible="False"
             HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="16,0,16,32"
             MaxWidth="600"
-            Margin="16,48,16,0" />
+            Background="{ThemeResource AppInputBackgroundBrush}"
+            BorderBrush="{ThemeResource AppInputBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource AppPillCornerRadius}"
+            Padding="16,10">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon x:Name="ToastIcon" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock
+                    x:Name="ToastText"
+                    FontSize="13"
+                    VerticalAlignment="Center"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource AppTextPrimaryBrush}" />
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
