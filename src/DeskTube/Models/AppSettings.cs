@@ -40,6 +40,9 @@ public sealed class AppSettings
     /// <summary>앱 시작 후 자동 재생 (PRD FR-19 — 기본 꺼짐). 켜면 일반 실행 시 마지막 항목부터 재생.</summary>
     public bool AutoPlayOnLaunch { get; set; }
 
+    /// <summary>플레이리스트 화면에서 마지막에 선택한 리스트 (재생 이력 LastPlaylistId와 별개 — FR-18 기본 선택용).</summary>
+    public Guid? LastSelectedPlaylistId { get; set; }
+
     /// <summary>자동 일시정지 정책 (PRD NFR-1 — 기본 모두 켬).</summary>
     public bool PauseOnFullscreen { get; set; } = true;
 

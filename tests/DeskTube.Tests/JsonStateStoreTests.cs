@@ -45,6 +45,7 @@ public sealed class JsonStateStoreTests : IDisposable
             LastPlaylistId = Guid.NewGuid(),
             LastItemId = Guid.NewGuid(),
             AutoPlayOnLaunch = true,
+            LastSelectedPlaylistId = Guid.NewGuid(),
             PauseOnFullscreen = false,
             Language = "ko",
         };
@@ -63,6 +64,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(settings.ReduceMirrorQuality, loaded.ReduceMirrorQuality);
         Assert.Equal(settings.LastPlaylistId, loaded.LastPlaylistId);
         Assert.Equal(settings.LastItemId, loaded.LastItemId);
+        Assert.Equal(settings.LastSelectedPlaylistId, loaded.LastSelectedPlaylistId);
         Assert.Equal(settings.AutoPlayOnLaunch, loaded.AutoPlayOnLaunch);
         Assert.Equal(settings.PauseOnFullscreen, loaded.PauseOnFullscreen);
         Assert.Equal(settings.Language, loaded.Language);
@@ -129,6 +131,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(PlaybackMode.Sequential, settings.Mode);
         Assert.False(settings.AutoPlayOnLaunch); // FR-19 — 기본 꺼짐
         Assert.Null(settings.LastItemId);
+        Assert.Null(settings.LastSelectedPlaylistId); // 구형 JSON·첫 실행 — 기본 null (하위 호환)
         Assert.Empty(playlists);
     }
 
