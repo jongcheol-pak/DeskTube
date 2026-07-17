@@ -144,7 +144,7 @@
     - 연속 호출 경합 → CTS 교체 패턴(CancelMetadataBackfill 선례 — Dispose 없이 Cancel만)
   - **Halt Forecast**: (없음 — 공개 시그니처 불변, 내부 구현 변경)
   - **Depends on**: -
-- [ ] T3. 미러 화질 캡 기본 켬 (신규 설치)
+- [x] T3. 미러 화질 캡 기본 켬 (신규 설치)
   - **Type**: C
   - **Acceptance**: Given 필드 미기록·신규 settings, Then ReduceMirrorQuality == true (기본값 단언 테스트) / Given 기존 파일에 false 기록, Then false 유지 (왕복 테스트 — 값을 false로 반전해 직렬화 누락 감지 유지) / Harness는 false 고정으로 기존 미러 테스트 의도 보존, 전건 통과.
   - **Files**:
@@ -183,6 +183,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 b21c3b2, e97cc70): IPlayerHost.Suspend/ResumeFromSuspend + PolicyPause 절전·전 재개 경로 해제·PostCommand 자동 해제 / 볼륨 저장 500ms 디바운스 + Dispose 최종 저장(FireAndForget — quality MAJOR 수정 반영). 빌드 0경고·121/121.
+  - 결정: CTS 미Dispose는 CancelMetadataBackfill 관례 승계(follow-up 등록), 타이밍 테스트 실시간 대기 수용(가상 시계 인프라 부재).
 
 ## Next Steps
 

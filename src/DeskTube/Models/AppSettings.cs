@@ -32,8 +32,9 @@ public sealed class AppSettings
     /// <summary>자막 표시 (PRD FR-20 — 기본 끔). 켜면 강제 표시, 끄면 계정 선호와 무관하게 숨김.</summary>
     public bool CaptionsEnabled { get; set; }
 
-    /// <summary>미러 모니터 화질 하향 (NFR-2 부하 절감 — 기본 꺼짐, 사용자 opt-in).</summary>
-    public bool ReduceMirrorQuality { get; set; }
+    /// <summary>미러 모니터 화질 하향 (NFR-2 부하 절감 — 기본 켬, 2026-07-17 꺼짐에서 변경).
+    /// 기존 settings.json에 기록된 값은 유지된다 (신규 설치·필드 미기록 파일만 새 기본 적용).</summary>
+    public bool ReduceMirrorQuality { get; set; } = true;
 
     /// <summary>마지막 재생 플레이리스트 (부팅 자동 재생용 — PRD FR-8).</summary>
     public Guid? LastPlaylistId { get; set; }

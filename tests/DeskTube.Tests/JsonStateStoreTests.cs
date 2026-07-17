@@ -43,7 +43,7 @@ public sealed class JsonStateStoreTests : IDisposable
             QualityScaleHeight = 720,
             FitMode = FitMode.Stretch,
             CaptionsEnabled = true,
-            ReduceMirrorQuality = true,
+            ReduceMirrorQuality = false, // 기본 true (NFR-2 — 2026-07-17)
             LastPlaylistId = Guid.NewGuid(),
             LastItemId = Guid.NewGuid(),
             AutoPlayOnLaunch = false, // 기본 true (FR-19)
@@ -137,6 +137,7 @@ public sealed class JsonStateStoreTests : IDisposable
         Assert.Equal(FitMode.Contain, settings.FitMode); // FR-16 — 기본 맞춤 (2026-07-17)
         Assert.True(settings.IsMuted); // FR-5 — 음소거 기본 켬 (2026-07-17)
         Assert.True(settings.AutoPlayOnLaunch); // FR-19 — 기본 켜짐 (2026-07-17)
+        Assert.True(settings.ReduceMirrorQuality); // NFR-2 — 미러 화질 하향 기본 켬 (2026-07-17)
         Assert.Null(settings.LastItemId);
         Assert.Null(settings.LastSelectedPlaylistId); // 구형 JSON·첫 실행 — 기본 null (하위 호환)
         Assert.Null(settings.LastHomeUrl); // 구형 JSON·첫 실행 — 기본 null (FR-1 홈 URL 복원)
