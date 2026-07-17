@@ -147,7 +147,7 @@
     - (ii-a) manifest(배포 설정) 변경 → `## 사전 승인 항목`
   - **Depends on**: -
 
-- [ ] T4. 앱 내 앱 이름 표시 — 하드코딩 제거
+- [x] T4. 앱 내 앱 이름 표시 — 하드코딩 제거
   - **Type**: C
   - **Design**: ① `MainWindow.xaml(.cs)`, `Views/AboutPage.xaml(.cs)` ② 신규 공개 심볼 없음 — 타이틀바 TextBlock·About 앱 카드 TextBlock에 x:Name 부여, 각 생성자에서 `Loc.Get("AppDisplayName")` 배정, `Title = "DeskTube"` → 동일 키(D6) ③ View → Loc(Services)만 ④ 바인딩·VM 경유로 만들지 않음(정적 1회 배정 — 언어 전환 시 셸 재로드가 재생성)
   - **Acceptance**: 빌드 통과 + 소스에서 사용자 노출 "DeskTube" 리터럴이 MainWindow.xaml(.cs)·AboutPage.xaml에서 제거됨(grep) + MainWindow.xaml 22행 낡은 주석("번역 대상 아님") 갱신. 한글 환경 창 제목·타이틀바·정보 화면 "데스크튜브" 표시는 ⏳ HUMAN-VERIFY. 언어 전환 직후 창 제목 갱신 여부 확인 — 셸 재로드 경로가 MainWindow를 재생성하지 않으면 전환 핸들러에서 Title·타이틀바 재배정 1줄 추가(Risks 4행)
