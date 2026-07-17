@@ -183,6 +183,12 @@
   <data name="ReduceMirrorCard.Description" xml:space="preserve">
     <value>Reduces video quality on monitors without sound to ease system load</value>
   </data>
+  <data name="CaptionsCard.Header" xml:space="preserve">
+    <value>Captions</value>
+  </data>
+  <data name="CaptionsCard.Description" xml:space="preserve">
+    <value>Shows captions on videos that provide them</value>
+  </data>
   <data name="QualityCard.Header" xml:space="preserve">
     <value>Video quality</value>
   </data>

@@ -160,7 +160,7 @@
     - (ii-a) `IPlayerHost` 공개 인터페이스 메서드 추가(계획된 공개 API 변경) → `## 사전 승인 항목`에 등록
   - **Depends on**: T1
 
-- [ ] T3. 설정 UI — 자막 토글 카드 + 문구 + README
+- [x] T3. 설정 UI — 자막 토글 카드 + 문구 + README
   - **Type**: C
   - **Design**: ① 배치 — SettingsViewModel(속성·핸들러)·SettingsPage.xaml(카드)·resw 2개(문구)·README(기능 서술). ② 신규 심볼 — `SettingsViewModel.CaptionsEnabled`([ObservableProperty]) + `OnCaptionsEnabledChanged`(OnReduceMirrorQualityChanged 동형 — `Apply(() => Coordinator.SetCaptionsEnabledAsync(value), "자막 표시 적용")`), Populate에서 `CaptionsEnabled = settings.CaptionsEnabled` 로드(_loading 가드 구간). ③ 의존 방향 — VM→Coordinator(T2 신설 메서드), XAML은 x:Bind TwoWay. ④ 비추상화 — 토글 공통화·헬퍼 추출 없음(기존 카드 패턴 복제).
   - **Acceptance**: Given 설정 화면 XAML, When 빌드, Then CaptionsCard(SettingsCard+ToggleSwitch, `IsOn="{x:Bind ViewModel.CaptionsEnabled, Mode=TwoWay}"`)가 화면 그룹 끝(ReduceMirrorCard 다음)에 존재 + resw ko/en에 `CaptionsCard.Header`/`.Description` 키 존재 + 빌드 경고/에러 0. 토글 변경 → SetCaptionsEnabledAsync 호출 경로는 코드 대조로 확인. 화면 표시·실동작은 HUMAN-VERIFY(빌드 통과 ≠ 시각 확인 — AGENTS XAML 규칙 8).
@@ -196,6 +196,8 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료 (커밋 7a36989, d01f2bb): PRD FR-20 신설 + 자막 명령 파이프라인(AppSettings→Coordinator→IPlayerHost→player.html). 빌드 경고 0, 테스트 108/108, spec/quality 리뷰 OK.
+  - 참고: `dotnet test`는 `-p:Platform=x64` 필수 (미지정 시 MSIX AnyCPU 에러 — Deferred 대장 기지 이슈).
 
 ## Next Steps
 - plan 승인 후 pjc:implement-task로 T1부터 자율 실행

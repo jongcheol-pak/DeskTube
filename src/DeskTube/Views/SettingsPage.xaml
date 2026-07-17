@@ -74,6 +74,11 @@
                     <ToggleSwitch IsOn="{x:Bind ViewModel.ReduceMirrorQuality, Mode=TwoWay}" />
                 </controls:SettingsCard>
 
+                <!-- 자막 표시 (FR-20 — 켬=강제 표시/끔=강제 숨김, 기본 꺼짐) -->
+                <controls:SettingsCard x:Uid="CaptionsCard">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.CaptionsEnabled, Mode=TwoWay}" />
+                </controls:SettingsCard>
+
                 <!-- ═ 소리 ═ -->
                 <TextBlock x:Uid="SettingsGroupSound" Style="{StaticResource AppGroupHeaderTextStyle}" />
 

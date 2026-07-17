@@ -183,6 +183,12 @@
   <data name="ReduceMirrorCard.Description" xml:space="preserve">
     <value>소리가 나지 않는 모니터의 화질을 낮춰 컴퓨터 부담을 줄입니다</value>
   </data>
+  <data name="CaptionsCard.Header" xml:space="preserve">
+    <value>자막</value>
+  </data>
+  <data name="CaptionsCard.Description" xml:space="preserve">
+    <value>켜면 영상에 자막을 표시합니다 (자막이 제공되는 영상만)</value>
+  </data>
   <data name="QualityCard.Header" xml:space="preserve">
     <value>화질</value>
   </data>

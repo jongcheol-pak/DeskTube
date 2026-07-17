@@ -102,6 +102,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial int FitModeIndex { get; set; }
 
+    /// <summary>자막 표시 토글 (FR-20 — 기본 끔, 켬=강제 표시/끔=강제 숨김).</summary>
+    [ObservableProperty]
+    public partial bool CaptionsEnabled { get; set; }
+
     [ObservableProperty]
     public partial int AudioIndex { get; set; }
 
@@ -214,6 +218,7 @@ public partial class SettingsViewModel : ObservableObject
             ReduceMirrorQuality = settings.ReduceMirrorQuality;
             AutoPlayOnLaunch = settings.AutoPlayOnLaunch;
             FitModeIndex = (int)settings.FitMode;
+            CaptionsEnabled = settings.CaptionsEnabled;
 
             PauseOnFullscreen = settings.PauseOnFullscreen;
             PauseOnBatterySaver = settings.PauseOnBatterySaver;
@@ -409,6 +414,10 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>미러 화질 하향 토글 (NFR-2) — 재생 중이면 미러 스케일 즉시 재계산.</summary>
     partial void OnReduceMirrorQualityChanged(bool value) =>
         Apply(() => _services!.Coordinator.SetReduceMirrorQualityAsync(value), "미러 화질 하향 적용");
+
+    /// <summary>자막 표시 토글 (FR-20) — 재생 중이면 전 플레이어에 즉시 반영.</summary>
+    partial void OnCaptionsEnabledChanged(bool value) =>
+        Apply(() => _services!.Coordinator.SetCaptionsEnabledAsync(value), "자막 표시 적용");
 
     /// <summary>크기 모드 변경 (FR-16) — 재생 중이면 전 플레이어에 즉시 반영.</summary>
     partial void OnFitModeIndexChanged(int value)
