@@ -17,6 +17,12 @@ public sealed partial class HomePage : Page
         NavigationCacheMode = NavigationCacheMode.Required; // 전환 시 재생성 방지 (NFR-3)
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
+
+        // 프레임 폭 = 콘텐츠 폭 + 페이지 패딩 좌우 — 손계산 파생 토큰 대신 원본 토큰에서 유도
+        // (AppPagePadding·AppPageContentWidth 변경 시 자동 추종 — 다른 페이지와 폭 일치 유지)
+        var contentWidth = (double)Application.Current.Resources["AppPageContentWidth"];
+        var padding = (Thickness)Application.Current.Resources["AppPagePadding"];
+        Layout.Width = contentWidth + padding.Left + padding.Right;
     }
 
     public HomeViewModel ViewModel { get; } = new();
@@ -34,23 +40,8 @@ public sealed partial class HomePage : Page
         ViewModel.Account.SignInRequested -= OnSignInRequested;
     }
 
-    /// <summary>로그인 창 열기 (FR-15) — 닫히면 세션 상태 재확인 (SettingsPage와 동일 패턴).</summary>
-    private void OnSignInRequested(object? sender, EventArgs e)
-    {
-        var login = new LoginWindow();
-        login.Closed += async (_, _) =>
-        {
-            try
-            {
-                await ViewModel.Account.RefreshSessionAsync();
-            }
-            catch (Exception ex)
-            {
-                AppLog.Write($"로그인 후 상태 갱신 실패: {ex.GetType().Name} {ex.Message}");
-            }
-        };
-        login.Activate();
-    }
+    /// <summary>로그인 창 열기 (FR-15) — 공통 흐름 위임 (SettingsPage와 공유, LoginFlow).</summary>
+    private void OnSignInRequested(object? sender, EventArgs e) => LoginFlow.Open(ViewModel.Account);
 
     /// <summary>빠른 재생 칩 하단 정렬 재현 — 콘텐츠가 뷰포트보다 짧으면 뷰포트만큼 늘린다 (시안 margin-top:auto).</summary>
     private void OnRootSizeChanged(object sender, SizeChangedEventArgs e) =>

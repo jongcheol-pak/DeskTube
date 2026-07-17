@@ -39,6 +39,14 @@ public sealed partial class PlaylistsPage : Page
         }
     }
 
+    /// <summary>
+    /// 가로 스크롤 래퍼는 콘텐츠를 무한 폭으로 측정한다 — MaxWidth를 뷰포트 폭(최소 1000)으로 걸어
+    /// 긴 영상 제목이 페이지 폭을 무한정 키우는 대신 말줄임(CharacterEllipsis)되게 한다.
+    /// </summary>
+    private void OnRootSizeChanged(object sender, SizeChangedEventArgs e) =>
+        Layout.MaxWidth = Math.Max(
+            Root.ViewportWidth, (double)Application.Current.Resources["AppPageContentWidth"]);
+
     /// <summary>x:Bind 함수 — 선택 없음 안내의 반전 가시성.</summary>
     public Visibility InvertVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 

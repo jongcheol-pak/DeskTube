@@ -194,10 +194,15 @@
     <CornerRadius x:Key="AppLargeIconCornerRadius">12</CornerRadius>
     <Thickness x:Key="AppPagePadding">56,44</Thickness>
     <!-- 콘텐츠 고정 폭 1000 — 홈·설정·정보 공통, 창 폭에 따라 가운데 정렬·좁으면 가로 스크롤 (사용자 확정).
-         플레이리스트는 분할 레이아웃이라 이 값을 최소 폭으로만 사용 -->
+         플레이리스트는 분할 레이아웃이라 이 값을 최소 폭으로만 사용.
+         홈의 프레임 폭(콘텐츠 + 패딩)은 파생값이라 토큰이 아니라 코드비하인드에서 이 토큰 + AppPagePadding으로 계산 -->
     <x:Double x:Key="AppPageContentWidth">1000</x:Double>
-    <!-- 홈 전용 — Layout Grid가 페이지 패딩(AppPagePadding 좌우 56×2)을 소유하므로 콘텐츠 1000 + 112 -->
-    <x:Double x:Key="AppPageFrameWidth">1112</x:Double>
+
+    <!-- 구글 브랜드 공식 4색 (FR-15 로그인 버튼 "G" 로고 전용 — 앱 팔레트 아님, 변경 금지) -->
+    <SolidColorBrush x:Key="GoogleBrandBlueBrush" Color="#4285F4" />
+    <SolidColorBrush x:Key="GoogleBrandGreenBrush" Color="#34A853" />
+    <SolidColorBrush x:Key="GoogleBrandYellowBrush" Color="#FBBC05" />
+    <SolidColorBrush x:Key="GoogleBrandRedBrush" Color="#EA4335" />
 
     <!-- 공용 스타일 — 시안 반복 요소 (plan T2 Design ②) -->
 

@@ -7,13 +7,17 @@
     xmlns:local="using:DeskTube.Views">
     <!-- 시안 플레이리스트: 좌 300px 패널(제목·새 리스트·목록) / 우(추가 입력·리스트명+곡수+듣기 버튼·트랙 행).
          컬럼 헤더 행은 시안에 없어 제거 (plan D6).
-         최소 폭 1000 — 좁은 창은 가로 스크롤(세로는 내부 ListView가 처리 — 가로 전용 래퍼, 사용자 확정) -->
+         최소 폭 1000 — 좁은 창은 가로 스크롤(세로는 내부 ListView가 처리 — 가로 전용 래퍼, 사용자 확정).
+         가로 래퍼는 콘텐츠를 무한 폭으로 측정하므로 MaxWidth를 뷰포트에 맞춰(코드비하인드) 긴 제목이
+         페이지 폭을 키우지 않고 말줄임되게 한다 -->
     <ScrollViewer
+        x:Name="Root"
+        SizeChanged="OnRootSizeChanged"
         HorizontalScrollMode="Enabled"
         HorizontalScrollBarVisibility="Auto"
         VerticalScrollMode="Disabled"
         VerticalScrollBarVisibility="Disabled">
-    <Grid MinWidth="{StaticResource AppPageContentWidth}">
+    <Grid x:Name="Layout" MinWidth="{StaticResource AppPageContentWidth}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

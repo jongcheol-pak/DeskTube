@@ -5,15 +5,21 @@ using DeskTube.Services;
 namespace DeskTube.ViewModels;
 
 /// <summary>
-/// 유튜브 계정 상태 패널 (PRD FR-15) — 설정·홈이 공유하는 공용 VM (MonitorPanelViewModel과 동형).
-/// 로그인 여부 확인·문구·로그인 요청 발화·로그아웃을 담당한다. 페이지 인스턴스별로 독립이며
-/// 상태 동기화는 페이지 재진입 시 Attach의 재확인으로 충분하다 (이벤트 버스 미도입 — plan D5).
+/// 유튜브 계정 상태 패널 (PRD FR-15) — 설정·홈이 공유하는 공용 VM.
+/// 로그인 여부 확인·문구·로그인 요청 발화·로그아웃을 담당한다.
+/// 로그인 상태는 앱 전역(공유 프로필의 쿠키 세션)이므로 페이지별 복제 대신 단일 공유 인스턴스를
+/// 쓴다 (Shared). 세션 프로브(숨김 WebView2 컨트롤러 생성)는 최초 1회 + 로그인 창 닫힘·로그아웃
+/// 시에만 실행한다 — 페이지 진입마다 재프로브하던 방식은 기동 경로 비용·재진입 비용이 커서 변경 (2026-07-17).
 /// </summary>
 public partial class AccountPanelViewModel : ObservableObject
 {
+    /// <summary>앱 전역 공유 인스턴스 — 홈·설정이 같은 정본을 바인딩한다 (페이지 간 상태 불일치 제거).</summary>
+    public static AccountPanelViewModel Shared { get; } = new();
+
     private AppServices? _services;
     private YouTubeSessionService? _session;
     private bool _signedIn;
+    private bool _probed;
 
     [ObservableProperty]
     public partial string? AccountStatusText { get; set; }
@@ -29,18 +35,23 @@ public partial class AccountPanelViewModel : ObservableObject
     public event EventHandler? SignInRequested;
 
     /// <summary>
-    /// 페이지 진입 시 호출 (멱등) — 최초에 세션 프로브를 만들고, 매 진입마다 상태를 재확인한다
-    /// (다른 페이지에서 로그인/로그아웃한 뒤 재진입해도 최신 상태 표시 — plan Risks 수용 기준).
+    /// 페이지 진입 시 호출 (멱등) — 최초 1회만 세션 프로브를 실행하고, 이후 진입은 알려진 상태로
+    /// 문구만 재생성한다 (재프로브는 로그인 창 닫힘·로그아웃이 담당 — 그 외에 상태가 바뀔 경로 없음).
+    /// 세션 서비스는 매번 재생성 — 언어 전환 시 창이 재생성되어 부모 창 핸들이 바뀐다 (상태 없는 경량 래퍼).
     /// </summary>
     public void Attach(AppServices services)
     {
-        if (_services is null)
+        _services = services;
+        _session = new YouTubeSessionService(App.MainWindowHandle);
+
+        if (!_probed)
         {
-            _services = services;
-            _session = new YouTubeSessionService(App.MainWindowHandle);
+            _probed = true;
+            _ = RefreshSessionAsync();
+            return;
         }
 
-        _ = RefreshSessionAsync();
+        ApplyTexts();
     }
 
     /// <summary>로그인 상태 갱신 — 페이지 진입·로그인 창 닫힘 후 호출 (세션 만료도 여기서 자동 반영).</summary>
@@ -56,17 +67,26 @@ public partial class AccountPanelViewModel : ObservableObject
         try
         {
             _signedIn = await _session.IsSignedInAsync();
-            AccountStatusText = Loc.Get(_signedIn ? "Settings_AccountSignedIn" : "Settings_AccountSignedOut");
-            AccountButtonText = Loc.Get(_signedIn ? "Settings_SignOut" : "Settings_SignIn");
-            AccountActionAvailable = true;
+            ApplyTexts();
         }
         catch (Exception ex)
         {
-            // 확인 실패(WebView2 런타임 문제 등) — 버튼 비활성으로 방어
+            // 확인 실패(WebView2 런타임 문제 등) — 미로그인으로 간주하고 버튼은 로그인(=재시도 경로)으로 유지.
+            // 버튼을 비활성화하면 재확인 트리거(로그인 창 닫힘)에 도달할 수 없어 일시 오류가 영구 고착된다.
             AppLog.Write($"로그인 상태 확인 실패: {ex.GetType().Name} {ex.Message}");
+            _signedIn = false;
             AccountStatusText = Loc.Get("Settings_AccountUnknown");
-            AccountActionAvailable = false;
+            AccountButtonText = Loc.Get("Settings_SignIn");
+            AccountActionAvailable = true;
         }
+    }
+
+    /// <summary>알려진 로그인 상태로 상태·버튼 문구를 (재)생성한다 — 재진입·언어 전환 재부착 공용.</summary>
+    private void ApplyTexts()
+    {
+        AccountStatusText = Loc.Get(_signedIn ? "Settings_AccountSignedIn" : "Settings_AccountSignedOut");
+        AccountButtonText = Loc.Get(_signedIn ? "Settings_SignOut" : "Settings_SignIn");
+        AccountActionAvailable = true;
     }
 
     [RelayCommand]

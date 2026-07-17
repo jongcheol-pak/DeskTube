@@ -182,6 +182,9 @@ window.onYouTubeIframeAPIReady = function () {
           player.unMute();
           player.setVolume(desiredVolume);
         }
+        // 영상 로드가 자막 모듈 상태를 비동기로 리셋할 수 있어 재생 진입 시점에 설정을 재적용한다
+        // (load 직후의 동기 적용만으로는 새 영상 초기화에 덮일 수 있음 — FR-20)
+        if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); }
         post({ type: 'state', state: e.data });
       },
       onError: (e) => post({ type: 'error', code: e.data }) // 101/150 = 임베드 금지 (코디네이터가 스킵)

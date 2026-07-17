@@ -1,3 +1,4 @@
+using DeskTube.Models;
 using DeskTube.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
@@ -128,6 +129,10 @@ public partial class App : Application
 
         ServicesInitialized?.Invoke(this, EventArgs.Empty);
 
+        // 전 항목 재생 불가 정지 안내 — 창이 숨겨진(트레이 전용) 상태에서도 보이도록 창 표시 경로로 라우팅.
+        // 코디네이터는 표시 수단을 모른다 (이벤트만 발화 — 발생 스레드 비보장이라 UI로 마셜링).
+        Services.Coordinator.AllItemsFailed += OnAllItemsFailed;
+
         // FR-19 토글은 일반 실행에만 의미가 있고, 부팅 자동 시작(autoPlay)은 FR-8로 항상 재생한다
         if (autoPlay || Services.Settings.AutoPlayOnLaunch)
         {
@@ -135,33 +140,37 @@ public partial class App : Application
         }
     }
 
+    private void OnAllItemsFailed(object? sender, EventArgs e) =>
+        _window?.DispatcherQueue.TryEnqueue(() => ShowMainWindow(Loc.Get("Playback_AllItemsFailed")));
+
     /// <summary>자동 시작·앱 시작 자동 재생 (PRD FR-8·FR-19) — 마지막 재생 항목부터 조용히 재생 시작. 리스트가 없으면 생략하고 트레이만 상주 (plan T4 Edge).</summary>
     private async Task TryAutoPlayLastAsync()
     {
         var services = Services!;
-        var lastId = services.Settings.LastPlaylistId;
-        var playlist = lastId.HasValue
-            ? services.Library.Playlists.FirstOrDefault(p => p.Id == lastId.Value)
-            : null;
-        if (playlist is null || playlist.Items.Count == 0)
-        {
-            AppLog.Write("자동 시작: 재생할 마지막 플레이리스트가 없어 재생을 생략합니다.");
-            return;
-        }
 
         // 마지막 재생이 홈 즉시 재생("빠른 재생")이면 자동 재생 생략 (FR-8·FR-19 예외 — 일반 실행·부팅 공통).
-        // 이름 기반 식별은 HomeViewModel의 리스트 식별 방식과 동일 (언어 전환 시 한계도 동일 — plan T4 Edge)
-        if (playlist.Name == Loc.Get("Home_QuickPlaylistName"))
+        // 식별은 안정 ID(Settings.QuickPlaylistId) — 언어 전환·동명 사용자 리스트에 흔들리지 않는다 (2026-07-17 수정).
+        // ID 미기록(구버전 데이터)이면 이름 폴백으로 판정한다 (홈 재생 1회 후 ID가 기록되며 폴백은 소멸).
+        if (services.Settings.LastPlaylistId is { } lastId)
         {
-            AppLog.Write("자동 시작: 마지막 재생이 홈 즉시 재생이라 자동 재생을 생략합니다.");
-            return;
+            var isQuickPlay = services.Settings.QuickPlaylistId is { } quickId
+                ? lastId == quickId
+                : services.Library.Playlists.FirstOrDefault(p => p.Id == lastId)?.Name
+                    == Loc.Get("Home_QuickPlaylistName");
+            if (isQuickPlay)
+            {
+                AppLog.Write("자동 시작: 마지막 재생이 홈 즉시 재생이라 자동 재생을 생략합니다.");
+                return;
+            }
         }
 
-        // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
-        var result = await services.Coordinator.StartAsync(playlist.Id, services.Settings.LastItemId);
+        // 마지막 리스트 재개는 트레이 재생과 공용 경로 (StartLastAsync — 중복 구현 제거, 2026-07-17)
+        var result = await services.Coordinator.StartLastAsync();
         if (!result.IsSuccess)
         {
-            AppLog.Write($"자동 시작 재생 실패: {result.Message}");
+            AppLog.Write(result.Code == ErrorCode.NotFound
+                ? "자동 시작: 재생할 마지막 플레이리스트가 없어 재생을 생략합니다."
+                : $"자동 시작 재생 실패: {result.Message}");
         }
     }
 

@@ -66,8 +66,8 @@ public partial class SettingsViewModel : ObservableObject
     /// <summary>모니터 카드 패널 (홈과 공유하는 공용 VM — 선택 저장·최소 1개 강제·배지 계산 담당).</summary>
     public MonitorPanelViewModel MonitorPanel { get; } = new();
 
-    /// <summary>유튜브 계정 상태 패널 (홈과 공유하는 공용 VM — FR-15, plan T5 D5).</summary>
-    public AccountPanelViewModel Account { get; } = new();
+    /// <summary>유튜브 계정 상태 패널 (FR-15) — 홈과 같은 전역 공유 인스턴스 (상태 정본 단일화).</summary>
+    public AccountPanelViewModel Account => AccountPanelViewModel.Shared;
 
     public ObservableCollection<string> AudioOptions { get; } = [];
 
@@ -152,7 +152,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             // 재진입 — Unloaded의 Detach로 끊긴 모니터 변경 구독을 되살리고 목록 갱신 (Attach는 멱등)
             MonitorPanel.Attach(_services!);
-            Account.Attach(_services!); // 다른 페이지에서 로그인/로그아웃했을 수 있어 상태 재확인 (plan T5)
+            Account.Attach(_services!); // 공유 인스턴스 재연결 — 프로브 없이 문구만 재생성 (NFR-3 재진입 경제성)
 
             // 음소거는 트레이 메뉴에서도 바뀌므로 재진입 때 재동기화 (T2 — 트레이와 상태 일치)
             _loading = true;
@@ -227,7 +227,7 @@ public partial class SettingsViewModel : ObservableObject
         // 이 로그가 재진입에 반복되면 캐시가 깨진 것 (acceptance: 2번째 진입 시 StartupTask 프로브 미실행 확인용)
         AppLog.Write("설정 최초 로드 — 자동 실행·로그인 상태 확인 (재진입은 모니터 목록·계정 상태만 갱신)");
         _ = RefreshAutoStartAsync();
-        Account.Attach(services); // 세션 프로브 생성 + 상태 확인 (공용 패널 — plan T5)
+        Account.Attach(services); // 공유 패널 연결 — 미프로브 상태였다면 최초 1회 세션 확인 (plan T5)
     }
 
     /// <summary>패널 목록 재구성 후 파생 UI 갱신 — 오디오 대상 콤보 재구성 (자체 로드 가드).</summary>

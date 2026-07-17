@@ -1,5 +1,4 @@
 using DeskTube.Models;
-using Microsoft.UI.Xaml.Controls;
 
 namespace DeskTube.Services;
 
@@ -47,8 +46,13 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>곡 전환 직후 늦게 도착하는 이전 곡의 Ended 중복 처리 방지 (Playing 수신 시 해제).</summary>
     private bool _suppressEnded;
 
-    /// <summary>연속 재생 불가 곡 수 (FR-1) — Playing 도달 시 리셋. 큐 항목 수에 도달하면 전 항목 재생 불가로 정지.</summary>
-    private int _errorSkipCount;
+    /// <summary>재생 불가로 확인된 항목 집합 (FR-1) — Playing 도달 시 비움. 서로 다른 항목 기준으로
+    /// 전 항목을 덮으면 정지한다 (연속 카운트 방식은 Random에서 조기 오탐·한곡반복에서 동일 곡 재시도 낭비 — 2026-07-17 수정).</summary>
+    private readonly HashSet<Guid> _failedItemIds = [];
+
+    /// <summary>일시정지 중 재생 불가 오류 발생 — 재개 시 다음 곡으로 스킵한다
+    /// (loadVideoById는 즉시 재생을 시작하므로 일시정지 중 자동 전진은 소리를 다시 낸다 — 2026-07-17 수정).</summary>
+    private bool _advanceAfterResume;
 
     /// <summary>에러 스킵 예약됨 — 같은 곡의 중복 에러 이벤트로 다중 스킵 방지 (다음 곡 로드 시 해제).</summary>
     private bool _errorAdvancePending;
@@ -84,6 +88,10 @@ public sealed class PlaybackCoordinator : IDisposable
 
     /// <summary>음소거 상태 변경 알림 — 값 정본은 Settings.IsMuted (홈·설정 배지 동기화용, 배지 plan T2).</summary>
     public event EventHandler? MutedChanged;
+
+    /// <summary>전 항목 재생 불가로 정지했음 — 표시는 UI 계층이 결정한다
+    /// (창이 숨겨진 트레이 전용 상태에서도 안내가 보여야 하므로 코디네이터는 표시 수단에 의존하지 않는다).</summary>
+    public event EventHandler? AllItemsFailed;
 
     public AppSettings Settings => _settings;
 
@@ -136,10 +144,7 @@ public sealed class PlaybackCoordinator : IDisposable
             }
 
             var player = created.Value;
-            Subscribe(player);
-            player.SetQualityScale(EffectiveScaleFor(target.Id));
-            player.SetFitMode(_settings.FitMode);
-            player.SetCaptionsEnabled(_settings.CaptionsEnabled);
+            InitializePlayer(target.Id, player);
             _players[target.Id] = new PlayerEntry(target, player);
         }
 
@@ -158,13 +163,33 @@ public sealed class PlaybackCoordinator : IDisposable
         _userPaused = false;
         _policyPaused = false;
         _healthFailures = 0;
-        _errorSkipCount = 0;
+        _failedItemIds.Clear();
         _errorAdvancePending = false;
+        _advanceAfterResume = false;
         SetStatus(PlaybackStatus.Playing);
 
         _settings.LastPlaylistId = playlistId;
         await _store.SaveSettingsAsync(_settings);
         return Result.Ok();
+    }
+
+    /// <summary>
+    /// 마지막 재생 리스트를 마지막 항목부터 재개한다 (FR-8·FR-19 — 앱 자동 시작·트레이 재생 공용 경로).
+    /// 재생할 리스트가 없으면(미기록·삭제·빈 리스트) NotFound 실패를 반환하고, 안내 방식은 호출측이 결정한다.
+    /// </summary>
+    public async Task<Result> StartLastAsync()
+    {
+        var lastId = _settings.LastPlaylistId;
+        var playlist = lastId.HasValue
+            ? _library.Playlists.FirstOrDefault(p => p.Id == lastId.Value)
+            : null;
+        if (playlist is null || playlist.Items.Count == 0)
+        {
+            return Result.Fail(ErrorCode.NotFound, "재생할 마지막 플레이리스트가 없습니다.");
+        }
+
+        // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
+        return await StartAsync(playlist.Id, _settings.LastItemId);
     }
 
     /// <summary>재생 정지 — 플레이어·배경창 전부 정리하고 원래 배경화면 복구 (PRD FR-9 정지).</summary>
@@ -200,7 +225,7 @@ public sealed class PlaybackCoordinator : IDisposable
 
         _userPaused = false;
         _policyPaused = false;
-        PlayAll();
+        ResumeOrSkipFailed();
         SetStatus(PlaybackStatus.Playing);
     }
 
@@ -226,9 +251,22 @@ public sealed class PlaybackCoordinator : IDisposable
         _policyPaused = false;
         if (Status == PlaybackStatus.Paused && !_userPaused)
         {
-            PlayAll();
+            ResumeOrSkipFailed();
             SetStatus(PlaybackStatus.Playing);
         }
+    }
+
+    /// <summary>재개 공통 — 일시정지 중 재생 불가 오류가 있었으면 에러 난 곡 재생 대신 다음 곡으로 스킵한다.</summary>
+    private void ResumeOrSkipFailed()
+    {
+        if (_advanceAfterResume)
+        {
+            _advanceAfterResume = false;
+            FireAndForget(AdvanceAsync, "재개 시 재생 불가 곡 스킵");
+            return;
+        }
+
+        PlayAll();
     }
 
     public async Task SetVolumeAsync(int volume)
@@ -383,6 +421,18 @@ public sealed class PlaybackCoordinator : IDisposable
 
     // ---- 플레이어 이벤트 (UI 스레드) ----
 
+    /// <summary>
+    /// 플레이어 공통 초기화 — 구독 + 플레이어별 설정 일괄 적용.
+    /// 신규 시작·재생성·모니터 합류 세 경로가 공유한다 (설정 추가 시 한 곳만 수정 — 누락 방지).
+    /// </summary>
+    private void InitializePlayer(string monitorId, IPlayerHost player)
+    {
+        Subscribe(player);
+        player.SetQualityScale(EffectiveScaleFor(monitorId));
+        player.SetFitMode(_settings.FitMode);
+        player.SetCaptionsEnabled(_settings.CaptionsEnabled);
+    }
+
     private void Subscribe(IPlayerHost player)
     {
         player.StateChanged += OnPlayerStateChanged;
@@ -407,7 +457,7 @@ public sealed class PlaybackCoordinator : IDisposable
         if (state == PlayerState.Playing)
         {
             _suppressEnded = false;
-            _errorSkipCount = 0; // 정상 재생 도달 — 연속 재생 불가 카운트 초기화 (FR-1)
+            _failedItemIds.Clear(); // 정상 재생 도달 — 재생 불가 항목 집합 초기화 (FR-1)
         }
         else if (state == PlayerState.Ended && !_suppressEnded && Status == PlaybackStatus.Playing)
         {
@@ -437,20 +487,32 @@ public sealed class PlaybackCoordinator : IDisposable
 
         // 임베드 금지(101/150) 등 재생 불가 — 마스터 기준으로 다음 곡 스킵 (PRD FR-1 Edge).
         // 가드는 Ended 억제(_suppressEnded)와 분리 — 곡 시작 직후(Playing 이전) 에러도 스킵해야 한다 (FR-1 보강).
-        if (IsMaster(sender) && !_errorAdvancePending)
+        if (IsMaster(sender) && !_errorAdvancePending && _queue is not null)
         {
             _errorAdvancePending = true;
-            _errorSkipCount++;
-
-            // 전 항목 재생 불가 — 같은 곡 무한 재로드 방지: 정지 후 안내 (FR-1)
-            if (_queue is not null && _errorSkipCount >= _queue.Count)
+            if (_queue.Current is { } current)
             {
-                AppLog.Write($"재생 불가 곡 연속 {_errorSkipCount}개 — 전 항목 재생 불가로 정지합니다.");
+                _failedItemIds.Add(current.Id);
+            }
+
+            // 전 항목 재생 불가(서로 다른 항목 기준) 또는 한곡반복(다음 곡도 같은 곡 — 재시도 무의미)
+            // — 무한 재로드 방지: 정지 후 안내 (FR-1). 표시는 AllItemsFailed 구독자(UI 계층) 몫.
+            if (_failedItemIds.Count >= _queue.Count || _queue.Mode == PlaybackMode.RepeatOne)
+            {
+                AppLog.Write($"재생 불가 항목 {_failedItemIds.Count}/{_queue.Count}개 — 재생 가능한 항목이 없어 정지합니다.");
                 FireAndForget(async () =>
                 {
                     await StopAsync();
-                    ToastService.Show(Loc.Get("Playback_AllItemsFailed"), InfoBarSeverity.Error);
+                    AllItemsFailed?.Invoke(this, EventArgs.Empty);
                 }, "전 항목 재생 불가 정지");
+                return;
+            }
+
+            if (Status == PlaybackStatus.Paused)
+            {
+                // 일시정지 중 자동 전진 금지 — loadVideoById가 즉시 재생을 시작해 일시정지 상태를
+                // 깨고 소리를 낸다 (정책 일시정지 포함). 재개 시점에 스킵한다.
+                _advanceAfterResume = true;
                 return;
             }
 
@@ -590,10 +652,7 @@ public sealed class PlaybackCoordinator : IDisposable
         }
 
         var player = created.Value;
-        Subscribe(player);
-        player.SetQualityScale(EffectiveScaleFor(monitorId));
-        player.SetFitMode(_settings.FitMode);
-        player.SetCaptionsEnabled(_settings.CaptionsEnabled);
+        InitializePlayer(monitorId, player);
         _players[monitorId] = old with { Player = player };
 
         ResumeCurrentTrack(player);
@@ -676,10 +735,7 @@ public sealed class PlaybackCoordinator : IDisposable
             }
 
             var player = created.Value;
-            Subscribe(player);
-            player.SetQualityScale(EffectiveScaleFor(target.Id));
-            player.SetFitMode(_settings.FitMode);
-            player.SetCaptionsEnabled(_settings.CaptionsEnabled);
+            InitializePlayer(target.Id, player);
             _players[target.Id] = new PlayerEntry(target, player);
             ResumeCurrentTrack(player);
         }

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using DeskTube.Models;
 using H.NotifyIcon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -41,24 +42,30 @@ public sealed class TrayIconService : IDisposable
     {
         _dispatcher = DispatcherQueue.GetForCurrentThread();
 
+        // PopupMenu(네이티브) 모드는 항목 선택 시 Command만 실행하고 WinUI Click 이벤트를 발생시키지
+        // 않는다 (H.NotifyIcon 2.4.1 PopulateMenu — Command?.TryExecute). 반드시 Command로 연결할 것.
         var menu = new MenuFlyout();
 
-        _playStopItem = new MenuFlyoutItem();
-        _playStopItem.Click += OnPlayStopClick;
+        _playStopItem = new MenuFlyoutItem { Command = new AsyncRelayCommand(TogglePlayStopAsync) };
         menu.Items.Add(_playStopItem);
 
-        _muteItem = new MenuFlyoutItem();
-        _muteItem.Click += OnMuteClick;
+        _muteItem = new MenuFlyoutItem { Command = new AsyncRelayCommand(ToggleMuteAsync) };
         menu.Items.Add(_muteItem);
 
         menu.Items.Add(new MenuFlyoutSeparator());
 
-        var settings = new MenuFlyoutItem { Text = Loc.Get("Tray_OpenSettings") };
-        settings.Click += (_, _) => _showSettings(null);
+        var settings = new MenuFlyoutItem
+        {
+            Text = Loc.Get("Tray_OpenSettings"),
+            Command = new RelayCommand(() => _showSettings(null)),
+        };
         menu.Items.Add(settings);
 
-        var exit = new MenuFlyoutItem { Text = Loc.Get("Tray_Exit") };
-        exit.Click += (_, _) => _exitApp();
+        var exit = new MenuFlyoutItem
+        {
+            Text = Loc.Get("Tray_Exit"),
+            Command = new RelayCommand(_exitApp),
+        };
         menu.Items.Add(exit);
 
         // 상태 연동 문구 — 초기값은 현재 상태로, 이후는 이벤트가 갱신 (Dispose에서 해제)
@@ -105,7 +112,7 @@ public sealed class TrayIconService : IDisposable
         }
     }
 
-    private async void OnPlayStopClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async Task TogglePlayStopAsync()
     {
         try
         {
@@ -124,7 +131,7 @@ public sealed class TrayIconService : IDisposable
         }
     }
 
-    private async void OnMuteClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async Task ToggleMuteAsync()
     {
         try
         {
@@ -155,23 +162,20 @@ public sealed class TrayIconService : IDisposable
             return;
         }
 
-        var lastId = _services.Settings.LastPlaylistId;
-        var playlist = lastId.HasValue
-            ? _services.Library.Playlists.FirstOrDefault(p => p.Id == lastId.Value)
-            : null;
-        if (playlist is null || playlist.Items.Count == 0)
-        {
-            _showSettings(Loc.Get("Tray_NoPlaylist"));
-            return;
-        }
-
-        // 항목이 삭제됐으면 PlaybackQueue.Start가 무시하고 리스트 기본 시작 (FR-19 Edge)
-        var result = await coordinator.StartAsync(playlist.Id, _services.Settings.LastItemId);
+        // 마지막 리스트 재개는 앱 자동 시작과 공용 경로 (StartLastAsync — 중복 구현 제거, 2026-07-17)
+        var result = await coordinator.StartLastAsync();
         if (!result.IsSuccess)
         {
-            // 서비스 오류 문구는 미로컬라이즈(내부용) — 사용자에겐 리소스 문구, 상세는 로그로
-            AppLog.Write($"트레이 재생 시작 실패: {result.Message}");
-            _showSettings(Loc.Get("Tray_PlayFailed"));
+            if (result.Code == ErrorCode.NotFound)
+            {
+                _showSettings(Loc.Get("Tray_NoPlaylist")); // 재생할 리스트 없음 — 조용히 무시하지 않고 안내
+            }
+            else
+            {
+                // 서비스 오류 문구는 미로컬라이즈(내부용) — 사용자에겐 리소스 문구, 상세는 로그로
+                AppLog.Write($"트레이 재생 시작 실패: {result.Message}");
+                _showSettings(Loc.Get("Tray_PlayFailed"));
+            }
         }
     }
 

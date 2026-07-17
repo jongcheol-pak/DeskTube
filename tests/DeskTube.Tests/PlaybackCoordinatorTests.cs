@@ -525,4 +525,80 @@ public sealed class PlaybackCoordinatorTests
         Assert.Contains("captions:True", h.Players["MON-0"].Commands);
         Assert.Contains("captions:True", h.Players["MON-1"].Commands);
     }
+
+    [Fact]
+    public async Task 전_곡_재생_불가_정지는_AllItemsFailed_이벤트를_발화한다()
+    {
+        var h = new Harness(itemCount: 2);
+        var raised = 0;
+        h.Coordinator.AllItemsFailed += (_, _) => raised++;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseError(150); // 1곡째 → 2곡째 스킵
+        h.Master.RaiseError(150); // 2곡째 — 서로 다른 2개 = 전 항목 재생 불가
+
+        // 표시(창 표시·토스트)는 UI 계층 구독자 몫 — 코디네이터는 이벤트만 발화
+        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public async Task 한곡반복_모드에서_재생_불가_곡은_반복하지_않고_정지한다()
+    {
+        var h = new Harness(itemCount: 3);
+        h.Settings.Mode = PlaybackMode.RepeatOne;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseError(150);
+
+        // 다음 곡도 같은 곡이라 재시도가 무의미 — Count회 재로드하던 낭비 제거 (2026-07-17 수정)
+        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
+        Assert.Single(h.Master.Commands, c => c == "load:video00000a");
+    }
+
+    [Fact]
+    public async Task 일시정지_중_재생_불가_오류는_즉시_전진하지_않고_재개_시_스킵한다()
+    {
+        var h = new Harness(itemCount: 3);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Coordinator.Pause();
+        h.Master.RaiseError(150); // 일시정지 직후 도착한 재생 불가 에러
+
+        // 일시정지 중에는 전진하지 않는다 — loadVideoById가 즉시 재생을 시작해 일시정지를 깨기 때문
+        Assert.Equal(PlaybackStatus.Paused, h.Coordinator.Status);
+        Assert.DoesNotContain("load:video00001a", h.Master.Commands);
+
+        h.Coordinator.Resume();
+
+        // 재개 시 에러 난 곡 대신 다음 곡으로 스킵
+        Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status);
+        Assert.Contains("load:video00001a", h.Master.Commands);
+    }
+
+    [Fact]
+    public async Task 마지막_재생_기록이_없으면_StartLastAsync는_NotFound를_반환한다()
+    {
+        var h = new Harness();
+
+        var result = await h.Coordinator.StartLastAsync();
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorCode.NotFound, result.Code);
+        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
+    }
+
+    [Fact]
+    public async Task StartLastAsync는_마지막_리스트를_마지막_항목부터_재개한다()
+    {
+        var h = new Harness(itemCount: 3);
+        h.Settings.LastPlaylistId = h.Playlist.Id;
+        h.Settings.LastItemId = h.Playlist.Items[1].Id;
+
+        var result = await h.Coordinator.StartLastAsync();
+
+        // FR-19: 자동 시작·트레이 재생 공용 재개 경로 — 마지막 항목부터 시작
+        Assert.True(result.IsSuccess);
+        Assert.Contains("load:video00001a", h.Master.Commands);
+    }
 }

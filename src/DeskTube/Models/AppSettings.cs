@@ -50,6 +50,10 @@ public sealed class AppSettings
     /// <summary>홈에서 마지막으로 재생한 URL — 재실행 시 입력란 복원 표시용 (PRD FR-1, 재생 성공 시에만 기록).</summary>
     public string? LastHomeUrl { get; set; }
 
+    /// <summary>홈 즉시 재생("빠른 재생") 플레이리스트의 안정 식별자 — 자동 재생 제외 판정용 (FR-8).
+    /// 표시 이름은 언어 전환·동명 사용자 리스트와 충돌하므로 식별에 쓰지 않는다 (2026-07-17 수정).</summary>
+    public Guid? QuickPlaylistId { get; set; }
+
     /// <summary>자동 일시정지 정책 (PRD NFR-1 — 기본 모두 켬).</summary>
     public bool PauseOnFullscreen { get; set; } = true;
 

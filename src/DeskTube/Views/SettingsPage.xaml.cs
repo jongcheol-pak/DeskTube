@@ -36,21 +36,6 @@ public sealed partial class SettingsPage : Page
         ViewModel.Account.SignInRequested -= OnSignInRequested;
     }
 
-    /// <summary>로그인 창 열기 (T5) — 닫히면 세션 상태 재확인 (도중 닫기 = 상태 변화 없음).</summary>
-    private void OnSignInRequested(object? sender, EventArgs e)
-    {
-        var login = new LoginWindow();
-        login.Closed += async (_, _) =>
-        {
-            try
-            {
-                await ViewModel.Account.RefreshSessionAsync();
-            }
-            catch (Exception ex)
-            {
-                AppLog.Write($"로그인 후 상태 갱신 실패: {ex.GetType().Name} {ex.Message}");
-            }
-        };
-        login.Activate();
-    }
+    /// <summary>로그인 창 열기 (T5) — 공통 흐름 위임 (HomePage와 공유, LoginFlow).</summary>
+    private void OnSignInRequested(object? sender, EventArgs e) => LoginFlow.Open(ViewModel.Account);
 }

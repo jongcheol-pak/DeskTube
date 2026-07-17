@@ -11,13 +11,17 @@ public sealed record QuickChip(Guid Id, string Name, string CountText);
 
 /// <summary>
 /// 홈 — URL 입력·즉시 재생 + 재생 중 pill + 모니터 카드 + 빠른 재생 칩 (restyle plan T5, 시안).
-/// 즉시 재생은 "빠른 재생" 플레이리스트(이름 고정)를 만들어 그 항목을 교체하는 방식 —
+/// 즉시 재생은 "빠른 재생" 플레이리스트를 만들어 그 항목을 교체하는 방식 —
 /// part1 Coordinator가 플레이리스트 단위로만 재생하므로 공개 계약을 바꾸지 않는다.
+/// 리스트 식별은 안정 ID(Settings.QuickPlaylistId — 표시 이름은 언어 전환·동명 리스트와 충돌).
 /// </summary>
 public partial class HomeViewModel : ObservableObject
 {
     private AppServices? _services;
     private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcher;
+
+    /// <summary>마지막 URL 복원을 1회만 수행 — 사용자가 지운 입력을 재진입 때 되살리지 않는다 (FR-1).</summary>
+    private bool _urlRestored;
 
     public HomeViewModel()
     {
@@ -33,8 +37,8 @@ public partial class HomeViewModel : ObservableObject
     /// <summary>모니터 카드 패널 (설정과 공유하는 공용 VM — 선택 상태의 정본은 AppSettings).</summary>
     public MonitorPanelViewModel MonitorPanel { get; } = new();
 
-    /// <summary>유튜브 계정 상태 패널 (설정과 공유하는 공용 VM — FR-15, plan T5 D5).</summary>
-    public AccountPanelViewModel Account { get; } = new();
+    /// <summary>유튜브 계정 상태 패널 (FR-15) — 설정과 같은 전역 공유 인스턴스 (상태 정본 단일화).</summary>
+    public AccountPanelViewModel Account => AccountPanelViewModel.Shared;
 
     /// <summary>빠른 재생 칩 (플레이리스트 요약 — 클릭 시 View가 플레이리스트 페이지로 이동, D5).</summary>
     public ObservableCollection<QuickChip> QuickChips { get; } = [];
@@ -98,14 +102,15 @@ public partial class HomeViewModel : ObservableObject
         services.Coordinator.StatusChanged -= OnStatusChanged;
         services.Coordinator.StatusChanged += OnStatusChanged;
 
-        // 마지막 재생 URL 복원 표시 (FR-1) — 입력 중인 값은 덮지 않는다
-        if (Url.Length == 0 && services.Settings.LastHomeUrl is { Length: > 0 } lastUrl)
+        // 마지막 재생 URL 복원 표시 (FR-1) — 최초 1회만, 입력 중인 값은 덮지 않는다
+        if (!_urlRestored && Url.Length == 0 && services.Settings.LastHomeUrl is { Length: > 0 } lastUrl)
         {
             Url = lastUrl;
         }
+        _urlRestored = true;
 
         MonitorPanel.Attach(services);
-        Account.Attach(services); // 진입마다 로그인 상태 재확인 (설정에서 로그아웃했을 수 있음 — plan T5)
+        Account.Attach(services); // 공유 인스턴스 연결 — 프로브는 최초 1회, 이후 상태 변화는 로그인 창 닫힘/로그아웃이 갱신
         RefreshChips();
         UpdatePlaybackState(services.Coordinator.Status);
     }
@@ -181,11 +186,14 @@ public partial class HomeViewModel : ObservableObject
             return;
         }
 
-        var quickName = Loc.Get("Home_QuickPlaylistName");
-        var playlist = services.Library.Playlists.FirstOrDefault(p => p.Name == quickName);
+        // "빠른 재생" 리스트는 안정 ID(Settings.QuickPlaylistId)로 식별한다 (2026-07-17 수정 —
+        // 이름 식별은 언어 전환·동명 사용자 리스트와 충돌). ID 미기록(구버전 데이터)이면 이름 폴백 1회.
+        var playlist = services.Settings.QuickPlaylistId is { } quickId
+            ? services.Library.Playlists.FirstOrDefault(p => p.Id == quickId)
+            : services.Library.Playlists.FirstOrDefault(p => p.Name == Loc.Get("Home_QuickPlaylistName"));
         if (playlist is null)
         {
-            var created = services.Library.Create(quickName);
+            var created = services.Library.Create(Loc.Get("Home_QuickPlaylistName"));
             if (!created.IsSuccess || created.Value is null)
             {
                 AppLog.Write($"빠른 재생 리스트 생성 실패: {created.Message}");
@@ -208,20 +216,19 @@ public partial class HomeViewModel : ObservableObject
 
         await services.Library.SaveAsync();
 
+        // 마지막 URL·빠른 재생 ID 영속은 StartAsync 성공 경로의 자체 저장에 편승 (이중 settings.json 저장 제거).
+        // StartAsync는 실패 경로에서 저장하지 않으므로 실패 시 URL만 원복하면 "성공 시에만 기록"(FR-1)이 유지된다.
+        var previousUrl = services.Settings.LastHomeUrl;
+        services.Settings.LastHomeUrl = Url.Trim();
+        services.Settings.QuickPlaylistId = playlist.Id;
+
         var startResult = await services.Coordinator.StartAsync(playlist.Id);
         if (!startResult.IsSuccess)
         {
+            services.Settings.LastHomeUrl = previousUrl; // 실패한 URL이 이후 다른 저장에 편승해 남지 않게 원복
             AppLog.Write($"즉시 재생 시작 실패: {startResult.Message}");
             ToastService.Show(Loc.Get("Home_PlayFailed"), InfoBarSeverity.Error);
             return;
-        }
-
-        // 재생 성공 시에만 마지막 URL 기록 — 재실행 시 입력란 복원 표시 (FR-1)
-        services.Settings.LastHomeUrl = Url.Trim();
-        var saved = await services.Store.SaveSettingsAsync(services.Settings);
-        if (!saved.IsSuccess)
-        {
-            AppLog.Write($"마지막 홈 URL 저장 실패: {saved.Message}"); // 재생은 이미 시작 — 표시 복원만 손실
         }
 
         RefreshChips(); // "빠른 재생" 리스트 생성·곡 교체가 칩 표시에 반영되게
