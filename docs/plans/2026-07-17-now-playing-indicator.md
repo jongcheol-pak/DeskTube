@@ -179,14 +179,20 @@
 - 수동 검증 (HUMAN-VERIFY): ① 재생 시작 → 플레이리스트 목록·홈 칩에 코럴 스피커 표시 ② 정지·일시정지 동작 ③ 재생 중 페이지 진입 시 즉시 표시 ④ 재생 중 리스트 삭제 시 해제 ⑤ 같은 리스트 재시작 시 깜빡임이 거슬리는 수준인지 (m1 — 허용 전제)
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 4a57990)
+- Phase G 통과 (Must 100%)
 
 ## Retry Ledger
 
 ## Progress Log
 - T1-T2 완료 (커밋 a0addd3, 0eb687e): CurrentPlaylistId 정본 신설(SetStatus 전 확정 — 레이스 제거)·IsPlaying 전환·테스트 1건 / 플레이리스트 목록 글리프(E767·resw NowPlayingIndicator·정적 헬퍼 NowPlayingLabel). 빌드 0경고·117/117·리뷰 전건 OK.
   - 결정: 접근성 문구는 resw attached 구문 대신 정적 헬퍼 x:Bind(MonitorCardsControl.BadgeToggleName 선례) — 문구 자체는 resw 키.
+- T3-T4 완료 (커밋 e429fe9, 4a57990): QuickChip record→ObservableObject 전환(IsNowPlaying)·홈 칩 글리프 / PRD FR-18 보강+README. 빌드 0경고·117/117·리뷰 전건 OK.
+- Phase F 통과: F-1~F-7 전체 — F-7 plan-completion-reviewer OK(MINOR 1: Progress Log 지연 기재 — 본 항목으로 해소).
 
 ## Next Steps
+- 권장 다음 액션: 전 task 완료 + Phase F/G 통과 — HUMAN-VERIFY 6건(글리프 표시·해제·일시정지 유지·진입 즉시 표시·재시작 깜빡임·툴팁) 사용자 확인 후, 필요 시 PR 생성·공식 /code-review 호출
+- Suggested skills: 공식 /code-review, /security-review (선택)
 
 ## Open Questions
 - [x] Q1: 표시 형태? → **A) 코럴 스피커 글리프(E767)** 확정 (텍스트 배지·병행안 기각 — 사용자 답변 2026-07-17)
