@@ -152,6 +152,7 @@
 - 수동 검증 (HUMAN-VERIFY): ① 공유 복사 → 하단 중앙 토스트 3초 후 소멸 ② 잘못된 URL 추가 → 오류 토스트 5초 ③ 모니터 마지막 해제 시도 → 경고 토스트 ④ 트레이 "재생"(리스트 없음) → 창 표시 + 토스트 ⑤ 연속 알림 교체 ⑥ 상시 안내 3곳 그대로
 
 ## Phase Ledger
+- Phase F 통과 (HEAD 43b3b40) — F-2 테스트 106/106, F-7 plan-completion-reviewer OK (BLOCKER/MAJOR/MINOR 0). PRD 미연결 — Phase F가 최종
 
 ## Retry Ledger
 
@@ -159,6 +160,8 @@
 - T1-T2 완료: ToastService+MainWindow 하단 토스트 호스트(3/5초·교체·클릭 통과, NoticeBar/ShowNotice 제거) / 홈·설정 전환(Notice 프로퍼티·NoticeCleared 전수 제거, ToastService 직접 호출 — ShowNotice 위임 없앰). 함정: SettingsViewModel은 InfoBarSeverity using이 없었음(신규 추가 — C# 실패가 XAML 컴파일러 WMC9999 연쇄 오류로 위장됨).
 
 ## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 6건 확인(토스트 표시/소멸 시간·연속 교체·상시 안내 불변) 후 main 병합 결정
+- Suggested skills: 공식 /code-review (선택)
 
 ## Open Questions
 - [x] Q1. 토스트 위치 — **하단 중앙** (사용자 확정)
