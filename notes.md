@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-17: **작업 표시줄 미리보기 창 아이콘 수정 (버그)** — 증상: hover 썸네일 플라이아웃의 창 아이콘이 기본 아이콘(작업 표시줄 버튼은 정상). 원인: 미리보기는 패키지가 아니라 창(Win32) 아이콘을 쓰는데 WinUI 3 Window는 자동 설정 안 함 — 레포 전체 SetIcon 0건(grep 확정, 경량 단일 원인). 해결: MainWindow·LoginWindow 생성자에 `AppWindow.SetIcon("Assets/AppIcon.ico")`(Content 패키징 기확인 — 트레이 동일 파일). 검증: 빌드 경고 0·테스트 106/106·spec/quality 리뷰 OK, 플라이아웃 표시는 HUMAN-VERIFY(회귀 테스트 불가 — OS 셸). 브랜치 `task/fix-taskbar-preview-icon`.
 - 2026-07-17: **한글 앱 이름 "데스크튜브" + 플레이리스트 마지막 선택 기억 (T1~T5, FR-18·NFR-4 보강)** — plan: `docs/plans/2026-07-17-appname-ko-lastselect.md`, 브랜치 `task/appname-ko-lastselect`
   - **무엇을**: ① T1 `AppSettings.LastSelectedPlaylistId`(Guid?, additive) + 왕복·구형 JSON 하위 호환 테스트 ② T2 PlaylistsViewModel — 비null 선택만 기록·fire-and-forget 저장, Populate 기본 선택(칩 예약 > 저장값 > 첫 리스트) ③ T3 resw `AppDisplayName`(ko 데스크튜브/en DeskTube) 신설 + manifest 표시명 3곳 `ms-resource:///Resources/AppDisplayName` 전환(StartupTask 선례 형식) + ko Tray_ToolTip·StartupTaskDisplayName·PrivacySummary 첫머리 데스크튜브화 ④ T4 창 제목·타이틀바·정보 화면 앱 카드 하드코딩 제거 → `Loc.Get("AppDisplayName")` 단일 키(언어 전환은 App.ApplyLanguageChange 창 재생성이 재배정 — 코드 확인) ⑤ T5 PRD FR-18·NFR-4 보강 + README
   - **왜**: 사용자 요청 3건 — 마지막 선택 기억(폴백 첫 리스트 확정), 홈 즉시 재생 반복(조사 결과 FR-7 기구현 — 코드 변경 없이 확인만으로 종결 확정), 앱 이름 한글화(전부 적용 확정, 개발자명 불변)

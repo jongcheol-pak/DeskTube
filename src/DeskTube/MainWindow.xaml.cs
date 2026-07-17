@@ -29,6 +29,10 @@ public sealed partial class MainWindow : Window
         Title = Loc.Get("AppDisplayName");
         AppTitleText.Text = Loc.Get("AppDisplayName");
 
+        // 창 아이콘 — 작업 표시줄 미리보기(썸네일 플라이아웃)는 패키지가 아니라 창 아이콘을 쓰는데,
+        // WinUI 3 Window는 이를 자동 설정하지 않아 기본 아이콘이 보인다 (경로는 실행 폴더 기준 Content)
+        AppWindow.SetIcon("Assets/AppIcon.ico");
+
         // 창 상태 저장·복원 + 최소 크기 (T5/D4 — 패키지 앱은 WinUIEx가 ApplicationData에 자동 저장)
         _manager = WinUIEx.WindowManager.Get(this);
         _manager.PersistenceId = "MainWindow";

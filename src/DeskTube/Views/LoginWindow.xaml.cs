@@ -18,6 +18,7 @@ public sealed partial class LoginWindow : Window
     {
         InitializeComponent();
         Title = Loc.Get("Login_Title");
+        AppWindow.SetIcon("Assets/AppIcon.ico"); // 작업 표시줄 미리보기 창 아이콘 (MainWindow와 동일 — 미설정 시 기본 아이콘)
         SystemBackdrop = new MicaBackdrop(); // MainWindow와 시각 통일 (T5/D4)
         Closed += OnClosed;
         _ = InitializeAsync();
