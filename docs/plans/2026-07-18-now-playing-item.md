@@ -170,6 +170,9 @@
 - 수동 검증 (HUMAN-VERIFY): ① 재생 시작 → 재생 중 행이 순위 대신 코럴 스피커 ② 곡 전환 시 글리프가 다음 행으로 이동 ③ 정지·일시정지 동작(정지 해제·일시정지 유지) ④ 재생 중 다른 리스트 선택 시 글리프 없음 ⑤ 재생 중 페이지·리스트 진입 즉시 표시 ⑥ 툴팁("재생 중")
 
 ## Phase Ledger
+- 전 task(T1~T3) 완료
+- Phase F 통과 (HEAD 6fe40e6) — 빌드 0·테스트 123·포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — FR-18 항목 단위 표시 요구 전 코드 충족
 
 ## Retry Ledger
 
@@ -179,7 +182,8 @@
   - 결정(T2): 재생 중 표시 갱신은 RefreshItems 말미 + Populate 말미(재진입) + CurrentItemChanged 구독 3경로. col0 순위/글리프 겹침은 RankVisibility 정적 헬퍼로 상호배타.
 
 ## Next Steps
-- 권장 다음 액션: plan 승인 시 implement-task로 T1~T3 자율 실행 → HUMAN-VERIFY 6건 사용자 확인
+- 권장 다음 액션: HUMAN-VERIFY 6건 사용자 확인(재생 시작·곡 전환·정지/일시정지·다른 리스트·페이지 진입·툴팁) → 이상 없으면 `task/now-playing-item` → main 병합(별도 승인 필요)
+- Suggested skills: 공식 /code-review, 공식 /security-review (선택)
 
 ## Open Questions
 - [x] Q1: 항목 표시 형태? → **순위 자리에 코럴 스피커 글리프(E767)** 확정 (제목 코럴·결합안 기각 — 사용자 답변 2026-07-18)
