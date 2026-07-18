@@ -67,8 +67,8 @@ public sealed partial class PlaylistsPage : Page
     public static Visibility RankVisibility(bool isNowPlaying) =>
         isNowPlaying ? Visibility.Collapsed : Visibility.Visible;
 
-    /// <summary>x:Bind 함수 — 상단 전체듣기/정지 토글 글리프 (정지 E71A는 홈 정지 pill과 통일 — stop-toggle plan D4).</summary>
-    public static string PlayToggleGlyph(bool isSelectedPlaying) => isSelectedPlaying ? "\uE71A" : "\uE768";
+    /// <summary>x:Bind 함수 — 듣기 버튼 트레일링 정지 아이콘의 접근성 이름·툴팁 (Tray_Stop 재사용 — mode-indicator plan D6).</summary>
+    public static string StopLabel() => Loc.Get("Tray_Stop");
 
     /// <summary>x:Bind 함수 — 행 재생/정지 토글 글리프 (재생 중인 곡 행만 정지 — stop-toggle plan D2).</summary>
     public static string RowPlayGlyph(bool isNowPlaying) => isNowPlaying ? "\uE71A" : "\uE768";

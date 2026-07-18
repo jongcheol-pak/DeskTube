@@ -249,9 +249,6 @@
   <data name="PlayAllLabel.Text" xml:space="preserve">
     <value>Play all</value>
   </data>
-  <data name="PlaylistsStopLabel.Text" xml:space="preserve">
-    <value>Stop</value>
-  </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>Add a YouTube video URL</value>
   </data>

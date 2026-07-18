@@ -249,9 +249,6 @@
   <data name="PlayAllLabel.Text" xml:space="preserve">
     <value>전체듣기</value>
   </data>
-  <data name="PlaylistsStopLabel.Text" xml:space="preserve">
-    <value>정지</value>
-  </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>추가할 유튜브 영상 주소를 입력하세요</value>
   </data>
