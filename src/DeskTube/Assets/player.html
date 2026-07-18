@@ -9,10 +9,15 @@
   /* 크기·위치는 전부 applyLayout이 px·transform으로 관리한다 (크기 모드 × 화질 스케일 통합 — plan D2) */
   #stage { position: absolute; top: 0; left: 0; transform-origin: top left; }
   #stage iframe { width: 100%; height: 100%; border: 0; }
+  /* 곡 전환 썸네일 브리지 (FR-1 보강) — loadVideoById의 로드 공백(검은 화면) 동안 다음 곡 썸네일을
+     표시하고, 실제 재생(PLAYING) 진입 시 페이드아웃한다. object-fit은 크기 모드에 맞춰 JS가 지정. */
+  #bridge { position: absolute; inset: 0; width: 100%; height: 100%; display: none;
+            opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+  #bridge.visible { opacity: 1; }
 </style>
 </head>
 <body>
-<div id="stage"><div id="player"></div></div>
+<div id="stage"><div id="player"></div><img id="bridge" alt="" decoding="async" /></div>
 <script>
 'use strict';
 
@@ -25,7 +30,7 @@
 
 // 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
 // (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
-const PLAYER_REV = 3;
+const PLAYER_REV = 4;
 
 let player = null;
 let playerReady = false;
@@ -42,6 +47,41 @@ const PLAYBACK_PROGRESS_MIN = 1.0; // START_TIMEOUT_MS 동안 currentTime이 이
 
 function post(obj) {
   try { window.chrome.webview.postMessage(obj); } catch (e) { /* 호스트 없음 - 무시 */ }
+}
+
+// ---- 곡 전환 썸네일 브리지 (FR-1 보강) ----
+// loadVideoById는 이전 영상을 즉시 내리고 다음 영상을 받아오는 1~3초 동안 검은 화면을 보인다.
+// 그 공백을 다음 곡 썸네일로 덮고, 재생이 실제로 시작되면(PLAYING) 페이드아웃한다.
+// maxresdefault가 없는 영상은 유튜브가 120x90 자리표시자를 200으로 반환하므로
+// naturalWidth로 판별해 hqdefault로 폴백한다. 썸네일 로드 실패는 기존 검은 화면과 동일(무해).
+const bridge = document.getElementById('bridge');
+let bridgeFallback = false;
+bridge.onload = () => {
+  if (bridge.naturalWidth <= 120 && !bridgeFallback) {
+    bridgeFallback = true;
+    bridge.src = bridge.src.replace('maxresdefault', 'hqdefault');
+  }
+};
+bridge.onerror = () => {
+  if (!bridgeFallback) {
+    bridgeFallback = true;
+    bridge.src = bridge.src.replace('maxresdefault', 'hqdefault');
+  } else {
+    hideBridge();
+  }
+};
+
+function showBridge(videoId) {
+  bridgeFallback = false;
+  // 크기 모드와 시각적으로 일치: 채움(0)=cover / 맞춤(1)=contain / 늘리기(2)=fill
+  bridge.style.objectFit = fitMode === 1 ? 'contain' : (fitMode === 2 ? 'fill' : 'cover');
+  bridge.src = 'https://i.ytimg.com/vi/' + videoId + '/maxresdefault.jpg';
+  bridge.style.display = 'block';
+  bridge.classList.add('visible');
+}
+
+function hideBridge() {
+  bridge.classList.remove('visible'); // opacity 페이드아웃 (display는 유지 — 다음 show에서 재사용)
 }
 
 // ---- 크기 모드(FR-16) × 화질 스케일(FR-13) 통합 레이아웃 (plan D2) ----
@@ -91,6 +131,7 @@ window.chrome.webview.addEventListener('message', (e) => {
 function execute(cmd) {
   switch (cmd.Type) {
     case 'load':
+      showBridge(cmd.VideoId); // 로드 공백 동안 다음 곡 썸네일 표시 (PLAYING 진입 시 해제)
       player.loadVideoById(cmd.VideoId);
       applyCaptions(); // 곡 전환 시 자막 모듈 상태가 리셋될 수 있어 재적용 (FR-20)
       armAutoplayWatchdog();
@@ -214,7 +255,7 @@ window.onYouTubeIframeAPIReady = function () {
         // (load 직후의 동기 적용만으로는 새 영상 초기화에 덮일 수 있음 — FR-20)
         // 시작 감시(startWatchdog)는 여기서 해제하지 않는다 — 권한 필요 영상은 PLAYING에 도달하고도
         // 재생이 진행되지 않으므로, 타이머가 만료 시점에 currentTime 진행 여부로 판정하도록 둔다.
-        if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); }
+        if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); hideBridge(); }
         post({ type: 'state', state: e.data });
       },
       onError: (e) => post({ type: 'error', code: e.data }) // 101/150 = 임베드 금지 (코디네이터가 스킵)
