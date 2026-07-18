@@ -422,6 +422,20 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 재생_시작_시간_초과_오류는_다음_곡으로_스킵한다()
+    {
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        // player.html 시작 감시가 보내는 코드(-3) — onError를 내지 않고 멈추는 재생 불가 영상 대비 (FR-1 보강).
+        // Playing 미도착 상태에서도 스킵돼야 한다(재생 불가 영상은 애초에 Playing에 도달하지 못한다).
+        h.Master.RaiseError(-3);
+
+        Assert.Contains("load:video00001a", h.Players["MON-0"].Commands);
+        Assert.Contains("load:video00001a", h.Players["MON-1"].Commands);
+    }
+
+    [Fact]
     public async Task 첫_곡부터_재생_불가면_Playing_이전에도_다음_곡으로_스킵한다()
     {
         var h = new Harness();

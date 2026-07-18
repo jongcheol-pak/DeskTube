@@ -32,6 +32,8 @@ let desiredMuted = false;  // 코디네이터가 지정한 음소거 상태 (워
 let desiredVolume = 100;
 let desiredCaptions = false; // 자막 표시 상태 (FR-20 — 기본 끔, load 시마다 재적용)
 let autoplayWatchdog = null;
+let startWatchdog = null;      // 재생 시작 감시 — 재생 불가(삭제·제한 등 onError 미발생) 감지 후 스킵 (FR-1 보강)
+const START_TIMEOUT_MS = 8000; // load 후 이 시간 내 PLAYING 미도달 시 재생 불가로 보고 (튜닝 가능)
 
 function post(obj) {
   try { window.chrome.webview.postMessage(obj); } catch (e) { /* 호스트 없음 - 무시 */ }
@@ -87,6 +89,7 @@ function execute(cmd) {
       player.loadVideoById(cmd.VideoId);
       applyCaptions(); // 곡 전환 시 자막 모듈 상태가 리셋될 수 있어 재적용 (FR-20)
       armAutoplayWatchdog();
+      armStartWatchdog(); // 재생 불가 감지 시작 — 곡 로드 시점부터 PLAYING 도달을 감시
       break;
     case 'play':
       player.playVideo();
@@ -94,6 +97,7 @@ function execute(cmd) {
       break;
     case 'pause':
       clearTimeout(autoplayWatchdog); // load/play가 예약한 워치독이 일시정지 의도를 뒤집지 않게 취소
+      clearTimeout(startWatchdog);    // 일시정지 의도 — 재생 시작 감시도 취소(PLAYING 아님이 정상)
       player.pauseVideo();
       break;
     case 'volume':
@@ -143,6 +147,19 @@ function armAutoplayWatchdog() {
   }, 2000);
 }
 
+// 재생 불가 감지 (FR-1 보강): 삭제·비공개·임베드/지역/연령 제한 영상은 onError를 내지 않고
+// 조용히 멈추는 경우가 있어 오류 기반 스킵이 걸리지 않는다. load 후 START_TIMEOUT_MS 내에
+// PLAYING에 도달하지 못하면 재생 불가로 보고(code -3)해 코디네이터가 다음 곡으로 스킵하게 한다.
+// autoplay watchdog(2초 mute+play)이 먼저 자동재생을 시도한 뒤에도 재생이 시작되지 않는 경우만 걸린다.
+function armStartWatchdog() {
+  clearTimeout(startWatchdog);
+  startWatchdog = setTimeout(() => {
+    if (player && player.getPlayerState && player.getPlayerState() !== YT.PlayerState.PLAYING) {
+      post({ type: 'error', code: -3 }); // 재생 시작 시간 초과 — 코디네이터가 재생 불가로 스킵
+    }
+  }, START_TIMEOUT_MS);
+}
+
 // ---- IFrame API 로드 ----
 const tag = document.createElement('script');
 tag.src = 'https://www.youtube.com/iframe_api';
@@ -184,7 +201,10 @@ window.onYouTubeIframeAPIReady = function () {
         }
         // 영상 로드가 자막 모듈 상태를 비동기로 리셋할 수 있어 재생 진입 시점에 설정을 재적용한다
         // (load 직후의 동기 적용만으로는 새 영상 초기화에 덮일 수 있음 — FR-20)
-        if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); }
+        if (e.data === YT.PlayerState.PLAYING) {
+          clearTimeout(startWatchdog); // 재생 시작 확인 — 재생 불가 감시 해제
+          applyCaptions();
+        }
         post({ type: 'state', state: e.data });
       },
       onError: (e) => post({ type: 'error', code: e.data }) // 101/150 = 임베드 금지 (코디네이터가 스킵)

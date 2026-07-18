@@ -1,6 +1,13 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **재생 불가 영상에서 다음 항목으로 안 넘어가는 문제 수정 (systematic-debugging, FR-1 보강)** — 사용자 버그 보고
+  - **증상**: 목록 재생 중 어떤 항목이 재생되지 않아도 다음 항목으로 넘어가지 않고 그 자리에서 멈춤(삭제·비공개·임베드/지역/연령 제한 영상).
+  - **근본 원인 (로그 3일치 + 코드 분석으로 확정)**: 자동 스킵 경로는 ① `OnPlayerError`(YouTube `onError` 수신) ② `OnPlayerStateChanged`의 `Ended`(단 `_suppressEnded==false` — 이미 Playing 도달) 둘뿐. 그런데 사용자가 겪은 재생 불가 유형은 `onError`를 내지 않고 조용히 멈춤(로그에 오류 기록 전무 — `HandlePlayerError`는 무조건 로그하므로 미도착 확정). `Playing` 미도달이라 `_suppressEnded`가 `LoadAll`에서 켜진 채 유지 → 설령 `Ended`가 와도 무시, 영구 멈춤이면 `Ended`조차 없음 → 어느 경로도 안 타 그 항목에서 정지. `player.html`의 autoplay watchdog(2초 mute+play 1회)은 자동재생 우회용이라 재생 불가를 감지·스킵하지 않음.
+  - **수정 (player.html 시작 감시 안전망)**: `armStartWatchdog()` 신설 — `load` 후 `START_TIMEOUT_MS`(8초) 내 `PLAYING` 미도달 시 앱 정의 오류 `code -3`을 C#에 보내 기존 스킵 파이프라인(`OnPlayerError` → `_failedItemIds` 누적 → Advance/전곡 불가 정지)을 그대로 태움. autoplay watchdog이 먼저 자동재생을 시도한 뒤에도 재생이 안 되는 경우만 걸림. `PLAYING` 도달 시·`pause` 시 `clearTimeout(startWatchdog)`으로 감시 해제(정상 곡·일시정지 오판 방지). C#은 로직 변경 없음 — `-3`은 `-2`(재생성) 분기를 안 타고 기존 재생 불가 스킵 분기로 자연히 흘러감. `IPlayerHost.cs`의 `PlayerError` 주석에 `-3` 정의 추가.
+  - **왜 player.html 감시인가**: 사용자 선택. player.html이 이미 상태를 알고 watchdog 인프라·error 파이프라인이 있어 재사용이 자연스러움. C# 타이머 방식 대비 중복 상태 추적 없음.
+  - **설계 결정**: `armStartWatchdog`은 `load`에만 걸고 `play`(재개)엔 안 걸음 — 재개는 이미 Playing 거친 곡이고, 절전 해제 후 복구가 느리면 정상 곡을 오판할 위험이 있어 제외. 8초는 느린 네트워크 버퍼링 오판 방지 마진(상수라 튜닝 가능). **수용 엣지**: 재생 불가 영상을 사용자가 일부러 pause→resume하면 감시가 취소된 채 재개돼 스킵이 안 걸릴 수 있음(극단적·드묾).
+  - **검증**: `dotnet build -c Debug -p:Platform=x64` 경고 0·오류 0 / 테스트 124/124(신규 1: `재생_시작_시간_초과_오류는_다음_곡으로_스킵한다` — `-3`이 스킵 경로임을 고정. 기존 150 스킵 경로 재사용이라 이미 GREEN, 회귀 방지용). **HUMAN-VERIFY 잔여**(JS 타이머는 자동 테스트 불가): ① 삭제·비공개·임베드/지역/연령 제한 영상을 목록에 넣고 재생 → 8초 내 다음 곡으로 자동 스킵 ② 정상 영상은 스킵 없이 재생(오판 없음) ③ 전 항목 재생 불가면 정지 후 안내 ④ 재생 불가 곡 로드 중 일시정지 시 감시 해제 확인.
 - 2026-07-18: **PlayerHost WebView2 상호작용 예외 방어 보강** — 예외처리 점검 후속(사용자 "보강" 요청)
   - **무엇을**: `PlayerHost.cs`의 WebView2 상호작용 3곳(`PostCommand`의 `PostWebMessageAsJson`, `ResumeFromSuspend`의 `Resume`/`IsVisible`, `OnSurfaceResized`의 `Bounds`)을 신규 private 헬퍼 `TryInteract(context, action)`로 감싸 예외를 흡수·로그. 공개 시그니처·동작 계약 변경 없음(best-effort 명령 전송은 그대로).
   - **왜**: 렌더러 프로세스 크래시 직후 `_controller`는 non-null이나 `CoreWebView2`가 무효인 짧은 창에서 위 interop 호출이 예외를 던지면, UI 스레드라 전역 `UnhandledException`까지 전파돼 최악의 경우 프로세스 종료 가능. 복구는 이미 `OnProcessFailed`(렌더러 1회 Reload / 그 외 -2 위임)가 담당하므로 이 경로는 무시가 맞음.
