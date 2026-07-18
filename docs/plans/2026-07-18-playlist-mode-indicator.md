@@ -112,5 +112,14 @@
 - D6. 정지 아이콘 접근성 = `AutomationProperties.Name`+ToolTip을 `Tray_Stop` 재사용(`StopLabel()` 정적 함수 — `NowPlayingLabel` 선례). 행 버튼 접근성(`RowPlayName`)은 불변.
 - D7. 미커밋 진단 계측 유지·이번 커밋은 이번 파일만 스테이징 — 직전 plan D7 승계(동일 세션 사용자 확정).
 
+## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4항목(모드별 아이콘 표시·클릭 정지·전환) 확인 → 이상 없으면 main 병합·진단 계측 커밋 여부 결정 (각각 별도 승인)
+- notes.md의 이번 기록은 미커밋(진단 계측 혼재 사유 승계 — stop-toggle plan Next Steps와 동일). 진단 계측 커밋 때 함께 커밋 권장.
+
+## Phase Ledger
+- 전 task(T1~T2) 완료
+- Phase F 통과 (HEAD 3ee0419) — 빌드 0·0, 테스트 125/125(F-2), 포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-18 수정분 코드 정합 확인(시각·동작은 ⏳ HUMAN-VERIFY), 범위 외 FR 제외 규정 적용
+
 ## Open Questions
 - [x] Q1: 표시 방식? → **문구 유지 + 문구 뒤 정지 아이콘** (사용자 명확화 답변 2026-07-18 — 선택지 제시 중 직접 지정)

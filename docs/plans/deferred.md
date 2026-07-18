@@ -26,6 +26,7 @@
 
 - [2026-07-17] `PlaybackCoordinator._volumeSaveCts` 미Dispose — CancelMetadataBackfill 관례(경합 방지·GC 수거) 승계, CTS 수명 관리 컨벤션 변경 시 함께 정리 (출처: 2026-07-17-perf-optimizations T2 quality m1)
 - [2026-07-17] 볼륨 디바운스 테스트가 실시간 Task.Delay(1200) 의존 — 가상 시계 인프라 도입 시 전환 검토, 현재 여유폭 2.4배 (출처: 2026-07-17-perf-optimizations T2 quality m2)
+- [2026-07-18] [MINOR] `ShuffleAllAsync` 주석의 "멜론 plan D4" 축약 표기를 전체 slug로 명확화 검토 — 리뷰 2건이 무의미 단어로 오인(레포 관례 표기이나 혼동 소지) (출처: 2026-07-18-playlist-mode-indicator T1 리뷰)
 
 ## 종결
 - [2026-07-16 → 2026-07-18] AGENTS.md Test 명령에 `-p:Platform=x64` 추가 · Stack net8.0→net10.0 실물 갱신 · Build & Test에 MSIX 패키징 명령 기록 — 반영 (record-project-fact, 사용자 "모두 수정" 승인. csproj TargetFramework·README/verification 문서로 값 검증). **주의**: AGENTS.md는 `~/.gitignore_global`로 전역 제외되어 커밋 안 됨 — 이 반영은 이 PC 로컬 전용(자동 로드는 정상, PC 간 공유 X, 사용자 "로컬 전용 유지" 결정)
