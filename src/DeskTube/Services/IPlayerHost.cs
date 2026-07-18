@@ -15,8 +15,9 @@ public enum PlayerState
 
 /// <summary>
 /// 플레이어 오류 코드. 양수는 유튜브 IFrame API 코드(2·5·100·101·150 — 101/150은 임베드 금지),
-/// 음수는 앱 정의(-1 API 로드 실패, -2 WebView2 프로세스 실패, -3 재생 시작 시간 초과 —
-/// onError를 내지 않고 멈추는 재생 불가 영상 감지, player.html의 시작 감시가 보고).
+/// 음수는 앱 정의(-1 API 로드 실패, -2 WebView2 프로세스 실패, -3 재생 미진행 —
+/// onError 없이 PLAYING 상태로만 멈추는 재생 불가 영상(권한 필요 등)을 currentTime 정지로 감지,
+/// player.html의 시작 감시가 보고).
 /// </summary>
 public readonly record struct PlayerError(int Code)
 {

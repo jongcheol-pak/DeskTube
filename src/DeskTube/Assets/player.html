@@ -23,6 +23,10 @@
 // setPlaybackQuality는 no-op이므로(PRD 제약) 화질은 렌더 해상도 스케일로 간접 제어한다.
 // ============================================================================
 
+// 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
+// (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
+const PLAYER_REV = 3;
+
 let player = null;
 let playerReady = false;
 let pending = [];          // ready 전에 도착한 명령 큐
@@ -32,8 +36,9 @@ let desiredMuted = false;  // 코디네이터가 지정한 음소거 상태 (워
 let desiredVolume = 100;
 let desiredCaptions = false; // 자막 표시 상태 (FR-20 — 기본 끔, load 시마다 재적용)
 let autoplayWatchdog = null;
-let startWatchdog = null;      // 재생 시작 감시 — 재생 불가(삭제·제한 등 onError 미발생) 감지 후 스킵 (FR-1 보강)
-const START_TIMEOUT_MS = 8000; // load 후 이 시간 내 PLAYING 미도달 시 재생 불가로 보고 (튜닝 가능)
+let startWatchdog = null;          // 재생 시작 감시 — 재생 불가(삭제·제한·권한 필요 등 onError 미발생) 감지 후 스킵 (FR-1 보강)
+const START_TIMEOUT_MS = 8000;     // load 후 이 시간까지 재생 진행을 확인 (튜닝 가능)
+const PLAYBACK_PROGRESS_MIN = 1.0; // START_TIMEOUT_MS 동안 currentTime이 이 값(초)만큼도 안 늘면 재생 불가로 판정
 
 function post(obj) {
   try { window.chrome.webview.postMessage(obj); } catch (e) { /* 호스트 없음 - 무시 */ }
@@ -147,15 +152,21 @@ function armAutoplayWatchdog() {
   }, 2000);
 }
 
-// 재생 불가 감지 (FR-1 보강): 삭제·비공개·임베드/지역/연령 제한 영상은 onError를 내지 않고
-// 조용히 멈추는 경우가 있어 오류 기반 스킵이 걸리지 않는다. load 후 START_TIMEOUT_MS 내에
-// PLAYING에 도달하지 못하면 재생 불가로 보고(code -3)해 코디네이터가 다음 곡으로 스킵하게 한다.
-// autoplay watchdog(2초 mute+play)이 먼저 자동재생을 시도한 뒤에도 재생이 시작되지 않는 경우만 걸린다.
+// 재생 불가 감지 (FR-1 보강): 삭제·비공개·임베드/지역/연령 제한·로그인 권한 필요 영상은 onError를
+// 내지 않고 조용히 멈추는 경우가 있어 오류 기반 스킵이 걸리지 않는다. 특히 권한 필요 영상은
+// getPlayerState()가 PLAYING을 반환하면서도 실제 재생은 진행되지 않으므로(currentTime 정지),
+// 재생 여부는 상태값이 아니라 currentTime 증가로 판정한다. load 후 START_TIMEOUT_MS까지
+// currentTime이 PLAYBACK_PROGRESS_MIN만큼도 안 늘면 재생 불가로 보고(code -3)해 다음 곡으로 스킵한다.
+// autoplay watchdog(2초 mute+play)이 먼저 자동재생을 시도한 뒤에도 재생이 진행되지 않는 경우만 걸린다.
 function armStartWatchdog() {
   clearTimeout(startWatchdog);
   startWatchdog = setTimeout(() => {
-    if (player && player.getPlayerState && player.getPlayerState() !== YT.PlayerState.PLAYING) {
-      post({ type: 'error', code: -3 }); // 재생 시작 시간 초과 — 코디네이터가 재생 불가로 스킵
+    // 판정 근거를 항상 보고 — 스킵 미동작 진단용 (C#이 로그로 남김)
+    const state = (player && player.getPlayerState) ? player.getPlayerState() : 'n/a';
+    const time = (player && player.getCurrentTime) ? player.getCurrentTime() : -1;
+    post({ type: 'diag', msg: 'start-watchdog state=' + state + ' time=' + time.toFixed(2) });
+    if (time >= 0 && time < PLAYBACK_PROGRESS_MIN) {
+      post({ type: 'error', code: -3 }); // 재생 미진행 — 코디네이터가 재생 불가로 스킵
     }
   }, START_TIMEOUT_MS);
 }
@@ -182,7 +193,7 @@ window.onYouTubeIframeAPIReady = function () {
     events: {
       onReady: () => {
         playerReady = true;
-        post({ type: 'ready' });
+        post({ type: 'ready', rev: PLAYER_REV });
         const queued = pending;
         pending = [];
         queued.forEach(execute);
@@ -201,10 +212,9 @@ window.onYouTubeIframeAPIReady = function () {
         }
         // 영상 로드가 자막 모듈 상태를 비동기로 리셋할 수 있어 재생 진입 시점에 설정을 재적용한다
         // (load 직후의 동기 적용만으로는 새 영상 초기화에 덮일 수 있음 — FR-20)
-        if (e.data === YT.PlayerState.PLAYING) {
-          clearTimeout(startWatchdog); // 재생 시작 확인 — 재생 불가 감시 해제
-          applyCaptions();
-        }
+        // 시작 감시(startWatchdog)는 여기서 해제하지 않는다 — 권한 필요 영상은 PLAYING에 도달하고도
+        // 재생이 진행되지 않으므로, 타이머가 만료 시점에 currentTime 진행 여부로 판정하도록 둔다.
+        if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); }
         post({ type: 'state', state: e.data });
       },
       onError: (e) => post({ type: 'error', code: e.data }) // 101/150 = 임베드 금지 (코디네이터가 스킵)
