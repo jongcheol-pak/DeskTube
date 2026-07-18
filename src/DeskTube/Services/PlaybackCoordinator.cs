@@ -178,6 +178,9 @@ public sealed class PlaybackCoordinator : IDisposable
         }
 
         ApplyAudioRouting();
+        // 리스트·항목 정본을 이벤트 발화 전에 확정 — LoadAll이 CurrentItemChanged를, SetStatus가 StatusChanged를
+        // 발화하며, 두 핸들러 모두 시점에 CurrentPlaylistId를 현재 값으로 읽어야 한다 (다른 리스트 전환 시 이전 값 오독 방지).
+        CurrentPlaylistId = playlistId;
         LoadAll(first);
 
         _userPaused = false;
@@ -186,7 +189,6 @@ public sealed class PlaybackCoordinator : IDisposable
         _failedItemIds.Clear();
         _errorAdvancePending = false;
         _advanceAfterResume = false;
-        CurrentPlaylistId = playlistId; // StatusChanged(Playing) 핸들러가 읽으므로 발화 전에 확정
         SetStatus(PlaybackStatus.Playing);
 
         _settings.LastPlaylistId = playlistId;
