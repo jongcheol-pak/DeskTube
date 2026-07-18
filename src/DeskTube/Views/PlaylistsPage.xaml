@@ -383,7 +383,7 @@
                                 PointerExited="OnRowPlayPointerExited"
                                 Click="OnPlayItemClick">
                                 <FontIcon
-                                    Glyph="{x:Bind local:PlaylistsPage.RowPlayGlyph(IsNowPlaying), Mode=OneWay}"
+                                    Glyph="{x:Bind local:PlaylistsPage.PlayToggleGlyph(IsNowPlaying), Mode=OneWay}"
                                     FontSize="12"
                                     Foreground="{ThemeResource AppChipTextBrush}" />
                             </Button>

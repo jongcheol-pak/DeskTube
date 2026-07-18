@@ -217,14 +217,18 @@ public partial class PlaylistsViewModel : ObservableObject
             entry.IsNowPlaying = entry.Id == currentId;
         }
 
-        UpdateModePlaying(SelectedPlaylist is not null && SelectedPlaylist.Id == currentId);
+        UpdateModePlaying();
     }
 
-    /// <summary>모드별 재생 상태 갱신 — 모드 정본은 Coordinator.Settings.Mode
-    /// (SetModeAsync가 설정·실행 큐를 함께 갱신하므로 재생 중 불변 — plan D2). 셔플 외 모드는
-    /// UI 진입점이 전체듣기·행 재생뿐이라 비셔플 묶음으로 전체듣기 쪽에 표시한다 (plan D3).</summary>
-    private void UpdateModePlaying(bool playing)
+    /// <summary>모드별 재생 상태 갱신 — "선택 리스트가 재생 중인가"를 정본(Coordinator.CurrentPlaylistId)에서
+    /// 직접 판정한다 (호출부마다 술어를 계산하면 표현이 갈라져 드리프트 위험 — 2026-07-18 정리).
+    /// 모드 정본은 Coordinator.Settings.Mode (SetModeAsync가 설정·실행 큐를 함께 갱신하므로 재생 중 불변 —
+    /// plan D2). 셔플 외 모드는 UI 진입점이 전체듣기·행 재생뿐이라 비셔플 묶음으로 전체듣기 쪽에 표시한다 (plan D3).</summary>
+    private void UpdateModePlaying()
     {
+        // null 가드 필수 — 정지 상태(CurrentPlaylistId == null)에서 선택도 null이면 == 비교가 true가 된다
+        var playing = SelectedPlaylist is not null
+            && _services?.Coordinator.CurrentPlaylistId == SelectedPlaylist.Id;
         var shuffle = _services?.Coordinator.Settings.Mode == PlaybackMode.Shuffle;
         IsShufflePlaying = playing && shuffle;
         IsSequentialPlaying = playing && !shuffle;
@@ -277,8 +281,9 @@ public partial class PlaylistsViewModel : ObservableObject
             entry.IsActive = ReferenceEquals(entry, value);
         }
 
-        // 선택이 바뀌면 모드별 정지 아이콘 상태도 즉시 재판정 — StatusChanged 없이 선택만 바뀌는 경우 대비 (mode-indicator plan T1)
-        UpdateModePlaying(value is not null && _services?.Coordinator.CurrentPlaylistId == value.Id);
+        // 선택이 바뀌면 모드별 정지 아이콘 상태도 즉시 재판정 — StatusChanged 없이 선택만 바뀌는 경우 대비
+        // (mode-indicator plan T1). SelectedPlaylist는 이 시점에 이미 value로 대입돼 있다 (MVVM Toolkit 규약).
+        UpdateModePlaying();
 
         // 마지막 선택 기억 — null(목록 재구성·삭제 중 일시 해제)은 기록하지 않는다 (plan T2·D3)
         if (value is not null && _services is not null
@@ -639,9 +644,8 @@ public partial class PlaylistsViewModel : ObservableObject
     [RelayCommand]
     private async Task PlayAsync()
     {
-        if (IsSequentialPlaying && _services is not null)
+        if (await TryStopIfPlayingAsync(IsSequentialPlaying))
         {
-            await _services.Coordinator.StopAsync();
             return;
         }
 
@@ -653,9 +657,8 @@ public partial class PlaylistsViewModel : ObservableObject
     [RelayCommand]
     private async Task ShuffleAllAsync()
     {
-        if (IsShufflePlaying && _services is not null)
+        if (await TryStopIfPlayingAsync(IsShufflePlaying))
         {
-            await _services.Coordinator.StopAsync();
             return;
         }
 
@@ -666,13 +669,24 @@ public partial class PlaylistsViewModel : ObservableObject
     /// (FR-18 행 재생 + stop-toggle plan D2, View의 행 버튼 핸들러가 호출).</summary>
     public async Task TogglePlayItemAsync(PlaylistItemEntry entry)
     {
-        if (entry.IsNowPlaying && _services is not null)
+        if (await TryStopIfPlayingAsync(entry.IsNowPlaying))
         {
-            await _services.Coordinator.StopAsync();
             return;
         }
 
         await StartPlaybackAsync(entry.Id, shuffle: false);
+    }
+
+    /// <summary>재생/정지 토글 공통 정지 경로 — 진입점이 "재생 중"이면 정지하고 true (stop-toggle plan D2).</summary>
+    private async Task<bool> TryStopIfPlayingAsync(bool isPlaying)
+    {
+        if (!isPlaying || _services is null)
+        {
+            return false;
+        }
+
+        await _services.Coordinator.StopAsync();
+        return true;
     }
 
     private async Task StartPlaybackAsync(Guid? startItemId, bool shuffle)

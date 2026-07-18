@@ -53,6 +53,11 @@ public sealed partial class LoginWindow : Window
         {
             var environment = await WebViewEnvironment.GetAsync();
             await LoginWebView.EnsureCoreWebView2Async(environment);
+            if (_isClosed)
+            {
+                return; // 초기화 중 창이 닫힘 — 정상 취소 (닫힌 컨트롤 접근으로 실패 로그가 남는 오해 방지)
+            }
+
             var core = _core = LoginWebView.CoreWebView2; // RCW 강참조 확보 — 필드 주석 참조
             core.NavigationCompleted += OnNavigationCompleted;
             core.Navigate("https://www.youtube.com/signin");

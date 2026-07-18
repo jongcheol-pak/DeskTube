@@ -30,6 +30,9 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>볼륨 저장 디바운스 — 슬라이더 드래그의 연속 변경을 마지막 1회 저장으로 합침 (perf plan D5).</summary>
     private const int VolumeSaveDebounceMs = 500;
 
+    /// <summary>재생 진행 확인 임계(초) — player.html의 PLAYBACK_PROGRESS_MIN과 동일 기준 (FR-1 보강).</summary>
+    private const double PlaybackProgressMinSeconds = 1.0;
+
     private sealed record PlayerEntry(MonitorInfo Monitor, IPlayerHost Player);
 
     private readonly IMonitorService _monitors;
@@ -49,8 +52,10 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>곡 전환 직후 늦게 도착하는 이전 곡의 Ended 중복 처리 방지 (Playing 수신 시 해제).</summary>
     private bool _suppressEnded;
 
-    /// <summary>재생 불가로 확인된 항목 집합 (FR-1) — Playing 도달 시 비움. 서로 다른 항목 기준으로
-    /// 전 항목을 덮으면 정지한다 (연속 카운트 방식은 Random에서 조기 오탐·한곡반복에서 동일 곡 재시도 낭비 — 2026-07-17 수정).</summary>
+    /// <summary>재생 불가로 확인된 항목 집합 (FR-1) — 실제 재생 진행(시각 보고 ≥ 임계) 확인 시 비움.
+    /// PLAYING 도달만으로 비우면 "PLAYING 도달 후 미진행(-3)" 곡들이 매번 집합을 비워 전 항목 재생 불가
+    /// 정지가 영영 발동하지 않는다 (2026-07-18 수정). 서로 다른 항목 기준으로 전 항목을 덮으면 정지한다
+    /// (연속 카운트 방식은 Random에서 조기 오탐·한곡반복에서 동일 곡 재시도 낭비 — 2026-07-17 수정).</summary>
     private readonly HashSet<Guid> _failedItemIds = [];
 
     /// <summary>일시정지 중 재생 불가 오류 발생 — 재개 시 다음 곡으로 스킵한다
@@ -67,6 +72,10 @@ public sealed class PlaybackCoordinator : IDisposable
     private int _healthFailures;
     private bool _handlingMonitorChange;
     private bool _monitorChangePending;
+
+    /// <summary>재생성 진행 중인 모니터 — 재생성 await 중 모니터 변경 처리가 같은 모니터에
+    /// 두 번째 플레이어를 만들어 미해제 이중 재생이 되는 것을 방지한다 (2026-07-18 수정).</summary>
+    private readonly HashSet<string> _recreatingMonitors = [];
 
     public PlaybackCoordinator(
         IMonitorService monitors,
@@ -531,8 +540,10 @@ public sealed class PlaybackCoordinator : IDisposable
 
         if (state == PlayerState.Playing)
         {
+            // 재생 불가 집합(_failedItemIds)은 여기서 비우지 않는다 — 권한 필요 영상은 PLAYING에
+            // 도달하고도 진행되지 않아(-3 후속), PLAYING 기준으로 비우면 전 항목 재생 불가 정지가
+            // 발동하지 못한다. 초기화는 OnPlayerTime의 실제 진행 확인 시점 (FR-1 보강, 2026-07-18 수정).
             _suppressEnded = false;
-            _failedItemIds.Clear(); // 정상 재생 도달 — 재생 불가 항목 집합 초기화 (FR-1)
         }
         else if (state == PlayerState.Ended && !_suppressEnded && Status == PlaybackStatus.Playing)
         {
@@ -601,6 +612,11 @@ public sealed class PlaybackCoordinator : IDisposable
         if (!IsMaster(sender))
         {
             return;
+        }
+
+        if (masterTime >= PlaybackProgressMinSeconds && _failedItemIds.Count > 0)
+        {
+            _failedItemIds.Clear(); // 실제 재생 진행 확인 — 재생 불가 항목 집합 초기화 (FR-1)
         }
 
         _timeTicks++;
@@ -733,35 +749,62 @@ public sealed class PlaybackCoordinator : IDisposable
             return;
         }
 
-        Unsubscribe(old.Player);
-        old.Player.Dispose();
-
-        // 배경창(표면)부터 재생성 — 브라우저 프로세스 소멸 복구에서 기존 표면 HWND가 무효가 되어
-        // 컨트롤러 생성이 0x80070578(Invalid window handle)로 실패하는 사례 확인 (2026-07-18 조사)
-        _wallpaper.Detach(monitorId);
-        var attached = _wallpaper.Attach(old.Monitor);
-        if (!attached.IsSuccess)
+        _recreatingMonitors.Add(monitorId); // await 중 모니터 변경 처리의 중복 생성 방지 (이중 재생 수정)
+        try
         {
-            AppLog.Write($"플레이어 재생성 실패({monitorId}) — 배경창 재부착 실패: {attached.Message}");
-            RefreshAudioTargetAfterRemoval();
-            return;
-        }
+            Unsubscribe(old.Player);
+            old.Player.Dispose();
 
-        var created = await _playerFactory(old.Monitor);
-        if (!created.IsSuccess || created.Value is null)
+            // 1차: 기존 표면 위에 재생성 — 일반적인 브라우저 프로세스 소멸에서 표면 HWND는 유효하므로
+            // 배경창을 먼저 파괴하지 않는다 (단일 모니터에서 매 복구마다 바탕화면이 번쩍이던 문제 수정).
+            var created = await _playerFactory(old.Monitor);
+            if (!created.IsSuccess || created.Value is null)
+            {
+                // 2차: 표면 HWND가 무효면 컨트롤러 생성이 0x80070578(Invalid window handle)로 실패한다
+                // (2026-07-18 조사) — 배경창을 재생성한 뒤 한 번 더 시도한다.
+                AppLog.Write($"플레이어 재생성 1차 실패({monitorId}) — 배경창 재생성 후 재시도: {created.Message}");
+                _wallpaper.Detach(monitorId);
+                var attached = _wallpaper.Attach(old.Monitor);
+                if (!attached.IsSuccess)
+                {
+                    AppLog.Write($"플레이어 재생성 실패({monitorId}) — 배경창 재부착 실패: {attached.Message}");
+                    await HandleRecreateGiveUpAsync();
+                    return;
+                }
+
+                created = await _playerFactory(old.Monitor);
+                if (!created.IsSuccess || created.Value is null)
+                {
+                    AppLog.Write($"플레이어 재생성 실패({monitorId}) — 해당 모니터 재생 제외");
+                    _wallpaper.Detach(monitorId);
+                    await HandleRecreateGiveUpAsync();
+                    return;
+                }
+            }
+
+            var player = created.Value;
+            InitializePlayer(monitorId, player);
+            _players[monitorId] = old with { Player = player };
+
+            ResumeCurrentTrack(player);
+            ApplyAudioRouting();
+        }
+        finally
         {
-            AppLog.Write($"플레이어 재생성 실패({monitorId}) — 해당 모니터 재생 제외");
-            _wallpaper.Detach(monitorId);
-            RefreshAudioTargetAfterRemoval();
-            return;
+            _recreatingMonitors.Remove(monitorId);
         }
+    }
 
-        var player = created.Value;
-        InitializePlayer(monitorId, player);
-        _players[monitorId] = old with { Player = player };
-
-        ResumeCurrentTrack(player);
-        ApplyAudioRouting();
+    /// <summary>재생성 포기 후 정리 — 남은 플레이어가 없으면 정지한다. 방치하면 표면·플레이어 0개인 채
+    /// Playing 상태가 지속되고, EnsureHealthy는 표면 0개를 정상으로 보므로 헬스체크로도 잡히지 않는다.</summary>
+    private async Task HandleRecreateGiveUpAsync()
+    {
+        RefreshAudioTargetAfterRemoval();
+        if (_players.Count == 0 && Status != PlaybackStatus.Stopped)
+        {
+            AppLog.Write("재생 가능한 플레이어가 없어 재생을 정지합니다.");
+            await StopAsync();
+        }
     }
 
     private void OnMonitorsChanged(object? sender, EventArgs e) =>
@@ -820,6 +863,11 @@ public sealed class PlaybackCoordinator : IDisposable
         // 기존 창 재배치 + 새 대상 추가 (해상도 변경·재연결)
         foreach (var target in targets)
         {
+            if (_recreatingMonitors.Contains(target.Id))
+            {
+                continue; // 재생성 진행 중 — 부착·생성 모두 재생성 경로 소유 (이중 플레이어 방지)
+            }
+
             if (_players.ContainsKey(target.Id))
             {
                 _wallpaper.Attach(target); // 기존 표면 재배치

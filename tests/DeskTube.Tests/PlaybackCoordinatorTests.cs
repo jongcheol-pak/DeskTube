@@ -449,6 +449,41 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task 전_곡이_Playing_도달_후_미진행이어도_정지한다()
+    {
+        var h = new Harness(itemCount: 2);
+        var raised = 0;
+        h.Coordinator.AllItemsFailed += (_, _) => raised++;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        // 전 곡이 권한 필요 영상인 리스트: 곡마다 PLAYING에 도달하지만 진행되지 않아 -3이 온다.
+        // PLAYING 도달만으로 실패 집합을 비우면 전 항목 재생 불가 정지가 영영 발동하지 않고
+        // 8초 간격 무한 스킵 루프가 된다 (2026-07-18 수정 회귀 방지).
+        h.Master.RaiseState(PlayerState.Playing);
+        h.Master.RaiseError(-3); // 1곡째 → 2곡째 스킵
+        h.Master.RaiseState(PlayerState.Playing);
+        h.Master.RaiseError(-3); // 2곡째 — 서로 다른 2개 = 전 항목 재생 불가
+
+        Assert.Equal(PlaybackStatus.Stopped, h.Coordinator.Status);
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public async Task 실제_재생_진행이_확인되면_재생_불가_집합이_초기화된다()
+    {
+        var h = new Harness(itemCount: 2);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseError(-3);  // 1곡째 재생 불가 → 2곡째 스킵 (집합 {1곡째})
+        h.Master.RaiseState(PlayerState.Playing);
+        h.Master.RaiseTime(5.0);  // 2곡째 실제 진행 확인 — 집합 초기화
+        h.Master.RaiseError(-3);  // 이후 2곡째 재생 불가 — 집합 {2곡째} 1개뿐이라 정지 없이 스킵
+
+        Assert.Equal(PlaybackStatus.Playing, h.Coordinator.Status); // 전 항목 실패로 오판하지 않는다
+        Assert.Equal(2, h.Master.Commands.Count(c => c == "load:video00000a")); // 1곡째로 순환 스킵
+    }
+
+    [Fact]
     public async Task 첫_곡부터_재생_불가면_Playing_이전에도_다음_곡으로_스킵한다()
     {
         var h = new Harness();

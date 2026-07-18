@@ -30,7 +30,7 @@
 
 // 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
 // (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
-const PLAYER_REV = 4;
+const PLAYER_REV = 5;
 
 let player = null;
 let playerReady = false;
@@ -42,8 +42,12 @@ let desiredVolume = 100;
 let desiredCaptions = false; // 자막 표시 상태 (FR-20 — 기본 끔, load 시마다 재적용)
 let autoplayWatchdog = null;
 let startWatchdog = null;          // 재생 시작 감시 — 재생 불가(삭제·제한·권한 필요 등 onError 미발생) 감지 후 스킵 (FR-1 보강)
+let watchdogLastTime = -1;         // 직전 감시 시점의 currentTime — 진행 여부 비교용
+let watchdogChecks = 0;            // 진행 재확인 횟수 (상한 START_RECHECK_MAX)
 const START_TIMEOUT_MS = 8000;     // load 후 이 시간까지 재생 진행을 확인 (튜닝 가능)
-const PLAYBACK_PROGRESS_MIN = 1.0; // START_TIMEOUT_MS 동안 currentTime이 이 값(초)만큼도 안 늘면 재생 불가로 판정
+const START_RECHECK_MS = 4000;     // 진행 흔적이 있으면 이 간격으로 재확인 (느린 시작·초기 버퍼링 오탐 방지)
+const START_RECHECK_MAX = 3;       // 재확인 상한 — 이후에도 미진행이면 재생 불가 확정
+const PLAYBACK_PROGRESS_MIN = 1.0; // currentTime이 이 값(초)만큼도 안 늘면 재생 불가로 판정
 
 function post(obj) {
   try { window.chrome.webview.postMessage(obj); } catch (e) { /* 호스트 없음 - 무시 */ }
@@ -71,10 +75,14 @@ bridge.onerror = () => {
   }
 };
 
+// 크기 모드와 시각적으로 일치: 채움(0)=cover / 맞춤(1)=contain / 늘리기(2)=fill
+function bridgeFit() {
+  return fitMode === 1 ? 'contain' : (fitMode === 2 ? 'fill' : 'cover');
+}
+
 function showBridge(videoId) {
   bridgeFallback = false;
-  // 크기 모드와 시각적으로 일치: 채움(0)=cover / 맞춤(1)=contain / 늘리기(2)=fill
-  bridge.style.objectFit = fitMode === 1 ? 'contain' : (fitMode === 2 ? 'fill' : 'cover');
+  bridge.style.objectFit = bridgeFit();
   bridge.src = 'https://i.ytimg.com/vi/' + videoId + '/maxresdefault.jpg';
   bridge.style.display = 'block';
   bridge.classList.add('visible');
@@ -123,7 +131,7 @@ window.chrome.webview.addEventListener('message', (e) => {
   const cmd = e.data;
   // 레이아웃 명령은 플레이어 준비와 무관 — 즉시 반영
   if (cmd.Type === 'scale') { scaleHeight = cmd.Height || 0; applyLayout(); return; }
-  if (cmd.Type === 'fit') { fitMode = cmd.Mode || 0; applyLayout(); return; }
+  if (cmd.Type === 'fit') { fitMode = cmd.Mode || 0; applyLayout(); bridge.style.objectFit = bridgeFit(); return; }
   if (!playerReady) { pending.push(cmd); return; }
   execute(cmd);
 });
@@ -140,10 +148,12 @@ function execute(cmd) {
     case 'play':
       player.playVideo();
       armAutoplayWatchdog();
+      armStartWatchdog(); // 재개 시 새 시각 기준으로 재장전 — 절전(suspend) 중 살아남은 스테일 타이머의
+                          // 재개 직후 오발화 방지 + 재개 후에도 미진행 영상은 계속 감지 (FR-1 보강)
       break;
     case 'pause':
       clearTimeout(autoplayWatchdog); // load/play가 예약한 워치독이 일시정지 의도를 뒤집지 않게 취소
-      clearTimeout(startWatchdog);    // 일시정지 의도 — 재생 시작 감시도 취소(PLAYING 아님이 정상)
+      clearStartWatchdog();           // 일시정지 의도 — 재생 시작 감시도 취소(진행 없음이 정상)
       player.pauseVideo();
       break;
     case 'volume':
@@ -196,20 +206,44 @@ function armAutoplayWatchdog() {
 // 재생 불가 감지 (FR-1 보강): 삭제·비공개·임베드/지역/연령 제한·로그인 권한 필요 영상은 onError를
 // 내지 않고 조용히 멈추는 경우가 있어 오류 기반 스킵이 걸리지 않는다. 특히 권한 필요 영상은
 // getPlayerState()가 PLAYING을 반환하면서도 실제 재생은 진행되지 않으므로(currentTime 정지),
-// 재생 여부는 상태값이 아니라 currentTime 증가로 판정한다. load 후 START_TIMEOUT_MS까지
-// currentTime이 PLAYBACK_PROGRESS_MIN만큼도 안 늘면 재생 불가로 보고(code -3)해 다음 곡으로 스킵한다.
+// 재생 여부는 상태값이 아니라 currentTime 증가로 판정한다.
+//   - 정상 곡은 1초 주기 시각 보고 인터벌이 진행(PLAYBACK_PROGRESS_MIN 이상) 확인 즉시 감시를
+//     해제하므로 타이머가 발화하지 않는다 (곡마다 diag가 쌓이지 않음).
+//   - START_TIMEOUT_MS 시점에 미진행이라도, 직전 확인 대비 조금이라도 늘고 있으면(느린 시작·
+//     초기 버퍼링) START_RECHECK_MS 간격으로 최대 START_RECHECK_MAX회 재확인해 오탐을 막는다.
+//   - currentTime을 못 읽는 상태(API 부재·undefined·NaN)는 죽은 플레이어 증거로 보고 즉시 -3.
 // autoplay watchdog(2초 mute+play)이 먼저 자동재생을 시도한 뒤에도 재생이 진행되지 않는 경우만 걸린다.
 function armStartWatchdog() {
   clearTimeout(startWatchdog);
-  startWatchdog = setTimeout(() => {
-    // 판정 근거를 항상 보고 — 스킵 미동작 진단용 (C#이 로그로 남김)
-    const state = (player && player.getPlayerState) ? player.getPlayerState() : 'n/a';
-    const time = (player && player.getCurrentTime) ? player.getCurrentTime() : -1;
-    post({ type: 'diag', msg: 'start-watchdog state=' + state + ' time=' + time.toFixed(2) });
-    if (time >= 0 && time < PLAYBACK_PROGRESS_MIN) {
-      post({ type: 'error', code: -3 }); // 재생 미진행 — 코디네이터가 재생 불가로 스킵
-    }
-  }, START_TIMEOUT_MS);
+  watchdogLastTime = -1;
+  watchdogChecks = 0;
+  startWatchdog = setTimeout(checkStartProgress, START_TIMEOUT_MS);
+}
+
+function clearStartWatchdog() {
+  clearTimeout(startWatchdog);
+  startWatchdog = null;
+}
+
+function checkStartProgress() {
+  startWatchdog = null;
+  const state = (player && player.getPlayerState) ? player.getPlayerState() : 'n/a';
+  const raw = (player && player.getCurrentTime) ? player.getCurrentTime() : NaN;
+  const time = (typeof raw === 'number' && isFinite(raw)) ? raw : -1; // 못 읽으면 -1로 정규화
+  // 판정 근거 보고 — 스킵 미동작 진단용 (C#이 로그로 남김; 정상 곡은 인터벌 해제로 여기 안 옴)
+  post({ type: 'diag', msg: 'start-watchdog state=' + state
+    + ' time=' + (time >= 0 ? time.toFixed(2) : 'n/a') + ' checks=' + watchdogChecks });
+  if (time >= PLAYBACK_PROGRESS_MIN) {
+    return; // 정상 진행 확인 — 감시 종료
+  }
+  if (time > watchdogLastTime + 0.1 && watchdogChecks < START_RECHECK_MAX) {
+    // 진행 흔적 있음 — 재확인 유예 (느린 네트워크에서 정상 곡을 오탐 스킵하지 않기 위함)
+    watchdogLastTime = time;
+    watchdogChecks++;
+    startWatchdog = setTimeout(checkStartProgress, START_RECHECK_MS);
+    return;
+  }
+  post({ type: 'error', code: -3 }); // 재생 미진행 — 코디네이터가 재생 불가로 스킵
 }
 
 // ---- IFrame API 로드 ----
@@ -241,7 +275,13 @@ window.onYouTubeIframeAPIReady = function () {
         // 재생 중 1초 주기 시각 보고 — 다중 모니터 동기 보정용 (plan D4)
         setInterval(() => {
           if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-            post({ type: 'time', current: player.getCurrentTime() });
+            const t = player.getCurrentTime();
+            post({ type: 'time', current: t });
+            // 실제 진행 확인 즉시 시작 감시 해제 — 정상 곡은 타이머 발화·diag 보고 자체가 없다
+            if (startWatchdog !== null && typeof t === 'number' && isFinite(t)
+                && t >= PLAYBACK_PROGRESS_MIN) {
+              clearStartWatchdog();
+            }
           }
         }, 1000);
       },
@@ -253,8 +293,8 @@ window.onYouTubeIframeAPIReady = function () {
         }
         // 영상 로드가 자막 모듈 상태를 비동기로 리셋할 수 있어 재생 진입 시점에 설정을 재적용한다
         // (load 직후의 동기 적용만으로는 새 영상 초기화에 덮일 수 있음 — FR-20)
-        // 시작 감시(startWatchdog)는 여기서 해제하지 않는다 — 권한 필요 영상은 PLAYING에 도달하고도
-        // 재생이 진행되지 않으므로, 타이머가 만료 시점에 currentTime 진행 여부로 판정하도록 둔다.
+        // 시작 감시(startWatchdog)는 PLAYING 도달만으로 해제하지 않는다 — 권한 필요 영상은 PLAYING에
+        // 도달하고도 재생이 진행되지 않기 때문. 해제는 1초 인터벌이 currentTime 진행을 확인했을 때만.
         if (e.data === YT.PlayerState.PLAYING) { applyCaptions(); hideBridge(); }
         post({ type: 'state', state: e.data });
       },

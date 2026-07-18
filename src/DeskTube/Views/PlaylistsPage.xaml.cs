@@ -67,17 +67,15 @@ public sealed partial class PlaylistsPage : Page
     public static Visibility RankVisibility(bool isNowPlaying) =>
         isNowPlaying ? Visibility.Collapsed : Visibility.Visible;
 
-    /// <summary>x:Bind 함수 — 전체듣기 선행 글리프 (비셔플 재생 중 정지 E71A, 평소 재생 E768 — leading-stop-glyph plan D1).</summary>
-    public static string PlayToggleGlyph(bool isSequentialPlaying) => isSequentialPlaying ? "\uE71A" : "\uE768";
+    /// <summary>x:Bind 함수 — 재생/정지 토글 글리프 (재생 중 정지 E71A, 평소 재생 E768 — leading-stop-glyph plan D1).
+    /// 전체듣기 버튼(IsSequentialPlaying)과 행 재생 버튼(IsNowPlaying)이 공유한다 (stop-toggle plan D2).</summary>
+    public static string PlayToggleGlyph(bool playing) => playing ? "\uE71A" : "\uE768";
 
     /// <summary>x:Bind 함수 — 셔플듣기 선행 글리프 (셔플 재생 중 정지 E71A, 평소 셔플 E8B1).</summary>
     public static string ShuffleToggleGlyph(bool isShufflePlaying) => isShufflePlaying ? "\uE71A" : "\uE8B1";
 
     /// <summary>x:Bind 함수 — 선행 아이콘의 접근성 이름·툴팁: 재생 중에만 "정지"(Tray_Stop 재사용), 평소엔 null 폴백(장식 — plan D2).</summary>
     public static string? StopTip(bool playing) => playing ? Loc.Get("Tray_Stop") : null;
-
-    /// <summary>x:Bind 함수 — 행 재생/정지 토글 글리프 (재생 중인 곡 행만 정지 — stop-toggle plan D2).</summary>
-    public static string RowPlayGlyph(bool isNowPlaying) => isNowPlaying ? "\uE71A" : "\uE768";
 
     /// <summary>x:Bind 함수 — 행 재생/정지 버튼의 상태 반영 접근성 이름 (NowPlayingLabel과 동일 Loc 패턴).</summary>
     public static string RowPlayName(bool isNowPlaying) =>

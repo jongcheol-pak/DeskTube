@@ -96,7 +96,11 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
-        // 시작·종료 마커 — 이전 세션이 "앱 종료" 로그 없이 끝났으면 비정상 종료(크래시·강제 종료)로 판별 (2026-07-18 조사)
+        // 시작·종료 마커 — 이전 세션이 "앱 종료" 로그 없이 끝났으면 비정상 종료(크래시·강제 종료)로
+        // 추정한다. 단 OS 종료·로그오프는 WM_ENDSESSION 후 즉시 종료돼 마커가 안 남을 수 있으므로
+        // 단정하지 않는다 (2026-07-18 조사). ProcessExit 마커는 정상 프로세스 종료(트레이 종료 포함)
+        // 커버리지를 넓히는 최선 노력 경로 — 판별 오탐(정상 종료를 크래시로 오판)을 줄인다.
+        AppDomain.CurrentDomain.ProcessExit += static (_, _) => AppLog.Write("=== 앱 종료 (프로세스 종료) ===");
         AppLog.Write("=== 앱 시작 ===");
 
         // 자동 시작(부팅) 판별 — 활성화 종류 우선, 조회 실패 시 명령줄 인자 폴백 (plan T4·D3)
