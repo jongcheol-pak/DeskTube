@@ -109,7 +109,7 @@
 - **Source**: PlaylistsViewModel.cs:151~195(StatusChanged 구독 패턴), :258~294(RefreshItems)
 
 ## Tasks
-- [ ] T1. 코디네이터 `CurrentItemId` 속성 + `CurrentItemChanged` 이벤트 신설 + 테스트
+- [x] T1. 코디네이터 `CurrentItemId` 속성 + `CurrentItemChanged` 이벤트 신설 + 테스트
   - **Type**: C
   - **Design**:
     - ① 배치: `src/DeskTube/Services/PlaybackCoordinator.cs` (서비스 계층 — 재생 상태 단일 소유자).
