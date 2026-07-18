@@ -104,6 +104,17 @@
 - **Edge Cases**: URL 열기 실패(브라우저 없음·차단) → catch 후 로그만, 앱 정상 유지(라이선스 카드와 동일). 빈/null URL 불가(상수 고정).
 - **Halt Forecast**: 없음 — 신규 의존성·파괴적 작업·외부 인증 없음(브라우저 열기만).
 
+## Phase Ledger
+
+- 전 task 완료 (T1·T2)
+- Phase F 통과 (HEAD b99c4a8)
+- Phase G 통과 (Must 100% — FR-21(Could) 코드 충족, HUMAN-VERIFY 3건 잔여)
+
+## Progress Log
+
+- T1-T2 완료 (커밋 63b3146, f13b174): PRD FR-21 신설 + 정보 화면 후원 카드(SettingsCard + OnSupportCardClick, GitHub Sponsors). 빌드 0/0·테스트 121/121·이중 리뷰 OK.
+  - 결정: 배치 정보 화면(사용자 확정), URL은 code-behind 상수(번역 대상 아님), 하트 글리프 EB52(채운 하트).
+
 ## Deferred / Follow-up
 
 - (없음)
