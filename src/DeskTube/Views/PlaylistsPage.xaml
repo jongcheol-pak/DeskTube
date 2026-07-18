@@ -306,13 +306,26 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
+                            <!-- 순위 번호 / 재생 중 스피커 글리프 겹침 (col0) — 재생 중인 곡은 번호 대신 코럴 스피커
+                                 (좌측 리스트·홈 칩과 동일 E767, now-playing item plan D3) -->
                             <TextBlock
                                 Grid.Column="0"
                                 Text="{x:Bind Rank, Mode=OneWay}"
                                 FontSize="14"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                                Foreground="{ThemeResource AppTextTertiaryBrush}"
+                                Visibility="{x:Bind local:PlaylistsPage.RankVisibility(IsNowPlaying), Mode=OneWay}" />
+                            <FontIcon
+                                Grid.Column="0"
+                                Glyph="&#xE767;"
+                                FontSize="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource AppAccentBrush}"
+                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.NowPlayingLabel()}"
+                                ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.NowPlayingLabel()}"
+                                Visibility="{x:Bind IsNowPlaying, Mode=OneWay}" />
                             <!-- 썸네일 64×40 (시안 16:9 — 유튜브 원본 비율 그대로) -->
                             <Border
                                 Grid.Column="1"

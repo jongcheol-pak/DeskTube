@@ -128,7 +128,7 @@
   - **Halt Forecast**:
     - (ii-a) 공개 API 추가(CurrentItemId 속성 + CurrentItemChanged 이벤트) → `## 사전 승인 항목`에 등록
   - **Depends on**: -
-- [ ] T2. 우측 항목 목록에 재생 중 글리프 표시 (VM + XAML)
+- [x] T2. 우측 항목 목록에 재생 중 글리프 표시 (VM + XAML)
   - **Type**: C
   - **Design**:
     - ① 배치: `src/DeskTube/ViewModels/PlaylistsViewModel.cs`(PlaylistItemEntry + VM) + `src/DeskTube/Views/PlaylistsPage.xaml`(항목 템플릿).
@@ -174,6 +174,9 @@
 ## Retry Ledger
 
 ## Progress Log
+- T1-T2 완료: 코디네이터 CurrentItemId/CurrentItemChanged 신설(T1) + 우측 항목 목록 재생 중 스피커 글리프 표시(T2). 빌드/테스트 OK(123통과), spec+quality 리뷰 통과.
+  - 결정(T1): StartAsync에서 CurrentPlaylistId를 LoadAll(이벤트 발화) 앞으로 이동 — "발화 전 상태 확정" 파일 관례 준수(리뷰 M1).
+  - 결정(T2): 재생 중 표시 갱신은 RefreshItems 말미 + Populate 말미(재진입) + CurrentItemChanged 구독 3경로. col0 순위/글리프 겹침은 RankVisibility 정적 헬퍼로 상호배타.
 
 ## Next Steps
 - 권장 다음 액션: plan 승인 시 implement-task로 T1~T3 자율 실행 → HUMAN-VERIFY 6건 사용자 확인

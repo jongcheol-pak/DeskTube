@@ -72,6 +72,10 @@ public partial class PlaylistItemEntry : ObservableObject
 
     /// <summary>표시 제목 — 메타 미조회·조회 실패 시 URL 폴백 (plan D1).</summary>
     public string DisplayTitle => string.IsNullOrEmpty(Title) ? Url : Title;
+
+    /// <summary>지금 배경 재생 중인 곡 — 순위 자리 스피커 글리프 표시용 (PlaylistEntry.IsNowPlaying 항목판, now-playing item plan T2).</summary>
+    [ObservableProperty]
+    public partial bool IsNowPlaying { get; set; }
 }
 
 /// <summary>
@@ -137,6 +141,7 @@ public partial class PlaylistsViewModel : ObservableObject
         if (_services is not null)
         {
             _services.Coordinator.StatusChanged -= OnStatusChanged;
+            _services.Coordinator.CurrentItemChanged -= OnCurrentItemChanged;
         }
 
         CancelMetadataBackfill(); // 페이지 이탈 — 늦은 응답 반영 방지 (plan D10)
@@ -156,6 +161,8 @@ public partial class PlaylistsViewModel : ObservableObject
         // 재진입마다 해제 후 재구독 (Detach와 대칭 — HomeViewModel과 동일 멱등 패턴)
         services.Coordinator.StatusChanged -= OnStatusChanged;
         services.Coordinator.StatusChanged += OnStatusChanged;
+        services.Coordinator.CurrentItemChanged -= OnCurrentItemChanged;
+        services.Coordinator.CurrentItemChanged += OnCurrentItemChanged;
 
         Playlists.Clear();
         foreach (var playlist in services.Library.Playlists)
@@ -177,18 +184,35 @@ public partial class PlaylistsViewModel : ObservableObject
                 ?? Playlists[0];
         }
 
-        UpdateNowPlaying(); // 재생 중 페이지 진입 — 초기 상태 반영 (now-playing plan T2)
+        UpdateNowPlaying(); // 재생 중 페이지 진입 — 리스트 초기 상태 반영 (now-playing plan T2)
+        UpdateNowPlayingItem(); // 선택 불변 재진입(RefreshItems 미발생) 시에도 항목 표시 반영 (now-playing item plan T2)
     }
 
     /// <summary>StatusChanged는 발생 스레드가 보장되지 않아 UI로 마셜링 (HomeViewModel과 동일 패턴).</summary>
     private void OnStatusChanged(object? sender, PlaybackStatus status) =>
         _dispatcher?.TryEnqueue(UpdateNowPlaying);
 
+    /// <summary>CurrentItemChanged도 발생 스레드가 보장되지 않아 UI로 마셜링 (OnStatusChanged와 동일 패턴).
+    /// 같은 리스트 내 곡 전환은 StatusChanged가 미발화하므로 항목 표시 갱신은 이 이벤트에 의존한다.</summary>
+    private void OnCurrentItemChanged(object? sender, EventArgs e) =>
+        _dispatcher?.TryEnqueue(UpdateNowPlayingItem);
+
     /// <summary>재생 중 리스트 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).</summary>
     private void UpdateNowPlaying()
     {
         var currentId = _services?.Coordinator.CurrentPlaylistId;
         foreach (var entry in Playlists)
+        {
+            entry.IsNowPlaying = entry.Id == currentId;
+        }
+    }
+
+    /// <summary>재생 중 항목 글리프 갱신 — 정본은 Coordinator.CurrentItemId (정지 시 null → 전부 해제).
+    /// 우측 목록의 재생 중인 곡만 순위 자리에 스피커 글리프를 표시한다 (UpdateNowPlaying 항목판).</summary>
+    private void UpdateNowPlayingItem()
+    {
+        var currentId = _services?.Coordinator.CurrentItemId;
+        foreach (var entry in Items)
         {
             entry.IsNowPlaying = entry.Id == currentId;
         }
@@ -286,6 +310,8 @@ public partial class PlaylistsViewModel : ObservableObject
         {
             _syncingItems = false;
         }
+
+        UpdateNowPlayingItem(); // 재구성된 Items에 재생 중 항목 반영 (선택 변경·페이지 진입 — now-playing item plan D4)
 
         if (playlist is not null)
         {

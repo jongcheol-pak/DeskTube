@@ -63,6 +63,10 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>x:Bind 함수 — 재생 중 글리프의 접근성 이름·툴팁 (다국어, MonitorCardsControl BadgeToggleName 선례).</summary>
     public static string NowPlayingLabel() => Loc.Get("NowPlayingIndicator");
 
+    /// <summary>x:Bind 함수 — 재생 중이면 순위 번호를 숨긴다(같은 자리 스피커 글리프가 대신 표시 — now-playing item plan D3).</summary>
+    public static Visibility RankVisibility(bool isNowPlaying) =>
+        isNowPlaying ? Visibility.Collapsed : Visibility.Visible;
+
     // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
     // PointerEntered/Exited는 IsEnabled=False에도 발생하므로 비활성 버튼 강조 방지 가드 필수 (리뷰 M1)
 
