@@ -116,6 +116,16 @@
 - D7. 미커밋 진단 계측 변경은 그대로 유지, 이번 커밋은 이번 변경 파일만 스테이징 — 사용자 확정 (질문 Q4).
 - D8. PRD 보강 진행 + plan에 PRD 연결(Phase G 활성) — 사용자 확정 (질문 Q3).
 
+## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4항목(토글 시각·동작) 확인 → 이상 없으면 main 병합·진단 계측 커밋 여부 결정 (둘 다 별도 승인)
+- Suggested skills: 공식 /code-review (원하면), pjc:llm-wiki (vault 미설정 — 해당 없음)
+- notes.md의 이번 작업 기록은 미커밋 상태 — 미커밋 진단 계측 항목과 같은 파일이라 스테이징 시 섞임(사용자 Q4 결정에 따른 보류). 진단 계측 커밋 때 함께 커밋 권장.
+
+## Phase Ledger
+- 전 task(T1~T2) 완료
+- Phase F 통과 (HEAD 3cad707) — 빌드 0·0, 테스트 125/125(F-2), 포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-18 보강분 코드 정합 확인(시각·동작은 ⏳ HUMAN-VERIFY), 범위 외 FR 제외 규정 적용
+
 ## Open Questions
 - [x] Q1: 정지 버튼 표시 기준? → **선택 리스트 기준** (사용자 답변 2026-07-18)
 - [x] Q2: 적용 범위? → **상단 버튼 + 행 재생 버튼 포함** (사용자 답변 2026-07-18)
