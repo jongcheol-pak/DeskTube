@@ -74,7 +74,19 @@ public sealed class AppServices : IDisposable
             if (!initialized.IsSuccess)
             {
                 player.Dispose();
-                return Result<IPlayerHost>.Fail(initialized.Code, initialized.Message);
+
+                // 정지 직후 재시작 레이스 — 직전 브라우저 프로세스가 종료 수순 중이면 컨트롤러 생성이
+                // 일시 실패(E_ABORT 등)한다. 종료가 끝나길 짧게 기다렸다 1회만 재시도한다 (2026-07-18 조사).
+                // 런타임 부재 같은 영구 실패도 재시도 1회의 지연만 추가될 뿐 결과는 동일하다.
+                AppLog.Write("플레이어 초기화 1회 재시도 (직전 브라우저 종료 대기)");
+                await Task.Delay(TimeSpan.FromMilliseconds(1500));
+                player = new PlayerHost(surface, dispatcherQueue);
+                initialized = await player.InitializeAsync();
+                if (!initialized.IsSuccess)
+                {
+                    player.Dispose();
+                    return Result<IPlayerHost>.Fail(initialized.Code, initialized.Message);
+                }
             }
 
             return Result<IPlayerHost>.Ok(player);

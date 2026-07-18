@@ -178,6 +178,7 @@ public sealed class PlaybackCoordinator : IDisposable
         }
 
         ApplyAudioRouting();
+        AppLog.Write($"재생 시작: '{playlist.Name}' (항목 {playlist.Items.Count}개, 모드 {_settings.Mode}, 음소거 {_settings.IsMuted}, 볼륨 {_settings.Volume})");
         // 리스트·항목 정본을 이벤트 발화 전에 확정 — LoadAll이 CurrentItemChanged를, SetStatus가 StatusChanged를
         // 발화하며, 두 핸들러 모두 시점에 CurrentPlaylistId를 현재 값으로 읽어야 한다 (다른 리스트 전환 시 이전 값 오독 방지).
         CurrentPlaylistId = playlistId;
@@ -218,6 +219,7 @@ public sealed class PlaybackCoordinator : IDisposable
     /// <summary>재생 정지 — 플레이어·배경창 전부 정리하고 원래 배경화면 복구 (PRD FR-9 정지).</summary>
     public Task StopAsync()
     {
+        AppLog.Write("재생 정지");
         CleanupAll();
         _queue = null;
         CurrentPlaylistId = null; // StatusChanged(Stopped) 핸들러가 읽으므로 발화 전에 해제
@@ -235,6 +237,7 @@ public sealed class PlaybackCoordinator : IDisposable
             return;
         }
 
+        AppLog.Write("일시정지(사용자)");
         _userPaused = true;
         PauseAll();
         SetStatus(PlaybackStatus.Paused);
@@ -248,6 +251,7 @@ public sealed class PlaybackCoordinator : IDisposable
             return;
         }
 
+        AppLog.Write("재개(사용자)");
         _userPaused = false;
         _policyPaused = false;
         ResumeOrSkipFailed();
@@ -258,6 +262,8 @@ public sealed class PlaybackCoordinator : IDisposable
     /// 배경이 가려지거나 절전 상황이므로 플레이어를 절전시켜 CPU·메모리를 회수한다 (perf plan D1).</summary>
     public void PolicyPause()
     {
+        // 진단 로그 — "재생이 소리 없이 멈춤" 조사에서 정책 경로가 무로그라 원인 판별이 불가능했다 (2026-07-18)
+        AppLog.Write($"정책 일시정지 요청 (현재 상태 {Status} — {(Status == PlaybackStatus.Playing ? "일시정지+절전 수행" : "기록만")})");
         _policyPaused = true;
         if (Status == PlaybackStatus.Playing)
         {
@@ -278,8 +284,13 @@ public sealed class PlaybackCoordinator : IDisposable
         _policyPaused = false;
         if (Status == PlaybackStatus.Paused && !_userPaused)
         {
+            AppLog.Write("정책 재개 — 재생 계속");
             ResumeOrSkipFailed();
             SetStatus(PlaybackStatus.Playing);
+        }
+        else
+        {
+            AppLog.Write($"정책 재개 요청 무시 (상태 {Status}, 사용자 정지 {_userPaused})");
         }
     }
 
@@ -638,6 +649,7 @@ public sealed class PlaybackCoordinator : IDisposable
         // 항목 재생 시작 단일 경로 — 마지막 재생 항목을 기록해 앱 시작 시 재개에 쓴다 (FR-19).
         // 저장은 호출부 몫 (ReloadCurrentTrack은 현재 곡 재로드라 동일 값 재설정 — 저장 불요).
         _settings.LastItemId = item.Id;
+        AppLog.Write($"곡 로드: '{item.Title}' ({item.VideoId})");
         SetCurrentItem(item.Id); // 재생 중 항목 표시 정본 갱신 — 곡 전환 시 CurrentItemChanged 발화
 
         _suppressEnded = true; // 새 곡 Playing 확인 전까지 이전 곡 Ended 무시
@@ -723,6 +735,17 @@ public sealed class PlaybackCoordinator : IDisposable
 
         Unsubscribe(old.Player);
         old.Player.Dispose();
+
+        // 배경창(표면)부터 재생성 — 브라우저 프로세스 소멸 복구에서 기존 표면 HWND가 무효가 되어
+        // 컨트롤러 생성이 0x80070578(Invalid window handle)로 실패하는 사례 확인 (2026-07-18 조사)
+        _wallpaper.Detach(monitorId);
+        var attached = _wallpaper.Attach(old.Monitor);
+        if (!attached.IsSuccess)
+        {
+            AppLog.Write($"플레이어 재생성 실패({monitorId}) — 배경창 재부착 실패: {attached.Message}");
+            RefreshAudioTargetAfterRemoval();
+            return;
+        }
 
         var created = await _playerFactory(old.Monitor);
         if (!created.IsSuccess || created.Value is null)

@@ -96,6 +96,8 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppLog.Initialize(Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "logs"));
+        // 시작·종료 마커 — 이전 세션이 "앱 종료" 로그 없이 끝났으면 비정상 종료(크래시·강제 종료)로 판별 (2026-07-18 조사)
+        AppLog.Write("=== 앱 시작 ===");
 
         // 자동 시작(부팅) 판별 — 활성화 종류 우선, 조회 실패 시 명령줄 인자 폴백 (plan T4·D3)
         var quietStart = StartupService.WasActivatedByStartupTask()
@@ -215,6 +217,7 @@ public partial class App : Application
     /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>
     internal void ExitApplication()
     {
+        AppLog.Write("=== 앱 종료 (트레이 종료 선택) ===");
         IsExiting = true;
         _tray?.Dispose();
         _tray = null;

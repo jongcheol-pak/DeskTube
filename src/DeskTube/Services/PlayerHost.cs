@@ -35,6 +35,15 @@ public sealed class PlayerHost : IPlayerHost
     private int _apiLoadRetries;
     private bool _renderProcessRecovered;
 
+    /// <summary>브라우저 프로세스 소멸 감지용 — 환경은 앱 전역 공유(캐시)라 이벤트 구독 해제에 참조가 필요하다.</summary>
+    private CoreWebView2Environment? _environment;
+
+    /// <summary>이 플레이어가 붙은 브라우저 프로세스 PID — BrowserProcessExited가 이전 브라우저의
+    /// 정상 종료(정지→재시작 직후 새 플레이어가 받는 이벤트)인지 내 브라우저의 소멸인지 구분한다.</summary>
+    private uint _browserPid;
+
+    private bool _disposed;
+
     /// <param name="dispatcherQueue">재시도 타이머용 UI 디스패처 (Win32 창엔 DispatcherQueue가 없음 — plan D4)</param>
     internal PlayerHost(WallpaperSurface surface, Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue)
     {
@@ -79,6 +88,16 @@ public sealed class PlayerHost : IPlayerHost
             core.WebMessageReceived += OnWebMessageReceived;
             core.ProcessFailed += OnProcessFailed;
 
+            // 브라우저 프로세스 소멸 안전망 (2026-07-18 조사) — 정지→즉시 재시작 시 웹뷰 수가 0이 되는
+            // 순간 브라우저가 종료 수순에 들어가고, 그 사이 만든 새 컨트롤러가 죽어가는 브라우저에 붙으면
+            // ProcessFailed조차 없이 전 프로세스가 소멸한다(Buffering에서 상태·JS 타이머까지 침묵).
+            // 환경 이벤트로 소멸을 감지해 코디네이터 재생성(-2)으로 복구한다. PID 기록은 진단 로그 겸
+            // 이벤트 필터 기준.
+            _environment = environment;
+            _browserPid = core.BrowserProcessId;
+            environment.BrowserProcessExited += OnBrowserProcessExited;
+            AppLog.Write($"플레이어 초기화 완료 (브라우저 PID {_browserPid})");
+
             // 쿼리스트링 캐시 무력화 — WebView2가 가상 호스트 응답을 HTTP 캐시할 수 있어(프로필 영속),
             // 앱 업데이트 후에도 옛 player.html이 실행되는 것을 방지한다 (실행마다 새 URL → 항상 디스크 최신본)
             core.Navigate($"https://{VirtualHost}/player.html?t={Environment.TickCount64}");
@@ -98,11 +117,24 @@ public sealed class PlayerHost : IPlayerHost
         }
     }
 
-    public void Load(string videoId) => PostCommand(new PlayerCommand("load", VideoId: videoId));
+    public void Load(string videoId)
+    {
+        // 진단 로그 — 어떤 영상이 로드되는지 로그로 추적 (2026-07-18 "안 됨" 조사: 영상 식별 불가 문제)
+        AppLog.Write($"플레이어 명령: load {videoId}");
+        PostCommand(new PlayerCommand("load", VideoId: videoId));
+    }
 
-    public void Play() => PostCommand(new PlayerCommand("play"));
+    public void Play()
+    {
+        AppLog.Write("플레이어 명령: play");
+        PostCommand(new PlayerCommand("play"));
+    }
 
-    public void Pause() => PostCommand(new PlayerCommand("pause"));
+    public void Pause()
+    {
+        AppLog.Write("플레이어 명령: pause"); // pause는 시작 감시(startWatchdog)도 취소하므로 시점 기록이 중요
+        PostCommand(new PlayerCommand("pause"));
+    }
 
     public void SetVolume(int volume) => PostCommand(new PlayerCommand("volume", Volume: Math.Clamp(volume, 0, 100)));
 
@@ -171,9 +203,18 @@ public sealed class PlayerHost : IPlayerHost
 
     public void Dispose()
     {
+        _disposed = true;
         _retryTimer?.Stop();
         _retryTimer = null;
         _surface.Resized -= OnSurfaceResized;
+
+        // 정상 폐기 경로 — 구독을 먼저 해제하므로 이후 브라우저의 정상 종료는 소멸 감지에 걸리지 않는다
+        if (_environment is { } environment)
+        {
+            environment.BrowserProcessExited -= OnBrowserProcessExited;
+        }
+
+        _environment = null;
 
         if (_core is { } core)
         {
@@ -245,7 +286,9 @@ public sealed class PlayerHost : IPlayerHost
                     break;
 
                 case "state":
-                    StateChanged?.Invoke(this, (PlayerState)root.GetProperty("state").GetInt32());
+                    var state = (PlayerState)root.GetProperty("state").GetInt32();
+                    AppLog.Write($"플레이어 상태: {state}"); // 진단 로그 — 상태 전이 추적 (2026-07-18)
+                    StateChanged?.Invoke(this, state);
                     break;
 
                 case "error":
@@ -305,6 +348,19 @@ public sealed class PlayerHost : IPlayerHost
             return;
         }
 
+        ErrorOccurred?.Invoke(this, new PlayerError(-2));
+    }
+
+    /// <summary>브라우저 프로세스 종료 감지 — 내 브라우저(PID 일치)가 살아있어야 할 때 소멸하면
+    /// 컨트롤 재생성이 유일한 복구 수단이므로 -2로 위임한다 (ProcessFailed 미발화 케이스 보완).</summary>
+    private void OnBrowserProcessExited(CoreWebView2Environment sender, CoreWebView2BrowserProcessExitedEventArgs e)
+    {
+        if (_disposed || e.BrowserProcessId != _browserPid)
+        {
+            return; // 폐기 후 잔여 이벤트·이전 브라우저의 정상 종료(정지→재시작 직후)는 무시
+        }
+
+        AppLog.Write($"WebView2 브라우저 프로세스 소멸 감지 (kind={e.BrowserProcessExitKind}, PID {e.BrowserProcessId}) — 플레이어 재생성 요청");
         ErrorOccurred?.Invoke(this, new PlayerError(-2));
     }
 }

@@ -55,6 +55,9 @@ public sealed class PowerPolicyService : IDisposable
         var changed = active ? _active.Add(signal) : _active.Remove(signal);
         if (changed)
         {
+            // 진단 로그 — 정책 경로가 무로그라 "소리 없이 멈춤"의 원인 판별이 불가능했다 (2026-07-18).
+            // 신호는 변화 시에만 기록되므로 2초 폴링(전체화면)이 스팸이 되지 않는다.
+            AppLog.Write($"정책 신호 변화: {signal} {(active ? "감지" : "해제")} (설정 반영 {IsEnabled(signal)})");
             Evaluate();
         }
     }
