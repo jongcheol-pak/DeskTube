@@ -83,7 +83,7 @@
   - **Halt Forecast**: 없음 — 공개 멤버 개명(`PlayItemAsync`→`TogglePlayItemAsync`, 호출부 1곳)·`PlayAsync` 계약 변경(호출부 XAML 1곳)·resw 키 재배치는 아래 사전 승인 항목으로 일괄 승인. 파괴적·외부 작업 없음.
   - **Depends on**: 없음
 
-- [ ] T2. PRD FR-18 보강 + README 갱신 (FR-18 충족)
+- [x] T2. PRD FR-18 보강 + README 갱신 (FR-18 충족)
   - **Type**: A
   - **Acceptance**: FR-18에 "전체듣기 버튼은 선택 리스트 재생 중(일시정지 포함) 정지 버튼으로, 재생 중인 곡의 행 재생 버튼도 정지 버튼으로 토글(정지 시 원복)" 취지 1줄 보강 + 변경 이력 1줄(2026-07-18, 사용자 합의) / README 플레이리스트 기능 설명 갱신. 문서-코드 역대조 누락·잔존·변형 0.
   - **Files**: 주: `docs/prd.md`, `README.md`
