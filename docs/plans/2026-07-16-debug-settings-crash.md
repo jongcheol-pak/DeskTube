@@ -2,6 +2,17 @@
 
 > pjc:pjc-systematic-debugging 조사 로그 — 2026-07-16. 표준 경로(Phase 1~3) 수행,
 > **17:52 크래시의 단일 근본 원인은 미확정** (재현 불가 — Halt 조건 보고). 수정은 승인 대기.
+>
+> **[2026-07-18 종결 부록]** 미확정이던 "재생 중 화면 전환 크래시" 계열의 근본 원인이 확정됐다:
+> **PlayerHost가 CoreWebView2 RCW를 강참조하지 않아**(컨트롤러만 필드 보유, core는 프로퍼티 접근)
+> 페이지 전환 등 할당 급증 시 GC가 RCW를 수집 → CsWinRT 이벤트 구독 상태(ConditionalWeakTable 키)가
+> 소멸 → 재생 중 매초 오는 WebMessageReceived 네이티브 콜백이 해제된 스텁 호출 → CLR fatal
+> (pre-allocated ExecutionEngineException). 덤프(2026-07-18, 재생 중 메뉴 이동 100% 재현)의
+> 네이티브 스택(EmbeddedBrowserWebView!FireWebMessageReceived → 프로젝션 경계 예외 →
+> EEPolicy::HandleFatalError)과 힙 증거(PlayerHost·Controller 생존, CoreWebView2 RCW 0개)로 확정.
+> 20:44 "무조작 크래시"(백그라운드 GC 타이밍)·17:52 "재생 중 첫 설정 진입 크래시"와 정합 —
+> H2(stale 배포)가 아니라 이것이 원인이었을 개연성이 높다. 수정: PlayerHost `_core` 필드 강참조
+> (notes.md 2026-07-18 항목 참조).
 
 ## Symptom
 
