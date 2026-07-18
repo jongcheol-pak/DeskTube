@@ -95,7 +95,16 @@ public sealed class PlaybackCoordinator : IDisposable
     /// 핸들러가 이벤트 시점에 항상 현재 값을 읽는다.</summary>
     public Guid? CurrentPlaylistId { get; private set; }
 
+    /// <summary>지금 재생(일시정지 포함) 중인 곡(항목) ID — 정지 상태면 null (우측 항목 목록의 재생 중 표시 정본).
+    /// LastItemId는 정지 후에도 남는 재개용 이력이라 별개다(CurrentPlaylistId↔LastPlaylistId와 대칭).
+    /// 같은 리스트 내 곡 전환은 StatusChanged를 발화하지 않으므로 항목 표시는 CurrentItemChanged로 갱신한다.</summary>
+    public Guid? CurrentItemId { get; private set; }
+
     public event EventHandler<PlaybackStatus>? StatusChanged;
+
+    /// <summary>재생 중인 곡(항목) 전환 알림 — 값 정본은 CurrentItemId (우측 항목 목록 표시 갱신용).
+    /// StatusChanged가 못 잡는 같은 리스트 내 곡 전환(Advance)까지 알린다. 구독자는 CurrentItemId를 읽는다.</summary>
+    public event EventHandler? CurrentItemChanged;
 
     /// <summary>음소거 상태 변경 알림 — 값 정본은 Settings.IsMuted (홈·설정 배지 동기화용, 배지 plan T2).</summary>
     public event EventHandler? MutedChanged;
@@ -210,6 +219,7 @@ public sealed class PlaybackCoordinator : IDisposable
         CleanupAll();
         _queue = null;
         CurrentPlaylistId = null; // StatusChanged(Stopped) 핸들러가 읽으므로 발화 전에 해제
+        SetCurrentItem(null); // 재생 중 항목 표시 해제 — 전 행 순위 복귀
         SetStatus(PlaybackStatus.Stopped);
         Interop.ProcessInterop.TrimWorkingSet(); // 유휴 진입 — 워킹셋 OS 반환 (NFR-2, plan D6)
         return Task.CompletedTask;
@@ -626,6 +636,7 @@ public sealed class PlaybackCoordinator : IDisposable
         // 항목 재생 시작 단일 경로 — 마지막 재생 항목을 기록해 앱 시작 시 재개에 쓴다 (FR-19).
         // 저장은 호출부 몫 (ReloadCurrentTrack은 현재 곡 재로드라 동일 값 재설정 — 저장 불요).
         _settings.LastItemId = item.Id;
+        SetCurrentItem(item.Id); // 재생 중 항목 표시 정본 갱신 — 곡 전환 시 CurrentItemChanged 발화
 
         _suppressEnded = true; // 새 곡 Playing 확인 전까지 이전 곡 Ended 무시
         _errorAdvancePending = false; // 새 곡의 재생 불가 에러는 다시 수용 (이전 곡 잔여 에러의 오도착은
@@ -888,5 +899,18 @@ public sealed class PlaybackCoordinator : IDisposable
 
         Status = status;
         StatusChanged?.Invoke(this, status);
+    }
+
+    /// <summary>재생 중 곡 ID 확정 — ID가 실제로 바뀔 때만 갱신·발화한다 (SetStatus 가드 복제).
+    /// ReloadCurrentTrack의 동일 곡 재로드는 값이 같아 무발화 — 불필요한 UI 갱신 방지.</summary>
+    private void SetCurrentItem(Guid? itemId)
+    {
+        if (CurrentItemId == itemId)
+        {
+            return;
+        }
+
+        CurrentItemId = itemId;
+        CurrentItemChanged?.Invoke(this, EventArgs.Empty);
     }
 }

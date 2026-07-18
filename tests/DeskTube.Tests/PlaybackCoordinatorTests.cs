@@ -208,6 +208,48 @@ public sealed class PlaybackCoordinatorTests
     }
 
     [Fact]
+    public async Task CurrentItemId는_시작에_첫_곡_곡전환에_다음_곡_정지에_해제된다()
+    {
+        var h = new Harness(itemCount: 3);
+        var changed = 0;
+        h.Coordinator.CurrentItemChanged += (_, _) => changed++;
+
+        Assert.Null(h.Coordinator.CurrentItemId);
+
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        Assert.Equal(h.Playlist.Items[0].Id, h.Coordinator.CurrentItemId);
+        Assert.Equal(1, changed); // 첫 곡 설정 발화
+
+        h.Master.RaiseState(PlayerState.Playing); // 억제 해제
+        h.Master.RaiseState(PlayerState.Ended);   // Advance → 다음 곡
+        Assert.Equal(h.Playlist.Items[1].Id, h.Coordinator.CurrentItemId);
+        Assert.Equal(2, changed); // 곡 전환 발화
+
+        h.Coordinator.Pause(); // 일시정지 중에는 값 유지·무발화
+        Assert.Equal(h.Playlist.Items[1].Id, h.Coordinator.CurrentItemId);
+        Assert.Equal(2, changed);
+
+        await h.Coordinator.StopAsync();
+        Assert.Null(h.Coordinator.CurrentItemId);
+        Assert.Equal(3, changed); // 정지 해제 발화
+    }
+
+    [Fact]
+    public async Task 동일_곡_재로드는_CurrentItemChanged를_발화하지_않는다()
+    {
+        var h = new Harness(itemCount: 3);
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        var changedBefore = 0;
+        h.Coordinator.CurrentItemChanged += (_, _) => changedBefore++;
+
+        h.Coordinator.ReloadCurrentTrack(); // 현재 곡을 그대로 재로드 (세션 변경 후 경로)
+
+        // 항목 ID가 그대로라 무발화 — 불필요한 UI 갱신 방지 (SetCurrentItem 가드)
+        Assert.Equal(0, changedBefore);
+        Assert.Equal(h.Playlist.Items[0].Id, h.Coordinator.CurrentItemId);
+    }
+
+    [Fact]
     public async Task 정책_일시정지는_일시정지_후_절전하고_해제는_절전_해제_후_재생한다()
     {
         var h = new Harness(monitorCount: 2);
