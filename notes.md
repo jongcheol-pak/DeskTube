@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **PlayerHost WebView2 상호작용 예외 방어 보강** — 예외처리 점검 후속(사용자 "보강" 요청)
+  - **무엇을**: `PlayerHost.cs`의 WebView2 상호작용 3곳(`PostCommand`의 `PostWebMessageAsJson`, `ResumeFromSuspend`의 `Resume`/`IsVisible`, `OnSurfaceResized`의 `Bounds`)을 신규 private 헬퍼 `TryInteract(context, action)`로 감싸 예외를 흡수·로그. 공개 시그니처·동작 계약 변경 없음(best-effort 명령 전송은 그대로).
+  - **왜**: 렌더러 프로세스 크래시 직후 `_controller`는 non-null이나 `CoreWebView2`가 무효인 짧은 창에서 위 interop 호출이 예외를 던지면, UI 스레드라 전역 `UnhandledException`까지 전파돼 최악의 경우 프로세스 종료 가능. 복구는 이미 `OnProcessFailed`(렌더러 1회 Reload / 그 외 -2 위임)가 담당하므로 이 경로는 무시가 맞음.
+  - **결정**: 초기화 경로(line 78 주석)와 동일하게 "전용 예외 타입이 WinRT 프로젝션에 없다"는 이유로 broad `catch (Exception)` + `ex.GetType().Name`·HResult 로그. reverse P/Invoke 콜백 방어 패턴과 일관.
+  - **검증**: `dotnet build DeskTube.slnx -c Debug -p:Platform=x64` 경고 0·오류 0. (LSP는 CommunityToolkit/WinUI 소스생성기 참조를 미해석해 다수 CS0246/CS0234를 냈으나 실제 빌드와 무관 — 빌드로 확인.) 렌더러 크래시 직후 시나리오 실제 재현은 HUMAN-VERIFY 잔여(발생 빈도 낮음).
 - 2026-07-18: **재생 중인 곡(항목) 표시 — 우측 항목 목록 (T1~T3, FR-18 보강)** — plan: `docs/plans/2026-07-18-now-playing-item.md`, 브랜치 `task/now-playing-item`
   - **무엇을**: ① T1 `PlaybackCoordinator.CurrentItemId`(Guid?, 정지 시 null) 공개 속성 + `CurrentItemChanged` 공개 이벤트 신설 — `SetCurrentItem`이 ID 변화 시에만 발화(SetStatus 가드 복제), LoadAll(단일 곡 로드 경로)에서 확정·StopAsync에서 해제. StartAsync는 `CurrentPlaylistId`를 LoadAll(이벤트 발화) 앞으로 이동. 테스트 2건(시작·전환·일시정지 무발화·정지 수명주기 + 동일 곡 재로드 무발화) ② T2 우측 항목 — `PlaylistItemEntry.IsNowPlaying` + `UpdateNowPlayingItem`(전 Items에 `entry.Id==CurrentItemId` 반영) + CurrentItemChanged 구독(Populate 멱등 재구독·Detach 해제·TryEnqueue 마셜링) + RefreshItems·Populate 말미 초기 반영, XAML col0에 순위 TextBlock + 스피커 FontIcon(E767·AppAccentBrush) 겹침·`RankVisibility` 정적 헬퍼로 순위 가시성 토글, 접근성 이름·툴팁은 기존 `NowPlayingLabel()` resw 재사용 ③ T3 PRD FR-18 보강(본문·검증방법 CurrentItemId·변경 이력) + README 차트형 목록 설명
   - **왜**: 사용자 요청 — 배경 재생 중인 곡이 우측 항목 목록에서 어느 행인지 시각 표시. 직전 now-playing 작업(2026-07-17)은 **리스트 단위**였고 항목 단위를 Out of Scope로 남긴 후속. 표시 형태(순위 자리 코럴 스피커 E767)·PRD 보강은 질문 라운드 확정

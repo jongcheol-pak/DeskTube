@@ -145,12 +145,15 @@ public sealed class PlayerHost : IPlayerHost
             return;
         }
 
-        if (controller.CoreWebView2 is { IsSuspended: true } core)
+        TryInteract("플레이어 절전 해제", () =>
         {
-            core.Resume();
-        }
+            if (controller.CoreWebView2 is { IsSuspended: true } core)
+            {
+                core.Resume();
+            }
 
-        controller.IsVisible = true;
+            controller.IsVisible = true;
+        });
     }
 
     public void Dispose()
@@ -171,7 +174,8 @@ public sealed class PlayerHost : IPlayerHost
 
     /// <summary>배경창 크기 변경 추종 (해상도 변경 재배치 — plan D3).</summary>
     private void OnSurfaceResized(int width, int height) =>
-        _controller?.Bounds = new Windows.Foundation.Rect(0, 0, width, height);
+        TryInteract("플레이어 크기 반영", () =>
+            _controller?.Bounds = new Windows.Foundation.Rect(0, 0, width, height));
 
     private void PostCommand(PlayerCommand command)
     {
@@ -185,7 +189,26 @@ public sealed class PlayerHost : IPlayerHost
                 ResumeFromSuspend();
             }
 
-            core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand));
+            // 렌더러 크래시 직후 core가 무효인 짧은 창에서 전송이 던질 수 있음 — 흡수 (복구는 OnProcessFailed 담당)
+            TryInteract("플레이어 명령 전송", () =>
+                core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand)));
+        }
+    }
+
+    /// <summary>
+    /// WebView2 상호작용을 감싸 렌더러 크래시 직후(컨트롤은 살아있으나 코어가 무효인 짧은 창)의
+    /// 예외를 흡수한다. 전용 예외 타입이 WinRT 프로젝션에 없어 초기화 경로와 동일하게 넓게 잡는다.
+    /// 명령 전송·크기 반영·절전 해제는 best-effort — ProcessFailed 복구나 다음 명령에서 회복된다.
+    /// </summary>
+    private static void TryInteract(string context, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"{context} 실패(무시): {ex.GetType().Name} 0x{ex.HResult:X8}");
         }
     }
 
