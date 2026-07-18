@@ -1,12 +1,9 @@
 # Deferred 대장
 
 ## 대기
-- [2026-07-16] AGENTS.md Test 명령에 `-p:Platform=x64` 추가 — record-project-fact로 사용자 승인 후 갱신 (출처: 2026-07-15-desktube-core-part1 T1)
-- [2026-07-17] AGENTS.md Stack의 net8.0 표기를 실물(net10.0-windows10.0.22621.0)로 갱신 — record-project-fact 승인 필요 (출처: 2026-07-17-autoplay-on-launch F-7 부수 발견)
 - [2026-07-16] DI 컨테이너(Microsoft.Extensions.DependencyInjection) 도입 여부 — part2에서도 수동 컴포지션 루트 유지, 의존성 추가는 사용자 승인 필요. 도입·AppServices 재생성 구조 도입 시 PowerPolicyService의 PowerManager 정적 이벤트 해제 로직 동반 필요 (출처: 2026-07-15-desktube-core-part1 D13, F-7 m2)
 - [2026-07-16] Microsoft Store 실제 제출(계정·심사·identity 교체) — 앱 완성 후 사용자 수행 (출처: docs/prd.md)
 - [2026-07-16] T8 실측 3건 사용자 수행 — WACK(관리자)·대기 워킹셋(≤150MB)·콜드 스타트(≤3초), `docs/verification-2026-07.md` 체크리스트 (출처: 2026-07-15-desktube-ui-part2 T8)
-- [2026-07-16] AGENTS.md Build 섹션에 MSIX 패키징 명령(MSBuild 경로 포함) 기록 — record-project-fact 승인 필요 (출처: part2 T8, suggest-agents-record hook)
 - [2026-07-16] AGENTS.md 다국어 규칙 3-④ 문구 보정 검토 — "새 Frame 재로드" → "창 재생성"(x:Uid NavigationView 항목 제약) (출처: part2 T7 spec MINOR)
 - [2026-07-16] AGENTS.md 디자인 규칙 6에 마스터-디테일 페이지 골격 예외 명시 검토 (출처: part2 T3 quality MINOR)
 - [2026-07-16] PlaylistsViewModel Rename/AddItem 실패 안내의 ErrorCode별 분기 — 오류 원인 늘어나면 (출처: part2 T3 quality MINOR)
@@ -31,6 +28,7 @@
 - [2026-07-17] 볼륨 디바운스 테스트가 실시간 Task.Delay(1200) 의존 — 가상 시계 인프라 도입 시 전환 검토, 현재 여유폭 2.4배 (출처: 2026-07-17-perf-optimizations T2 quality m2)
 
 ## 종결
+- [2026-07-16 → 2026-07-18] AGENTS.md Test 명령에 `-p:Platform=x64` 추가 · Stack net8.0→net10.0 실물 갱신 · Build & Test에 MSIX 패키징 명령 기록 — 반영 (record-project-fact, 사용자 "모두 수정" 승인. csproj TargetFramework·README/verification 문서로 값 검증). **주의**: AGENTS.md는 `~/.gitignore_global`로 전역 제외되어 커밋 안 됨 — 이 반영은 이 PC 로컬 전용(자동 로드는 정상, PC 간 공유 X, 사용자 "로컬 전용 유지" 결정)
 - [2026-07-17 → 2026-07-17] 트레이 메뉴 "재생"도 마지막 항목부터 재개하도록 통일 — 반영 (2026-07-17-home-defaults-tray T7: StartAsync(id, LastItemId) 전달, D8)
 - [2026-07-17 → 2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 (PRD FR 신설 합의 필요) — 반영 (2026-07-17-autoplay-on-launch T1~T5: FR-19 신설, 항목 단위 재개 + 부팅 경로 통일)
 - [2026-07-16 → 2026-07-17] MainWindow 커스텀 타이틀바 Grid 높이 48px 고정 검토 — 반영 (2026-07-16-design-1a-restyle T3: 시안 확정값 44px을 AppTitleBarHeight 토큰으로 교체, 캡션 버튼 색도 토큰 정합)

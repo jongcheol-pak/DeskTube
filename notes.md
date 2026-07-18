@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **AGENTS.md 프로젝트 사실 3건 기록 (record-project-fact)** — Deferred 대장 대기 항목 소진
+  - **무엇을**: ① Stack 표기 `.NET 8`/`net8.0-…` → `.NET 10`/`net10.0-windows10.0.22621.0`(csproj `TargetFramework` 실물) ② Build & Test의 Test 명령에 `-c Debug -p:Platform=x64` 추가(미지정 시 MSIX AnyCPU 오류) ③ MSIX 사이드로드 패키징 명령(`MSBuild … GenerateAppxPackageOnBuild=true UapAppxPackageBuildMode=SideloadOnly AppxBundle=Never`) 기록. `docs/plans/deferred.md`의 해당 3개 대기 항목을 종결로 이동
+  - **왜**: 사용자 "모두 수정" 요청 — Deferred에 쌓인 AGENTS.md stale/누락 항목 정리. AGENTS.md는 세션 시작 시 자동 로드되므로 재발견(grep) 비용 제거
+  - **검증**: 값 교차검증 — TFM은 `src/DeskTube/DeskTube.csproj` 직접 확인, Test 플랫폼 플래그·MSIX 명령은 notes/`docs/verification-2026-07.md`/README의 검증 이력과 일치(추측 아님). 문서 변경이라 빌드 대상 아님
+  - **함정 (중요)**: `AGENTS.md`는 `~/.gitignore_global`(5행 `AGENTS.md`)로 **전역 제외** → git 미추적·**커밋 안 됨**. 이 PC에서는 세션 시작 자동 로드로 정상 반영되나 **다른 PC로는 공유되지 않음**. 사용자 확인 결과 "로컬 전용 유지"로 결정(전역 정책 존중). ⇒ AGENTS.md에 사실을 기록해도 PC 간 공유는 안 되므로, 크로스 PC 공유가 필요한 규약은 커밋되는 문서(notes/deferred/README)에 남길 것
 - 2026-07-18: **정보 화면 후원 링크 카드 추가 (T1~T2, FR-21 신설)** — plan: `docs/plans/2026-07-18-sponsor-link.md`, 브랜치 `task/sponsor-link`
   - **무엇을**: ① T1 PRD `docs/prd.md`에 FR-21(정보 화면 개발 지원 후원 링크 — GitHub Sponsors, Could) 신설 + 변경 이력 1줄 ② T2 정보(About) 화면 개인정보 카드와 라이선스 제목 사이에 `controls:SettingsCard`(클릭형, HeaderIcon 채운 하트 `EB52`·ActionIcon 외부링크 `E8A7`) 추가, `AboutPage.xaml.cs`에 `OnSupportCardClick` 핸들러 + `SponsorUrl` 상수(`https://github.com/sponsors/jongcheol-pak`) — 기존 `OnLicenseCardClick`의 `Windows.System.Launcher.LaunchUriAsync` + try-catch·`AppLog.Write` 패턴 그대로 복제, `Strings/{ko-KR,en-US}` `SupportCard.Header`/`.Description`(개발 지원 / Support development 등), README 정보 화면 기능 갱신
   - **왜**: 사용자 요청 — 앱에 개발자 후원(기부) 링크 추가. 배치(설정 vs 정보)는 질문 라운드에서 **정보 화면**으로 확정(관례상 후원은 정보 화면, 기존 라이선스 카드 외부 링크 패턴 재사용). 단일 채널·PRD 신규 FR 등록·추천 기본 문구·하트 아이콘 모두 질문 확정. URL은 사용자 제공(공개 Sponsors 페이지라 시크릿 아님)
