@@ -1,6 +1,12 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **정보 화면 후원 링크 카드 추가 (T1~T2, FR-21 신설)** — plan: `docs/plans/2026-07-18-sponsor-link.md`, 브랜치 `task/sponsor-link`
+  - **무엇을**: ① T1 PRD `docs/prd.md`에 FR-21(정보 화면 개발 지원 후원 링크 — GitHub Sponsors, Could) 신설 + 변경 이력 1줄 ② T2 정보(About) 화면 개인정보 카드와 라이선스 제목 사이에 `controls:SettingsCard`(클릭형, HeaderIcon 채운 하트 `EB52`·ActionIcon 외부링크 `E8A7`) 추가, `AboutPage.xaml.cs`에 `OnSupportCardClick` 핸들러 + `SponsorUrl` 상수(`https://github.com/sponsors/jongcheol-pak`) — 기존 `OnLicenseCardClick`의 `Windows.System.Launcher.LaunchUriAsync` + try-catch·`AppLog.Write` 패턴 그대로 복제, `Strings/{ko-KR,en-US}` `SupportCard.Header`/`.Description`(개발 지원 / Support development 등), README 정보 화면 기능 갱신
+  - **왜**: 사용자 요청 — 앱에 개발자 후원(기부) 링크 추가. 배치(설정 vs 정보)는 질문 라운드에서 **정보 화면**으로 확정(관례상 후원은 정보 화면, 기존 라이선스 카드 외부 링크 패턴 재사용). 단일 채널·PRD 신규 FR 등록·추천 기본 문구·하트 아이콘 모두 질문 확정. URL은 사용자 제공(공개 Sponsors 페이지라 시크릿 아님)
+  - **함정·결정**: 후원 URL은 번역 대상이 아니라 resw가 아닌 code-behind 상수로 둠(라이선스 URL이 index.json 데이터인 것과 대비 — 주석 명시) / 하트 글리프는 plan-reviewer MINOR 반영해 외곽선 `EB51`→채운 `EB52` / 정적 링크·ViewModel 미변경이라 라이선스 카드처럼 code-behind 핸들러로 충분(추상화 없음, YAGNI)
+  - **검증**: 빌드 경고 0·오류 0 / 테스트 121/121(회귀 없음, 신규 테스트 없음 — 정적 링크·UI) / dotnet format 위반 0 / T2 spec+quality 이중 리뷰 OK(이슈 0) / plan-reviewer BLOCKER·MAJOR 0(MINOR 1 하트 글리프 반영) / F-7·Phase G 통과. **HUMAN-VERIFY 잔여**: ① 정보 화면에 "개발 지원" 카드 시각 표시(하트·외부링크 아이콘) ② 카드 클릭 → 기본 브라우저에서 GitHub Sponsors 페이지 열림 ③ 언어 전환 시 ko/en 문구
+  - **유의사항(비차단)**: 외부 후원 링크는 Microsoft Store에서 일반적으로 허용되나 Store 제출 전 최신 정책 확인 권장(개발·빌드 무관)
 - 2026-07-17: **성능 최적화 3건 — 정책 일시정지 절전·볼륨 저장 디바운스·미러 캡 기본 켬 (T1~T4, NFR-1·NFR-2 보강)** — plan: `docs/plans/2026-07-17-perf-optimizations.md`, 브랜치 `task/perf-optimizations`
   - **무엇을**: ① T1 `IPlayerHost.Suspend()/ResumeFromSuspend()` 신설 — PlayerHost가 `IsVisible=false` 후 `TrySuspendAsync`(best-effort, 실패 로그만), 해제는 `IsSuspended` 확인 Resume + `IsVisible=true`, PostCommand가 절전 중이면 자동 해제 후 전송. 코디네이터 `PolicyPause` → PauseAll 후 SuspendAll, `ResumeOrSkipFailed` 초입 ResumeAllFromSuspend(사용자 Resume·PolicyResume 공용 합류점) — 사용자 일시정지는 비절전 ② T2 `SetVolumeAsync` — 플레이어 반영 즉시 + 저장은 CTS 교체·500ms 디바운스(마지막 값 1회), Dispose에서 pending 시 FireAndForget 최종 저장 ③ T3 `AppSettings.ReduceMirrorQuality` 기본 true(신규 설치·필드 미기록만 — 직렬화가 기본값도 기록해 기존 파일은 유지), 테스트 Harness false 고정·왕복 값 반전·기본값 단언 ④ T4 PRD NFR-1(절전)·NFR-2(미러 캡 기본) 보강 + README
   - **왜**: 성능 검토(정적 분석) 후 사용자 "모두 수정" — 정책 일시정지(전체화면·배터리 세이버·잠금)는 장시간 지속되는데 WebView2가 풀 상주(모니터당 수백 MB + 컴포지팅), 볼륨 드래그가 틱마다 settings.json 원자 쓰기, 미러 캡은 다중 모니터 CPU 최대 레버인데 opt-in. 적용 범위(정책 전체·사용자 일시정지 제외)·미러 캡 기본 켬은 질문 라운드 확정
