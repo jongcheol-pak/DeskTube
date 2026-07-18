@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **앱 버전 0.1.0.0 → 1.0.0.0 상향 (Store 배포 준비)** — 사용자 요청. `Package.appxmanifest`의 `Identity/@Version` 한 줄만 변경. 첫 Store 제출 관례상 1.0.0.0으로 확정. 정보 화면은 `Package.Current.Id.Version`을 동적으로 읽으므로(AboutViewModel.ResolveVersion) 하드코딩 수정 불필요 — 자동 반영. manifest는 VS 생성 관례대로 UTF-8 BOM 유지(원본도 BOM, CLAUDE.md 인코딩 예외). **검증**: Release 빌드(`-p:Platform=x64`) 경고 0·오류 0(매니페스트 파싱 정상). **배포 잔여(사용자 수행)**: Identity 교체(VS Store 연결 마법사)·개인정보처리방침 URL·WACK 통과·실측 3건·파트너 센터 등록 — Deferred 대장 참조.
 - 2026-07-18: **콘텐츠 고정 폭 1000 → 900 축소** — 사용자 요청. `Resources/DesignTokens.xaml`의 `AppPageContentWidth` 토큰 값 하나만 변경(1000→900)해 홈·설정·정보 공통 콘텐츠 폭과 플레이리스트 최소 폭에 일괄 전파. 값을 명시하던 주석 5곳(DesignTokens·SettingsPage·AboutPage·HomePage·PlaylistsPage.xaml + PlaylistsPage.xaml.cs)과 AGENTS.md 디자인 규칙 6번 문구를 900으로 동기 갱신. **검증**: `dotnet build -p:Platform=x64` 경고 0·오류 0. 실제 레이아웃 폭은 사용자 화면 확인 필요(HUMAN-VERIFY).
 - 2026-07-18: **한글 리소스 UI 문구 간결화 2건 (humanize)** — `ko-KR/Resources.resw`의 진행형("~하고 있습니다") 2건을 "~중입니다"로 다듬음(`Common_NotReady`, `Playlists_DeletePlayingConfirm`). AI 티 점검 결과 등급 A(수정 불필요)였고, 사용자가 선택한 미세 다듬기만 반영. 커밋 `525677f`.
 - 2026-07-18: **AGENTS.md 프로젝트 사실 3건 기록 (record-project-fact)** — Deferred 대장 대기 항목 소진

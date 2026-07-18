@@ -10,7 +10,7 @@
   <Identity
     Name="DeskTube.Dev"
     Publisher="CN=DeskTubeDev"
-    Version="0.1.0.0" />
+    Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>ms-resource:///Resources/AppDisplayName</DisplayName>
