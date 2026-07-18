@@ -193,22 +193,20 @@
                         Foreground="{ThemeResource AppTextTertiaryBrush}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <!-- 셔플듣기/전체듣기 — 재생을 시작한 모드의 버튼에만 문구 뒤 정지 아이콘을 표시하고
-                         그 버튼 클릭 시 정지한다 (문구는 유지 — mode-indicator plan D1·D4) -->
+                    <!-- 셔플듣기/전체듣기 — 재생을 시작한 모드의 버튼은 선행 아이콘이 정지 아이콘으로 바뀌고
+                         그 버튼 클릭 시 정지한다 (문구 유지, 툴팁·접근성 이름은 재생 중에만 "정지" — leading-stop-glyph plan D1·D2) -->
                     <Button
                         Style="{StaticResource AppPillButtonStyle}"
                         PointerEntered="OnOutlineButtonPointerEntered"
                         PointerExited="OnOutlineButtonPointerExited"
                         Command="{x:Bind ViewModel.ShuffleAllCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE8B1;" FontSize="13" />
-                            <TextBlock x:Uid="ShuffleAllLabel" FontSize="13" />
                             <FontIcon
-                                Glyph="&#xE71A;"
-                                FontSize="12"
-                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.StopLabel()}"
-                                ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.StopLabel()}"
-                                Visibility="{x:Bind ViewModel.IsShufflePlaying, Mode=OneWay}" />
+                                Glyph="{x:Bind local:PlaylistsPage.ShuffleToggleGlyph(ViewModel.IsShufflePlaying), Mode=OneWay}"
+                                FontSize="13"
+                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.StopTip(ViewModel.IsShufflePlaying), Mode=OneWay}"
+                                ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.StopTip(ViewModel.IsShufflePlaying), Mode=OneWay}" />
+                            <TextBlock x:Uid="ShuffleAllLabel" FontSize="13" />
                         </StackPanel>
                     </Button>
                     <Button
@@ -217,14 +215,12 @@
                         CornerRadius="{StaticResource AppCardCornerRadius}"
                         Command="{x:Bind ViewModel.PlayCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE768;" FontSize="13" />
-                            <TextBlock x:Uid="PlayAllLabel" FontSize="13" FontWeight="SemiBold" />
                             <FontIcon
-                                Glyph="&#xE71A;"
-                                FontSize="12"
-                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.StopLabel()}"
-                                ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.StopLabel()}"
-                                Visibility="{x:Bind ViewModel.IsSequentialPlaying, Mode=OneWay}" />
+                                Glyph="{x:Bind local:PlaylistsPage.PlayToggleGlyph(ViewModel.IsSequentialPlaying), Mode=OneWay}"
+                                FontSize="13"
+                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.StopTip(ViewModel.IsSequentialPlaying), Mode=OneWay}"
+                                ToolTipService.ToolTip="{x:Bind local:PlaylistsPage.StopTip(ViewModel.IsSequentialPlaying), Mode=OneWay}" />
+                            <TextBlock x:Uid="PlayAllLabel" FontSize="13" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
