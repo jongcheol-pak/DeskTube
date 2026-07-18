@@ -24,6 +24,13 @@ public sealed class PlayerHost : IPlayerHost
     private readonly WallpaperSurface _surface;
     private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
     private CoreWebView2Controller? _controller;
+
+    /// <summary>CoreWebView2 RCW 강참조 — 반드시 필드로 수명을 고정해야 한다 (2026-07-18 크래시 수정).
+    /// CsWinRT의 WinRT 이벤트 구독 상태는 ConditionalWeakTable&lt;RCW, EventSource&gt;로 RCW 인스턴스에
+    /// 약하게 붙으므로, 프로퍼티(_controller.CoreWebView2)로만 접근하면 GC가 RCW를 수집해
+    /// (페이지 전환 등 할당 급증 시) 네이티브 WebMessageReceived 콜백이 해제된 스텁을 호출
+    /// → CLR fatal(ExecutionEngineException)로 즉사한다 — 덤프 분석으로 확정된 재생 중 크래시.</summary>
+    private CoreWebView2? _core;
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _retryTimer;
     private int _apiLoadRetries;
     private bool _renderProcessRecovered;
@@ -56,7 +63,7 @@ public sealed class PlayerHost : IPlayerHost
             _controller.IsVisible = true;
             _surface.Resized += OnSurfaceResized;
 
-            var core = _controller.CoreWebView2;
+            var core = _core = _controller.CoreWebView2; // RCW 강참조 확보 — 필드 주석 참조
 
             // 배경화면 용도 — 사용자 상호작용 UI 전부 차단
             core.Settings.AreDefaultContextMenusEnabled = false;
@@ -72,7 +79,9 @@ public sealed class PlayerHost : IPlayerHost
             core.WebMessageReceived += OnWebMessageReceived;
             core.ProcessFailed += OnProcessFailed;
 
-            core.Navigate($"https://{VirtualHost}/player.html");
+            // 쿼리스트링 캐시 무력화 — WebView2가 가상 호스트 응답을 HTTP 캐시할 수 있어(프로필 영속),
+            // 앱 업데이트 후에도 옛 player.html이 실행되는 것을 방지한다 (실행마다 새 URL → 항상 디스크 최신본)
+            core.Navigate($"https://{VirtualHost}/player.html?t={Environment.TickCount64}");
             return Result.Ok();
         }
         catch (Exception ex)
@@ -111,20 +120,24 @@ public sealed class PlayerHost : IPlayerHost
     /// TrySuspendAsync는 IsVisible=false 선행이 필수이며 best-effort다(거부돼도 렌더링 중단 효과는 유지 — plan D7).</summary>
     public void Suspend()
     {
-        if (_controller is not { } controller)
+        if (_controller is not { } controller || _core is not { } core)
         {
             return;
         }
 
-        controller.IsVisible = false;
-        _ = TrySuspendCoreAsync(controller);
+        // IsVisible 설정도 프로세스 무효 창에서 던질 수 있음 — PostCommand와 동일 부류라 함께 흡수
+        TryInteract("플레이어 절전", () =>
+        {
+            controller.IsVisible = false;
+            _ = TrySuspendCoreAsync(core);
+        });
     }
 
-    private static async Task TrySuspendCoreAsync(CoreWebView2Controller controller)
+    private static async Task TrySuspendCoreAsync(CoreWebView2 core)
     {
         try
         {
-            var suspended = await controller.CoreWebView2.TrySuspendAsync();
+            var suspended = await core.TrySuspendAsync();
             if (!suspended)
             {
                 AppLog.Write("플레이어 절전 요청 거부(렌더링 중단만 적용) — best-effort");
@@ -147,7 +160,7 @@ public sealed class PlayerHost : IPlayerHost
 
         TryInteract("플레이어 절전 해제", () =>
         {
-            if (controller.CoreWebView2 is { IsSuspended: true } core)
+            if (_core is { IsSuspended: true } core)
             {
                 core.Resume();
             }
@@ -162,7 +175,7 @@ public sealed class PlayerHost : IPlayerHost
         _retryTimer = null;
         _surface.Resized -= OnSurfaceResized;
 
-        if (_controller?.CoreWebView2 is { } core)
+        if (_core is { } core)
         {
             core.WebMessageReceived -= OnWebMessageReceived;
             core.ProcessFailed -= OnProcessFailed;
@@ -170,6 +183,7 @@ public sealed class PlayerHost : IPlayerHost
 
         _controller?.Close();
         _controller = null;
+        _core = null; // RCW 강참조 해제 — 이후 GC 수집 허용 (구독은 위에서 해제됨)
     }
 
     /// <summary>배경창 크기 변경 추종 (해상도 변경 재배치 — plan D3).</summary>
@@ -180,18 +194,21 @@ public sealed class PlayerHost : IPlayerHost
     private void PostCommand(PlayerCommand command)
     {
         // 초기화 전·파괴 후 명령은 무시 (ready 전 큐잉은 JS 측이 담당)
-        if (_controller?.CoreWebView2 is { } core)
+        if (_core is { } core)
         {
-            // 절전 중엔 페이지 스크립트가 정지라 메시지 처리가 보장되지 않음 — 명시 해제 후 전송.
-            // 재절전은 하지 않는다 (드문 경로 — 다음 정책 일시정지에서 회복, plan D3)
-            if (core.IsSuspended)
-            {
-                ResumeFromSuspend();
-            }
-
-            // 렌더러 크래시 직후 core가 무효인 짧은 창에서 전송이 던질 수 있음 — 흡수 (복구는 OnProcessFailed 담당)
+            // 프로세스 크래시 직후 core가 무효인 짧은 창에선 IsSuspended 조회부터 0x8007139F를 던진다
+            // — 조회·전송 전체를 흡수 (복구는 OnProcessFailed 담당, 2026-07-18 정책 일시정지 크래시 수정)
             TryInteract("플레이어 명령 전송", () =>
-                core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand)));
+            {
+                // 절전 중엔 페이지 스크립트가 정지라 메시지 처리가 보장되지 않음 — 명시 해제 후 전송.
+                // 재절전은 하지 않는다 (드문 경로 — 다음 정책 일시정지에서 회복, plan D3)
+                if (core.IsSuspended)
+                {
+                    ResumeFromSuspend();
+                }
+
+                core.PostWebMessageAsJson(JsonSerializer.Serialize(command, PlayerJsonContext.Default.PlayerCommand));
+            });
         }
     }
 
@@ -222,6 +239,8 @@ public sealed class PlayerHost : IPlayerHost
             {
                 case "ready":
                     _apiLoadRetries = 0;
+                    // rev 로그 — 실행 중인 player.html 버전 확인 (WebView2 캐시로 옛 파일이 돌 수 있음)
+                    AppLog.Write($"플레이어 준비 (player.html rev {(root.TryGetProperty("rev", out var rev) ? rev.GetInt32() : 0)})");
                     Ready?.Invoke(this, EventArgs.Empty);
                     break;
 
@@ -231,6 +250,11 @@ public sealed class PlayerHost : IPlayerHost
 
                 case "error":
                     HandlePlayerError(root.GetProperty("code").GetInt32());
+                    break;
+
+                case "diag":
+                    // JS 측 진단 보고 (시작 감시 판정 근거 등) — 스킵 미동작류 조사용
+                    AppLog.Write($"플레이어 진단: {root.GetProperty("msg").GetString()}");
                     break;
 
                 case "time":
@@ -257,7 +281,7 @@ public sealed class PlayerHost : IPlayerHost
             _retryTimer = _dispatcherQueue.CreateTimer();
             _retryTimer.Interval = ApiRetryDelay;
             _retryTimer.IsRepeating = false;
-            _retryTimer.Tick += (_, _) => _controller?.CoreWebView2?.Reload();
+            _retryTimer.Tick += (_, _) => _core?.Reload();
             _retryTimer.Start();
             return;
         }
@@ -277,7 +301,7 @@ public sealed class PlayerHost : IPlayerHost
         if (e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessExited && !_renderProcessRecovered)
         {
             _renderProcessRecovered = true;
-            _controller?.CoreWebView2?.Reload();
+            _core?.Reload();
             return;
         }
 

@@ -14,6 +14,12 @@ public sealed partial class LoginWindow : Window
 {
     private bool _isClosed;
 
+    /// <summary>CoreWebView2 RCW 강참조 — 이벤트 구독 기간 내내 필드로 수명을 고정해야 한다.
+    /// CsWinRT 이벤트 구독 상태는 RCW 인스턴스에 약참조(ConditionalWeakTable)로 붙으므로,
+    /// 프로퍼티 체인(LoginWebView.CoreWebView2)으로만 접근하면 GC가 RCW를 수집해 구독이 소실되거나
+    /// 네이티브 콜백이 해제된 스텁을 호출해 죽는다 (PlayerHost와 동일 — 2026-07-18 크래시 수정).</summary>
+    private CoreWebView2? _core;
+
     public LoginWindow()
     {
         InitializeComponent();
@@ -32,11 +38,12 @@ public sealed partial class LoginWindow : Window
     private void OnClosed(object sender, WindowEventArgs args)
     {
         _isClosed = true;
-        if (LoginWebView.CoreWebView2 is { } core)
+        if (_core is { } core)
         {
             core.NavigationCompleted -= OnNavigationCompleted;
         }
 
+        _core = null; // RCW 강참조 해제 — 이후 GC 수집 허용
         LoginWebView.Close(); // 생성 진행 중이면 취소, 완료 상태면 컨트롤러 해제
     }
 
@@ -46,8 +53,9 @@ public sealed partial class LoginWindow : Window
         {
             var environment = await WebViewEnvironment.GetAsync();
             await LoginWebView.EnsureCoreWebView2Async(environment);
-            LoginWebView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-            LoginWebView.CoreWebView2.Navigate("https://www.youtube.com/signin");
+            var core = _core = LoginWebView.CoreWebView2; // RCW 강참조 확보 — 필드 주석 참조
+            core.NavigationCompleted += OnNavigationCompleted;
+            core.Navigate("https://www.youtube.com/signin");
         }
         catch (Exception ex)
         {
