@@ -123,6 +123,11 @@ public partial class PlaylistsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool HasSelection { get; set; }
 
+    /// <summary>선택한 리스트가 지금 배경 재생(일시정지 포함) 중인가 — 상단 전체듣기/정지 토글 버튼 상태.
+    /// 정본은 Coordinator.CurrentPlaylistId이고 이 값은 미러다 (stop-toggle plan T1·D1).</summary>
+    [ObservableProperty]
+    public partial bool IsSelectedPlaying { get; set; }
+
     /// <summary>페이지 진입 시 호출 (SettingsViewModel과 동일한 지연 초기화 패턴).</summary>
     public void Load()
     {
@@ -197,7 +202,8 @@ public partial class PlaylistsViewModel : ObservableObject
     private void OnCurrentItemChanged(object? sender, EventArgs e) =>
         _dispatcher?.TryEnqueue(UpdateNowPlayingItem);
 
-    /// <summary>재생 중 리스트 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).</summary>
+    /// <summary>재생 중 리스트 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).
+    /// 상단 전체듣기/정지 토글 상태도 같은 정본에서 함께 갱신한다 (stop-toggle plan T1).</summary>
     private void UpdateNowPlaying()
     {
         var currentId = _services?.Coordinator.CurrentPlaylistId;
@@ -205,6 +211,8 @@ public partial class PlaylistsViewModel : ObservableObject
         {
             entry.IsNowPlaying = entry.Id == currentId;
         }
+
+        IsSelectedPlaying = SelectedPlaylist is not null && SelectedPlaylist.Id == currentId;
     }
 
     /// <summary>재생 중 항목 글리프 갱신 — 정본은 Coordinator.CurrentItemId (정지 시 null → 전부 해제).
@@ -253,6 +261,9 @@ public partial class PlaylistsViewModel : ObservableObject
         {
             entry.IsActive = ReferenceEquals(entry, value);
         }
+
+        // 선택이 바뀌면 토글 상태도 즉시 재판정 — StatusChanged 없이 선택만 바뀌는 경우 대비 (stop-toggle plan T1)
+        IsSelectedPlaying = value is not null && _services?.Coordinator.CurrentPlaylistId == value.Id;
 
         // 마지막 선택 기억 — null(목록 재구성·삭제 중 일시 해제)은 기록하지 않는다 (plan T2·D3)
         if (value is not null && _services is not null
@@ -608,16 +619,36 @@ public partial class PlaylistsViewModel : ObservableObject
 
     // ---- 재생 (FR-18 — 전체듣기/셔플듣기/행 재생 3진입점이 공통 헬퍼 공유, plan 4-D) ----
 
-    /// <summary>전체듣기 — 목록 순서대로 리스트 처음부터 (끝나면 반복 — FR-7).</summary>
+    /// <summary>전체듣기/정지 토글 — 선택 리스트가 재생(일시정지 포함) 중이면 정지,
+    /// 아니면 목록 순서대로 리스트 처음부터 (끝나면 반복 — FR-7, 토글은 stop-toggle plan D1).</summary>
     [RelayCommand]
-    private Task PlayAsync() => StartPlaybackAsync(startItemId: null, shuffle: false);
+    private async Task PlayAsync()
+    {
+        if (IsSelectedPlaying && _services is not null)
+        {
+            await _services.Coordinator.StopAsync();
+            return;
+        }
+
+        await StartPlaybackAsync(startItemId: null, shuffle: false);
+    }
 
     /// <summary>셔플듣기 — 재생 모드를 셔플로 바꿔(설정에 영속, plan D4) 시작.</summary>
     [RelayCommand]
     private Task ShuffleAllAsync() => StartPlaybackAsync(startItemId: null, shuffle: true);
 
-    /// <summary>행 재생 — 해당 항목부터 목록 순서대로 (plan D3, View의 행 버튼 핸들러가 호출).</summary>
-    public Task PlayItemAsync(PlaylistItemEntry entry) => StartPlaybackAsync(entry.Id, shuffle: false);
+    /// <summary>행 재생/정지 토글 — 재생 중인 곡의 행이면 정지, 아니면 해당 항목부터 목록 순서대로
+    /// (FR-18 행 재생 + stop-toggle plan D2, View의 행 버튼 핸들러가 호출).</summary>
+    public async Task TogglePlayItemAsync(PlaylistItemEntry entry)
+    {
+        if (entry.IsNowPlaying && _services is not null)
+        {
+            await _services.Coordinator.StopAsync();
+            return;
+        }
+
+        await StartPlaybackAsync(entry.Id, shuffle: false);
+    }
 
     private async Task StartPlaybackAsync(Guid? startItemId, bool shuffle)
     {

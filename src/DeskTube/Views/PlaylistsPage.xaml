@@ -203,14 +203,27 @@
                             <TextBlock x:Uid="ShuffleAllLabel" FontSize="13" />
                         </StackPanel>
                     </Button>
+                    <!-- 전체듣기/정지 토글 — 선택 리스트 재생(일시정지 포함) 중이면 정지 표시 (stop-toggle plan D1·D4).
+                         문구는 x:Uid 두 개를 가시성 스왑(하드코딩 금지 — RankVisibility 상호배타 선례) -->
                     <Button
                         Style="{StaticResource AccentButtonStyle}"
                         Padding="18,9"
                         CornerRadius="{StaticResource AppCardCornerRadius}"
                         Command="{x:Bind ViewModel.PlayCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE768;" FontSize="13" />
-                            <TextBlock x:Uid="PlayAllLabel" FontSize="13" FontWeight="SemiBold" />
+                            <FontIcon
+                                Glyph="{x:Bind local:PlaylistsPage.PlayToggleGlyph(ViewModel.IsSelectedPlaying), Mode=OneWay}"
+                                FontSize="13" />
+                            <TextBlock
+                                x:Uid="PlayAllLabel"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Visibility="{x:Bind InvertVisibility(ViewModel.IsSelectedPlaying), Mode=OneWay}" />
+                            <TextBlock
+                                x:Uid="PlaylistsStopLabel"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Visibility="{x:Bind ViewModel.IsSelectedPlaying, Mode=OneWay}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -356,8 +369,8 @@
                                     Foreground="{ThemeResource AppTextTertiaryBrush}"
                                     TextTrimming="CharacterEllipsis" />
                             </StackPanel>
+                            <!-- 행 재생/정지 토글 — 재생 중인 곡의 행만 정지 표시, 접근성 이름도 상태 반영 (stop-toggle plan D2) -->
                             <Button
-                                x:Uid="ItemPlayButton"
                                 Grid.Column="3"
                                 Width="34"
                                 Height="34"
@@ -368,11 +381,12 @@
                                 Background="Transparent"
                                 BorderThickness="1"
                                 BorderBrush="{ThemeResource AppInputBorderBrush}"
+                                AutomationProperties.Name="{x:Bind local:PlaylistsPage.RowPlayName(IsNowPlaying), Mode=OneWay}"
                                 PointerEntered="OnRowPlayPointerEntered"
                                 PointerExited="OnRowPlayPointerExited"
                                 Click="OnPlayItemClick">
                                 <FontIcon
-                                    Glyph="&#xE768;"
+                                    Glyph="{x:Bind local:PlaylistsPage.RowPlayGlyph(IsNowPlaying), Mode=OneWay}"
                                     FontSize="12"
                                     Foreground="{ThemeResource AppChipTextBrush}" />
                             </Button>

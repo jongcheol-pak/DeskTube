@@ -67,6 +67,16 @@ public sealed partial class PlaylistsPage : Page
     public static Visibility RankVisibility(bool isNowPlaying) =>
         isNowPlaying ? Visibility.Collapsed : Visibility.Visible;
 
+    /// <summary>x:Bind 함수 — 상단 전체듣기/정지 토글 글리프 (정지 E71A는 홈 정지 pill과 통일 — stop-toggle plan D4).</summary>
+    public static string PlayToggleGlyph(bool isSelectedPlaying) => isSelectedPlaying ? "\uE71A" : "\uE768";
+
+    /// <summary>x:Bind 함수 — 행 재생/정지 토글 글리프 (재생 중인 곡 행만 정지 — stop-toggle plan D2).</summary>
+    public static string RowPlayGlyph(bool isNowPlaying) => isNowPlaying ? "\uE71A" : "\uE768";
+
+    /// <summary>x:Bind 함수 — 행 재생/정지 버튼의 상태 반영 접근성 이름 (NowPlayingLabel과 동일 Loc 패턴).</summary>
+    public static string RowPlayName(bool isNowPlaying) =>
+        Loc.Get(isNowPlaying ? "Tray_Stop" : "ItemPlayName");
+
     // ---- hover 코럴 처리 (시안 — x:Bind 정적 색은 hover 상태를 모르므로 포인터 이벤트로 교체) ----
     // PointerEntered/Exited는 IsEnabled=False에도 발생하므로 비활성 버튼 강조 방지 가드 필수 (리뷰 M1)
 
@@ -304,7 +314,7 @@ public sealed partial class PlaylistsPage : Page
         }
     }
 
-    /// <summary>행 재생 버튼 — 해당 항목부터 재생 (FR-18, plan D3).</summary>
+    /// <summary>행 재생/정지 토글 버튼 — 재생 중인 곡의 행이면 정지, 아니면 해당 항목부터 재생 (FR-18, stop-toggle plan D2).</summary>
     private async void OnPlayItemClick(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is not PlaylistItemEntry item)
@@ -314,7 +324,7 @@ public sealed partial class PlaylistsPage : Page
 
         try
         {
-            await ViewModel.PlayItemAsync(item);
+            await ViewModel.TogglePlayItemAsync(item);
         }
         catch (Exception ex)
         {

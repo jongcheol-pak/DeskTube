@@ -249,6 +249,9 @@
   <data name="PlayAllLabel.Text" xml:space="preserve">
     <value>전체듣기</value>
   </data>
+  <data name="PlaylistsStopLabel.Text" xml:space="preserve">
+    <value>정지</value>
+  </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>추가할 유튜브 영상 주소를 입력하세요</value>
   </data>
@@ -267,7 +270,7 @@
   <data name="ItemDeleteMenuItem.Text" xml:space="preserve">
     <value>삭제</value>
   </data>
-  <data name="ItemPlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemPlayName" xml:space="preserve">
     <value>이 곡부터 듣기</value>
   </data>
   <data name="RenameMenuItem.Text" xml:space="preserve">

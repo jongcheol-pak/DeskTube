@@ -249,6 +249,9 @@
   <data name="PlayAllLabel.Text" xml:space="preserve">
     <value>Play all</value>
   </data>
+  <data name="PlaylistsStopLabel.Text" xml:space="preserve">
+    <value>Stop</value>
+  </data>
   <data name="ItemUrlBox.PlaceholderText" xml:space="preserve">
     <value>Add a YouTube video URL</value>
   </data>
@@ -267,7 +270,7 @@
   <data name="ItemDeleteMenuItem.Text" xml:space="preserve">
     <value>Remove</value>
   </data>
-  <data name="ItemPlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ItemPlayName" xml:space="preserve">
     <value>Play from this track</value>
   </data>
   <data name="RenameMenuItem.Text" xml:space="preserve">
