@@ -1,6 +1,8 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-18: **콘텐츠 고정 폭 1000 → 900 축소** — 사용자 요청. `Resources/DesignTokens.xaml`의 `AppPageContentWidth` 토큰 값 하나만 변경(1000→900)해 홈·설정·정보 공통 콘텐츠 폭과 플레이리스트 최소 폭에 일괄 전파. 값을 명시하던 주석 5곳(DesignTokens·SettingsPage·AboutPage·HomePage·PlaylistsPage.xaml + PlaylistsPage.xaml.cs)과 AGENTS.md 디자인 규칙 6번 문구를 900으로 동기 갱신. **검증**: `dotnet build -p:Platform=x64` 경고 0·오류 0. 실제 레이아웃 폭은 사용자 화면 확인 필요(HUMAN-VERIFY).
+- 2026-07-18: **한글 리소스 UI 문구 간결화 2건 (humanize)** — `ko-KR/Resources.resw`의 진행형("~하고 있습니다") 2건을 "~중입니다"로 다듬음(`Common_NotReady`, `Playlists_DeletePlayingConfirm`). AI 티 점검 결과 등급 A(수정 불필요)였고, 사용자가 선택한 미세 다듬기만 반영. 커밋 `525677f`.
 - 2026-07-18: **AGENTS.md 프로젝트 사실 3건 기록 (record-project-fact)** — Deferred 대장 대기 항목 소진
   - **무엇을**: ① Stack 표기 `.NET 8`/`net8.0-…` → `.NET 10`/`net10.0-windows10.0.22621.0`(csproj `TargetFramework` 실물) ② Build & Test의 Test 명령에 `-c Debug -p:Platform=x64` 추가(미지정 시 MSIX AnyCPU 오류) ③ MSIX 사이드로드 패키징 명령(`MSBuild … GenerateAppxPackageOnBuild=true UapAppxPackageBuildMode=SideloadOnly AppxBundle=Never`) 기록. `docs/plans/deferred.md`의 해당 3개 대기 항목을 종결로 이동
   - **왜**: 사용자 "모두 수정" 요청 — Deferred에 쌓인 AGENTS.md stale/누락 항목 정리. AGENTS.md는 세션 시작 시 자동 로드되므로 재발견(grep) 비용 제거

@@ -10,7 +10,7 @@
          시안이 overflow:auto + 빠른 재생 하단 정렬(margin-top:auto)이라 ScrollViewer 안 Grid의
          MinHeight를 뷰포트에 맞춰(코드비하인드) 둘 다 재현한다. -->
     <!-- 가로 축소 시 요소 겹침 방지 — 콘텐츠 최소 폭 미만이면 가로 스크롤 (사용자 보고 수정).
-         Layout의 Width(콘텐츠 1000 + 페이지 패딩)는 파생값이라 코드비하인드에서 토큰으로 계산한다 -->
+         Layout의 Width(콘텐츠 900 + 페이지 패딩)는 파생값이라 코드비하인드에서 토큰으로 계산한다 -->
     <ScrollViewer
         x:Name="Root"
         SizeChanged="OnRootSizeChanged"

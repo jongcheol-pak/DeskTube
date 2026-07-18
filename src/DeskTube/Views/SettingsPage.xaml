@@ -6,7 +6,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:ctrls="using:DeskTube.Controls">
     <!-- 시안 설정: 그룹 헤더(화면/소리/일반) + 카드 순서 재배열. 테마 카드 없음(다크 고정), 재생 순서 카드 없음(2026-07-17 제거) -->
-    <!-- 콘텐츠 고정 1000 가운데 정렬 — 좁은 창은 가로 스크롤 (사용자 확정) -->
+    <!-- 콘텐츠 고정 900 가운데 정렬 — 좁은 창은 가로 스크롤 (사용자 확정) -->
     <ScrollViewer
         Padding="{StaticResource AppPagePadding}"
         HorizontalScrollMode="Enabled"

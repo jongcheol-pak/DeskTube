@@ -6,7 +6,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:DeskTube.ViewModels">
     <!-- 시안 정보: 앱 카드(아이콘 52 + 이름 + 버전·개발자 한 줄) → 개인정보 카드 → 라이선스 카드형 expander -->
-    <!-- 콘텐츠 고정 1000 가운데 정렬 — 좁은 창은 가로 스크롤 (사용자 확정) -->
+    <!-- 콘텐츠 고정 900 가운데 정렬 — 좁은 창은 가로 스크롤 (사용자 확정) -->
     <ScrollViewer
         Padding="{StaticResource AppPagePadding}"
         HorizontalScrollMode="Enabled"
