@@ -147,7 +147,7 @@
     - 재생 중 곡이 목록에서 삭제 → NotifyPlaylistChangedAsync가 Advance→CurrentItemChanged→글리프 다음 행 이동, RefreshItems가 목록 갱신
   - **Halt Forecast**: (없음 — 결정 전부 사전 확정)
   - **Depends on**: T1
-- [ ] T3. PRD FR-18 보강 + README 갱신
+- [x] T3. PRD FR-18 보강 + README 갱신
   - **Type**: A
   - **Acceptance**: FR-18에 "재생 중인 항목(곡)도 우측 목록에서 순위 자리 스피커 표시로 구분(일시정지 유지·정지 해제)" 취지 보강 + 변경 이력 1줄(2026-07-18, 사용자 합의) / README 기능 설명 갱신. 문서-코드 역대조 누락·잔존 0.
   - **Files**:
