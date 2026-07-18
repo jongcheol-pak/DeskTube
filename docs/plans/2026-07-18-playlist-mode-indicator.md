@@ -80,7 +80,7 @@
   - **Halt Forecast**: 없음 — `IsSelectedPlaying` 공개 observable 제거(소비자 XAML 3곳 전부 이번 수정 범위)·`ShuffleAllCommand` 동작 계약 변경(호출부 XAML 1곳)·resw 키 제거는 아래 사전 승인 항목으로 일괄 승인. 파괴적·외부 작업 없음.
   - **Depends on**: 없음
 
-- [ ] T2. PRD FR-18 토글 문구 조정 + README 갱신 (FR-18 충족)
+- [x] T2. PRD FR-18 토글 문구 조정 + README 갱신 (FR-18 충족)
   - **Type**: A
   - **Acceptance**: FR-18의 직전 토글 서술("정지 버튼으로 토글")을 "재생을 시작한 듣기 버튼(셔플듣기/전체듣기)의 문구는 유지한 채 뒤에 정지 아이콘을 표시하고 클릭 시 정지(행 재생 버튼 토글은 유지)" 취지로 수정 + 변경 이력 1줄(2026-07-18, 사용자 명확화). README "재생/정지 토글" 항목을 새 방식으로 갱신. 문서-코드 역대조 누락·잔존·변형 0.
   - **Files**: 주: `docs/prd.md`, `README.md`
