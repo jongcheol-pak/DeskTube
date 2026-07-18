@@ -47,7 +47,7 @@
 ## Tasks
 
 - [x] **T1** — PRD에 FR-21(후원 링크) 신설 (Type A)
-- [ ] **T2** — 정보 화면 후원 카드 구현 (Type C)
+- [x] **T2** — 정보 화면 후원 카드 구현 (Type C)
 
 ### T1 — PRD에 FR-21(후원 링크) 신설 · Type A (Doc)
 
@@ -131,7 +131,7 @@
 - [x] 근거 없는 단정 0 (Investigation Log 매칭)
 - [x] `## 요구 이해` 작성됨
 - [x] Impact Analysis 4-A~4-D (4-D 재사용 확인 포함)
-- [ ] plan-reviewer 이슈 0 (Type C 포함 → plan-reviewer 필수, Step 9에서 수행)
+- [x] plan-reviewer 이슈 0 (BLOCKER/MAJOR 0, MINOR 1(하트 글리프)은 EB52로 반영 완료)
 - [x] 각 task acceptance 검증 가능·동시 만족 가능
 - [x] Open Questions 모두 해결
 - [x] 코드 작성 중 사용자 결정 분기 0

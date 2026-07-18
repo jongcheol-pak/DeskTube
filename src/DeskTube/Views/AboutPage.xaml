@@ -63,6 +63,19 @@
                 </StackPanel>
             </Border>
 
+            <!-- 개발 지원 후원 링크 (FR-21 — 클릭 시 GitHub Sponsors를 기본 브라우저로 엶) -->
+            <controls:SettingsCard
+                x:Uid="SupportCard"
+                IsClickEnabled="True"
+                Click="OnSupportCardClick">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEB52;" />
+                </controls:SettingsCard.HeaderIcon>
+                <controls:SettingsCard.ActionIcon>
+                    <FontIcon Glyph="&#xE8A7;" FontSize="14" />
+                </controls:SettingsCard.ActionIcon>
+            </controls:SettingsCard>
+
             <!-- 오픈소스 라이선스 (FR-12 — 클릭 시 공식 사이트 이동, 전문은 패키지 동봉만) -->
             <TextBlock
                 x:Uid="LicensesTitle"

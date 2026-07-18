@@ -390,6 +390,12 @@
   <data name="LicensesTitle.Text" xml:space="preserve">
     <value>Open-source licenses</value>
   </data>
+  <data name="SupportCard.Header" xml:space="preserve">
+    <value>Support development</value>
+  </data>
+  <data name="SupportCard.Description" xml:space="preserve">
+    <value>Support the project on GitHub Sponsors</value>
+  </data>
   <data name="LanguageCard.Header" xml:space="preserve">
     <value>Language</value>
   </data>

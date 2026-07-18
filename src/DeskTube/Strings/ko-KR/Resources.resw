@@ -390,6 +390,12 @@
   <data name="LicensesTitle.Text" xml:space="preserve">
     <value>오픈소스 라이선스</value>
   </data>
+  <data name="SupportCard.Header" xml:space="preserve">
+    <value>개발 지원</value>
+  </data>
+  <data name="SupportCard.Description" xml:space="preserve">
+    <value>GitHub Sponsors에서 프로젝트를 응원해주세요</value>
+  </data>
   <data name="LanguageCard.Header" xml:space="preserve">
     <value>언어</value>
   </data>

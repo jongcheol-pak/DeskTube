@@ -19,6 +19,23 @@ public sealed partial class AboutPage : Page
 
     public AboutViewModel ViewModel { get; } = new();
 
+    // 후원 페이지 — 정적 링크라 리소스가 아닌 상수 (번역 대상 아님, 라이선스 URL이 index.json 데이터인 것과 대비)
+    private const string SponsorUrl = "https://github.com/sponsors/jongcheol-pak";
+
+    /// <summary>개발 지원 카드 클릭 — 후원 페이지(GitHub Sponsors)를 기본 브라우저로 연다 (FR-21).</summary>
+    private async void OnSupportCardClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(SponsorUrl));
+        }
+        catch (Exception ex)
+        {
+            // 브라우저 열기 실패는 앱 동작에 영향 없음 — 로그만 남긴다
+            AppLog.Write($"후원 링크 열기 실패: {ex.GetType().Name} {ex.Message}");
+        }
+    }
+
     /// <summary>라이선스 카드 클릭 — 해당 라이브러리 공식 사이트를 기본 브라우저로 연다 (FR-12).</summary>
     private async void OnLicenseCardClick(object sender, RoutedEventArgs e)
     {
