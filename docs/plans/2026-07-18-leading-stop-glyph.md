@@ -97,5 +97,14 @@
 - D4. 글리프 함수 2개 분리 유지(공통화 안 함) — implement-task 규칙 5(3회 문턱)·의미 분리. Source: 4-D 표.
 - D5. 미커밋 진단 계측·notes.md 커밋 보류 승계 — 기존 D7 (동일 세션 사용자 확정).
 
+## Next Steps
+- 권장 다음 액션: HUMAN-VERIFY 4항목(선행 아이콘 전환·툴팁·클릭 정지) 확인 → 이상 없으면 main 병합·진단 계측 커밋 여부 결정 (각각 별도 승인)
+- notes.md의 이번 기록은 미커밋(진단 계측 혼재 사유 승계). 진단 계측 커밋 때 함께 커밋 권장.
+
+## Phase Ledger
+- 전 task(T1~T2) 완료
+- Phase F 통과 (HEAD 761afb0) — 빌드 0·0, 테스트 125/125(F-2), 포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-18 수정분 코드 정합 확인(시각·동작은 ⏳ HUMAN-VERIFY), 범위 외 FR 제외 규정 적용
+
 ## Open Questions
 - (없음 — 표시 방식을 사용자가 직접 지정)
