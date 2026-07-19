@@ -920,7 +920,9 @@ public sealed class PlaybackCoordinator : IDisposable
         RefreshAudioTargetAfterRemoval();
     }
 
-    /// <summary>새로 합류한 플레이어가 현재 곡을 마스터 시각으로 이어서 재생하게 한다 (재생성·모니터 추가 공통).</summary>
+    /// <summary>새로 합류한 플레이어가 현재 곡을 마스터 시각으로 이어서 재생하게 한다 (재생성·모니터 추가 공통).
+    /// 시작 위치를 Load에 실어 보낸다 — load 직후 별도 Seek는 신선한 플레이어에서 유실돼(IFrame API 레이스)
+    /// 합류 모니터가 처음부터 재생되던 문제를 막는다 (2026-07-19 동일 시각 이어재생 수정).</summary>
     private void ResumeCurrentTrack(IPlayerHost player)
     {
         var current = _queue?.Current;
@@ -929,12 +931,8 @@ public sealed class PlaybackCoordinator : IDisposable
             return;
         }
 
-        player.Load(current.VideoId);
         var masterTime = MasterTime();
-        if (masterTime > 0)
-        {
-            player.Seek(masterTime);
-        }
+        player.Load(current.VideoId, masterTime > 0 ? masterTime : 0);
     }
 
     /// <summary>

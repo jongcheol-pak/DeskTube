@@ -45,7 +45,10 @@ public interface IPlayerHost : IDisposable
     /// <summary>WebView2 생성·player.html 로드. UI 스레드에서 호출.</summary>
     Task<Result> InitializeAsync();
 
-    void Load(string videoId);
+    /// <summary>영상 로드. startSeconds &gt; 0이면 그 위치부터 시작한다 — 재생 중 새 모니터 합류·플레이어
+    /// 재생성 시 마스터 시각으로 이어재생하기 위함. load 직후 별도 seek는 신선한 플레이어에서 유실될 수
+    /// 있어(IFrame API 레이스), 시작 위치를 로드에 실어 확정한다 (2026-07-19 동일 시각 이어재생 수정).</summary>
+    void Load(string videoId, double startSeconds = 0);
 
     void Play();
 
