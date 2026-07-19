@@ -154,6 +154,8 @@
 - T1 완료 (e8e4e6e): resw Language_System ko/en 문구 통일. Type A.
 - T2 완료 (ceddaff): PlaylistLibrary.SyncQuickPlaylistName(순수) + App 오케스트레이션, 시작 시 빠른재생 이름 언어 동기화. 테스트 4건. quality M1(fire-and-forget 예외안전) 수정. 147/147.
   - 결정: 개명은 안정 ID 식별 앱관리 리스트라 항상 동기화(수동개명 비지원). App fire-and-forget SaveAsync는 try/catch로 예외 안전.
+- T3-T4 완료 (f39ac6f, 1e21bee): 언어 변경 시 AppInstance.Restart로 앱 재시작(저장 await 완료 후, UnregisterKey로 FR-22 정합, 실패 시 Exit). resw Description·help.md 문구 갱신. MainWindow 고아코드(ForceClose) 제거. quality M1~M3 수정. 147/147.
+  - 결정: 재시작 실패(드묾) 시 degraded 유지 대신 Exit()로 확실히 종료. PrimaryLanguageOverride는 재시작이 재적용하므로 제거.
 
 ## Phase Ledger
 
