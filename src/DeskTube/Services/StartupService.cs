@@ -15,6 +15,15 @@ public static class StartupArgs
 
     public static bool HasStartupFlag(IEnumerable<string?> args) =>
         args.Any(a => string.Equals(a?.Trim(), StartupFlag, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// 리다이렉트로 수신한 활성화가 자동 시작 계열(조용한 시작)인지 판별 (FR-22, plan D3).
+    /// 최초 인스턴스용 WasActivatedByStartupTask(GetCurrent 기반)와 달리 수신 페이로드의
+    /// 종류·인자를 그대로 받는다 — StartupTask 활성화 또는 -startup 플래그(수동 시뮬레이션)면
+    /// 기존 인스턴스에 영향을 주지 않고 무시할 대상이다.
+    /// </summary>
+    public static bool IsQuietActivation(ExtendedActivationKind kind, IEnumerable<string?> args) =>
+        kind == ExtendedActivationKind.StartupTask || HasStartupFlag(args);
 }
 
 /// <summary>

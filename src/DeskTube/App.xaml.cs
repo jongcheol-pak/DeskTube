@@ -1,7 +1,11 @@
+using DeskTube.Interop;
 using DeskTube.Models;
 using DeskTube.Services;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
+// AppInstance는 두 네임스페이스에 모두 존재 — AppLifecycle 쪽으로 별칭 고정 (CS0104 회피, StartupService 관례)
+using AppLifecycleInstance = Microsoft.Windows.AppLifecycle.AppInstance;
 
 namespace DeskTube;
 
@@ -119,6 +123,10 @@ public partial class App : Application
             _window.Activate(); // 자동 시작이면 창 없이 트레이만 (PRD FR-8)
         }
 
+        // 두 번째 실행이 리다이렉트한 활성화 수신 구독 (FR-22) — 창 생성 직후 (plan D7:
+        // Main 시점 구독은 정적 브리지가 필요해 복잡도만 늘고, 등록~구독 사이 ms 공백은 재클릭 회복으로 수용)
+        AppLifecycleInstance.GetCurrent().Activated += OnRedirectedActivated;
+
         // async void 회피 — 실패는 로그로 남기고 앱은 뜬다 (UI가 Services null로 미준비 안내)
         _ = InitializeServicesAsync(quietStart);
     }
@@ -154,6 +162,30 @@ public partial class App : Application
 
     private void OnAllItemsFailed(object? sender, EventArgs e) =>
         _window?.DispatcherQueue.TryEnqueue(() => ShowMainWindow(Loc.Get("Playback_AllItemsFailed")));
+
+    /// <summary>
+    /// 두 번째 실행이 넘긴 활성화 처리 (FR-22). 자동 시작 계열(StartupTask·-startup)은 기존
+    /// 동작에 아무 영향 없이 무시하고(창 표시·자동 재생 없음), 일반 실행은 메인창을 표시·전면화한다.
+    /// 발생 스레드 비보장 — UI 마셜링 (OnAllItemsFailed 관례).
+    /// </summary>
+    private void OnRedirectedActivated(object? sender, AppActivationArguments e)
+    {
+        var launchArguments = (e.Data as Windows.ApplicationModel.Activation.ILaunchActivatedEventArgs)?.Arguments;
+        var args = launchArguments?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? [];
+        if (StartupArgs.IsQuietActivation(e.Kind, args))
+        {
+            AppLog.Write($"재실행 감지: 자동 시작 계열 활성화({e.Kind})라 무시합니다 (FR-22).");
+            return;
+        }
+
+        AppLog.Write("재실행 감지: 실행 중인 인스턴스의 메인창을 표시합니다 (FR-22).");
+        _window?.DispatcherQueue.TryEnqueue(() =>
+        {
+            ShowMainWindow(null);
+            // 전면화 — 두 번째 프로세스가 위양한 권한(AllowSetForegroundWindow) 사용, 실패는 무시(best-effort)
+            _ = ActivationInterop.SetForegroundWindow(MainWindowHandle);
+        });
+    }
 
     /// <summary>자동 시작·앱 시작 자동 재생 (PRD FR-8·FR-19) — 마지막 재생 항목부터 조용히 재생 시작. 리스트가 없으면 생략하고 트레이만 상주 (plan T4 Edge).</summary>
     private async Task TryAutoPlayLastAsync()
@@ -229,6 +261,17 @@ public partial class App : Application
     {
         AppLog.Write("=== 앱 종료 (트레이 종료 선택) ===");
         IsExiting = true;
+
+        // 인스턴스 키 조기 해제 — 종료 직후 재실행이 소멸 중인 프로세스로 리다이렉트하는 race 축소 (FR-22 D8).
+        // 게이트 폴백(D4)으로 키 미등록일 수 있어 실패는 로그만 (프로세스 소멸 시 OS 해제가 최종 안전망).
+        try
+        {
+            AppLifecycleInstance.GetCurrent().UnregisterKey();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"인스턴스 키 해제 실패(무시): {ex.GetType().Name} {ex.Message}");
+        }
         _tray?.Dispose();
         _tray = null;
         Services?.Dispose();

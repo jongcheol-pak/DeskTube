@@ -85,7 +85,7 @@
   - **Halt Forecast**: csproj 빌드 상수 추가(동작 영향 설정) + 진입점 구조 변경 + 신규 파일 2개 — **사전 승인 항목 등재**. 파괴적·외부 작업 없음.
   - **Depends on**: 없음
 
-- [ ] T3. 리다이렉트 수신 처리 — 활성화 종류별 창 표시/무시 + 판별 테스트 (FR-22 충족)
+- [x] T3. 리다이렉트 수신 처리 — 활성화 종류별 창 표시/무시 + 판별 테스트 (FR-22 충족)
   - **Type**: C (2~3개 파일 + 테스트, 신규 심볼 도입)
   - **Design**:
     - 배치: 수신 구독은 `App.OnLaunched`(창 생성 직후 — 핸들러가 `_window.DispatcherQueue`로 마셜링, D7), 판별 순수 함수는 `Services/StartupService.cs`의 `StartupArgs`(시작 판별 책임 지역성 — HasStartupFlag 옆), 키 해제는 `ExitApplication`.
@@ -145,7 +145,8 @@
 - D9. 리다이렉트 대기 = 백그라운드 Task 완료 → 이벤트 핸들 + `CoWaitForMultipleObjects` — STA 메인 스레드에서 `AsTask().Wait()` 직접 블로킹은 COM 마셜링 교착 위험(MS 샘플이 이 패턴을 명시). Source: MS Learn 단일 인스턴스 샘플.
 
 ## Progress Log
-- (구현 시작 전)
+- T1-T2 완료 (커밋 1887730, 552f035): T1 PRD FR-22 신설(+plan·deferred 대장 이관 파일 포함). T2 진입 게이트 — csproj 상수·Program.cs·ActivationInterop.cs·App 폴백 로그 3줄. 빌드 0·0, 테스트 138/138, spec OK(MINOR 1 — Design 의존 방향 서술 정정 반영)·quality OK.
+  - 결정: AppInstance API 실재는 winmd 바이너리 검색으로 확인(FindOrRegisterForKey·RedirectActivationToAsync·UnregisterKey·IsCurrent·ProcessId·Activated·get_Data/get_Kind 전부 존재). Application.Start 람다 매개변수를 discard(_)로 쓰면 안(파라미터 할당 CS0029) — 생성 Main과 동일한 p 사용.
 
 ## Next Steps
 - (구현 완료 후) HUMAN-VERIFY 5항목 확인 → 커밋·병합 여부는 별도 승인
