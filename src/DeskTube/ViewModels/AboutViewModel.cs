@@ -21,7 +21,7 @@ public partial class AboutViewModel : ObservableObject
         AppVersion = string.Empty;
     }
 
-    /// <summary>앱 카드 정보 한 줄 — "버전 x.x.x.x · 개발자: ..." (시안, restyle T8).</summary>
+    /// <summary>앱 카드 정보 한 줄 — "버전 x.x.x.x" (시안, restyle T8 — 개발자 표기는 2026-07-19 제거).</summary>
     [ObservableProperty]
     public partial string AppVersion { get; set; }
 

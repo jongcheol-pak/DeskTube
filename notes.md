@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **정보 화면 개발자 표기 제거 (FR-11 축소)** — 사용자 요청("버전 옆 개발자 삭제"). resw `About_InfoLineFormat` ko/en에서 "· 개발자: DeskTube Dev" 부분 삭제(버전만 표시), AboutViewModel·AboutPage.xaml 주석 동기화, PRD FR-11 문구·변경 이력 갱신(NFR-4의 시작메뉴 게시자명은 무관·유지). README는 개발자 표기 서술이 없어 미변경. **검증**: `dotnet build DeskTube.slnx -p:Platform=x64` 경고 0·오류 0 — 화면 표시는 HUMAN-VERIFY.
 - 2026-07-18: **코드 리뷰(/code-review high) 지적 10건 전수 수정** — 브랜치 `task/playlist-stop-toggle` (8각도 파인더 + 후보별 검증 에이전트, CONFIRMED 9 + PLAUSIBLE 1, 사용자 "수정" 승인)
   - **시작 감시 오탐·회귀 3건 (player.html, rev 4→5)**: ① PLAYING 도달 시 해제 가드 제거로 느린 시작(8초 시점 currentTime<1.0) 정상 곡이 -3 오탐 스킵 → **진행 재확인 유예** 도입(만료 시점에 미진행이라도 직전 대비 늘고 있으면 4초 간격 최대 3회 재확인 후 판정) + 1초 시각 보고 인터벌이 진행(≥1.0s) 확인 즉시 감시 해제(정상 곡은 타이머 발화·diag 로그 자체가 없어짐 — 곡·모니터당 diag 누적 소음 제거) ② `time.toFixed(2)`가 getCurrentTime() undefined에서 TypeError로 콜백을 죽여 -3 미발송(죽은 곡에서 영구 정지) → 타입 가드로 -1 정규화, 못 읽는 상태는 죽은 플레이어 증거로 즉시 -3 ③ 절전(suspend) 레이스로 살아남은 스테일 타이머가 정책 재개 직후 오발화 가능 → 'play' 명령에서 감시 재장전.
   - **전 항목 재생 불가 정지 무력화 (PlaybackCoordinator)**: PLAYING 도달이 `_failedItemIds`를 비워 "PLAYING 후 미진행(-3)" 곡만 있는 리스트에서 AllItemsFailed 정지가 영영 발동하지 않고 8초 간격 무한 스킵 루프 → 집합 초기화를 OnPlayerTime의 **실제 진행 확인(masterTime≥1.0)** 시점으로 이동(`PlaybackProgressMinSeconds` 상수 — player.html PLAYBACK_PROGRESS_MIN과 동일 기준). 회귀 테스트 2개 신설(전 곡 Playing 후 미진행 정지 / 진행 확인 시 집합 초기화).

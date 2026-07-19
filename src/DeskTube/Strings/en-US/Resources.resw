@@ -379,7 +379,7 @@
     <value>About</value>
   </data>
   <data name="About_InfoLineFormat" xml:space="preserve">
-    <value>Version {0} · Developer: DeskTube Dev</value>
+    <value>Version {0}</value>
   </data>
   <data name="PrivacyTitle.Text" xml:space="preserve">
     <value>Privacy policy</value>

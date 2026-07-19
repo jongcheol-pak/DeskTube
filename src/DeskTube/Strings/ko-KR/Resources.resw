@@ -379,7 +379,7 @@
     <value>정보</value>
   </data>
   <data name="About_InfoLineFormat" xml:space="preserve">
-    <value>버전 {0} · 개발자: DeskTube Dev</value>
+    <value>버전 {0}</value>
   </data>
   <data name="PrivacyTitle.Text" xml:space="preserve">
     <value>개인정보 처리방침</value>
