@@ -63,6 +63,7 @@ public sealed class PlaybackCoordinatorTests
     {
         public List<string> Commands { get; } = [];
         public double CurrentTime { get; set; }
+        public double CurrentDuration { get; set; }
 
         public event EventHandler? Ready;
         public event EventHandler<PlayerState>? StateChanged;
@@ -85,7 +86,18 @@ public sealed class PlaybackCoordinatorTests
 
         public void RaiseState(PlayerState state) => StateChanged?.Invoke(this, state);
         public void RaiseError(int code) => ErrorOccurred?.Invoke(this, new PlayerError(code));
-        public void RaiseTime(double time) => TimeUpdated?.Invoke(this, time);
+
+        // 실제 PlayerHost는 duration을 CurrentDuration에 캐시한 뒤 TimeUpdated를 발화한다 — 그 순서를 모사.
+        // duration 미지정(0)은 기존 호출 동작 보존(CurrentDuration 미설정).
+        public void RaiseTime(double time, double duration = 0)
+        {
+            if (duration > 0)
+            {
+                CurrentDuration = duration;
+            }
+
+            TimeUpdated?.Invoke(this, time);
+        }
         public void RaiseReady() => Ready?.Invoke(this, EventArgs.Empty);
     }
 

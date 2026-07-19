@@ -62,7 +62,7 @@
   - **Halt Forecast**: 없음 — 질문 확정이 곧 합의 (plan 승인에 포함, 사전 승인 항목 등재).
   - **Depends on**: 없음
 
-- [ ] T2. 수집 하부 — 모델 필드 + 브리지 duration 보고 + 플레이어 계약 (FR-18 충족)
+- [x] T2. 수집 하부 — 모델 필드 + 브리지 duration 보고 + 플레이어 계약 (FR-18 충족)
   - **Type**: D (인터페이스 변경 — 구현체 2곳 갱신)
   - **Design**:
     - 배치: 영속 필드는 `Models/Playlist.cs`, 보고는 `Assets/player.html`(기존 1초 인터벌), 계약은 `Services/IPlayerHost.cs`, 파싱은 `Services/PlayerHost.cs`(수신부 한 곳).

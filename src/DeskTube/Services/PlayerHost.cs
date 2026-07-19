@@ -58,6 +58,8 @@ public sealed class PlayerHost : IPlayerHost
 
     public double CurrentTime { get; private set; }
 
+    public double CurrentDuration { get; private set; }
+
     public async Task<Result> InitializeAsync()
     {
         try
@@ -302,6 +304,12 @@ public sealed class PlayerHost : IPlayerHost
 
                 case "time":
                     CurrentTime = root.GetProperty("current").GetDouble();
+                    // duration은 신 rev(6+)만 동반 — 옛 rev 캐시 실행 시 필드가 없으면 기존 값 유지 (FR-18)
+                    if (root.TryGetProperty("duration", out var duration))
+                    {
+                        CurrentDuration = duration.GetDouble();
+                    }
+
                     TimeUpdated?.Invoke(this, CurrentTime);
                     break;
             }

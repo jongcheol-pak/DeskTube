@@ -77,4 +77,7 @@ public interface IPlayerHost : IDisposable
 
     /// <summary>최근 시각 이벤트 캐시 (초). 아직 보고 없으면 0.</summary>
     double CurrentTime { get; }
+
+    /// <summary>최근 재생시간(총 길이) 이벤트 캐시 (초, FR-18). 아직 보고 없거나 미상(라이브·미로드)이면 0.</summary>
+    double CurrentDuration { get; }
 }

@@ -24,13 +24,13 @@
 // ============================================================================
 // DeskTube 플레이어 브리지 (plan D8)
 //   C# -> JS 명령: load / play / pause / volume / mute / seek / scale / fit / captions
-//   JS -> C# 이벤트: ready / state / error / time
+//   JS -> C# 이벤트: ready / state / error / time (time은 current + duration 동반 — FR-18)
 // setPlaybackQuality는 no-op이므로(PRD 제약) 화질은 렌더 해상도 스케일로 간접 제어한다.
 // ============================================================================
 
 // 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
 // (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
-const PLAYER_REV = 5;
+const PLAYER_REV = 6;
 
 let player = null;
 let playerReady = false;
@@ -276,7 +276,12 @@ window.onYouTubeIframeAPIReady = function () {
         setInterval(() => {
           if (player.getPlayerState() === YT.PlayerState.PLAYING) {
             const t = player.getCurrentTime();
-            post({ type: 'time', current: t });
+            // duration도 함께 보고 — 재생시간 표시용 캐시 (FR-18). 라이브·미로드는 0/비유한이라
+            // 0으로 정규화(getCurrentTime 타입 가드와 동일 관례). C#은 같은 틱의 current와 쌍으로 받아
+            // 곡 전환 오귀속 없이 현재 곡에 귀속한다.
+            const rawDur = player.getDuration();
+            const d = (typeof rawDur === 'number' && isFinite(rawDur) && rawDur > 0) ? rawDur : 0;
+            post({ type: 'time', current: t, duration: d });
             // 실제 진행 확인 즉시 시작 감시 해제 — 정상 곡은 타이머 발화·diag 보고 자체가 없다
             if (startWatchdog !== null && typeof t === 'number' && isFinite(t)
                 && t >= PLAYBACK_PROGRESS_MIN) {
