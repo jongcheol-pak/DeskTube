@@ -127,7 +127,7 @@
   - **Halt Forecast**: 없음 — 파괴적·외부 작업 없음.
   - **Depends on**: T2, T3
 
-- [ ] T5. README 갱신 (FR-18 충족)
+- [x] T5. README 갱신 (FR-18 충족)
   - **Type**: A
   - **Acceptance**: 플레이리스트 화면 기능 서술에 "항목 재생시간 표시(재생 시 수집·캐시, 미수집 곡 공란)" 추가. 역대조 누락·잔존·변형 0.
   - **Files**: 주: `README.md`
