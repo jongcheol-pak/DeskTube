@@ -30,7 +30,7 @@
 
 // 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
 // (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
-const PLAYER_REV = 6;
+const PLAYER_REV = 8;
 
 let player = null;
 let playerReady = false;
@@ -135,6 +135,11 @@ window.chrome.webview.addEventListener('message', (e) => {
   if (!playerReady) { pending.push(cmd); return; }
   execute(cmd);
 });
+
+// C# 명령 수신 리스너가 등록됐음을 호스트에 알린다 — 이 신호 이후 전송된 명령은 위 리스너(및 ready 전
+// pending 큐)에 확실히 도달한다. InitializeAsync가 이 신호를 기다린 뒤 명령을 보내므로, 페이지 로딩
+// 공백 중 PostWebMessage가 폐기되어 load 등이 유실되던 문제를 막는다 (2026-07-19 멀티모니터 미재생 수정).
+post({ type: 'hostReady', rev: PLAYER_REV });
 
 function execute(cmd) {
   switch (cmd.Type) {

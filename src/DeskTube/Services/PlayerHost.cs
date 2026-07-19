@@ -21,6 +21,9 @@ public sealed class PlayerHost : IPlayerHost
     private const int MaxApiLoadRetries = 3;
     private static readonly TimeSpan ApiRetryDelay = TimeSpan.FromSeconds(30);
 
+    /// <summary>player.html의 message 리스너 준비(hostReady) 대기 상한 — 초과 시 경고 후 진행(기존 동작 폴백).</summary>
+    private static readonly TimeSpan HostReadyTimeout = TimeSpan.FromSeconds(10);
+
     private readonly WallpaperSurface _surface;
     private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
     private CoreWebView2Controller? _controller;
@@ -38,6 +41,10 @@ public sealed class PlayerHost : IPlayerHost
     /// <summary>브라우저 프로세스 소멸 감지용 — 환경은 앱 전역 공유(캐시)라 이벤트 구독 해제에 참조가 필요하다.</summary>
     private CoreWebView2Environment? _environment;
 
+    /// <summary>player.html의 message 리스너 준비 신호(hostReady) 대기용. 초기화가 이 신호까지 기다린 뒤
+    /// 완료를 반환해, 이후 전송되는 명령이 리스너 등록 전 폐기되는 것을 막는다 (2026-07-19 멀티모니터 미재생 수정).</summary>
+    private readonly TaskCompletionSource _hostReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
     /// <summary>이 플레이어가 붙은 브라우저 프로세스 PID — BrowserProcessExited가 이전 브라우저의
     /// 정상 종료(정지→재시작 직후 새 플레이어가 받는 이벤트)인지 내 브라우저의 소멸인지 구분한다.</summary>
     private uint _browserPid;
@@ -50,6 +57,10 @@ public sealed class PlayerHost : IPlayerHost
         _surface = surface;
         _dispatcherQueue = dispatcherQueue;
     }
+
+    /// <summary>플레이어 인스턴스 식별 태그 — 배경창 hwnd 하위 4자리로 멀티모니터의 여러 플레이어를
+    /// 로그에서 구분한다 (어느 모니터의 이벤트인지 판독용).</summary>
+    private string Tag => $"P{_surface.Hwnd.ToInt64() & 0xFFFF:X4}";
 
     public event EventHandler? Ready;
     public event EventHandler<PlayerState>? StateChanged;
@@ -98,11 +109,22 @@ public sealed class PlayerHost : IPlayerHost
             _environment = environment;
             _browserPid = core.BrowserProcessId;
             environment.BrowserProcessExited += OnBrowserProcessExited;
-            AppLog.Write($"플레이어 초기화 완료 (브라우저 PID {_browserPid})");
 
             // 쿼리스트링 캐시 무력화 — WebView2가 가상 호스트 응답을 HTTP 캐시할 수 있어(프로필 영속),
             // 앱 업데이트 후에도 옛 player.html이 실행되는 것을 방지한다 (실행마다 새 URL → 항상 디스크 최신본)
             core.Navigate($"https://{VirtualHost}/player.html?t={Environment.TickCount64}");
+
+            // player.html이 message 리스너를 등록하고 hostReady를 보낼 때까지 대기한 뒤 완료를 반환한다.
+            // 이 대기가 없으면 초기화 직후 코디네이터가 보낸 load 등이 페이지 로딩 공백 중 폐기되어,
+            // 멀티모니터 동시 시작 시 일부 플레이어가 재생되지 않았다 (2026-07-19 수정).
+            var ready = await Task.WhenAny(_hostReadyTcs.Task, Task.Delay(HostReadyTimeout));
+            if (ready != _hostReadyTcs.Task)
+            {
+                // 시간 초과 — 명령 유실 가능성을 감수하고 진행(기존 동작 폴백). 실패로 막지 않는다.
+                AppLog.Write($"[{Tag}] player.html 준비 신호(hostReady) 시간 초과 — 진행");
+            }
+
+            AppLog.Write($"[{Tag}] 플레이어 초기화 완료 (브라우저 PID {_browserPid})");
             return Result.Ok();
         }
         catch (Exception ex)
@@ -122,7 +144,7 @@ public sealed class PlayerHost : IPlayerHost
     public void Load(string videoId)
     {
         // 진단 로그 — 어떤 영상이 로드되는지 로그로 추적 (2026-07-18 "안 됨" 조사: 영상 식별 불가 문제)
-        AppLog.Write($"플레이어 명령: load {videoId}");
+        AppLog.Write($"[{Tag}] 플레이어 명령: load {videoId}");
         PostCommand(new PlayerCommand("load", VideoId: videoId));
     }
 
@@ -280,16 +302,22 @@ public sealed class PlayerHost : IPlayerHost
             var root = doc.RootElement;
             switch (root.GetProperty("type").GetString())
             {
+                case "hostReady":
+                    // player.html의 message 리스너 준비 완료 — InitializeAsync의 대기를 해제한다.
+                    // 이 신호 이후 전송되는 명령은 리스너(및 YT ready 전 pending 큐)에 확실히 도달한다.
+                    _hostReadyTcs.TrySetResult();
+                    break;
+
                 case "ready":
                     _apiLoadRetries = 0;
                     // rev 로그 — 실행 중인 player.html 버전 확인 (WebView2 캐시로 옛 파일이 돌 수 있음)
-                    AppLog.Write($"플레이어 준비 (player.html rev {(root.TryGetProperty("rev", out var rev) ? rev.GetInt32() : 0)})");
+                    AppLog.Write($"[{Tag}] 플레이어 준비 (player.html rev {(root.TryGetProperty("rev", out var rev) ? rev.GetInt32() : 0)})");
                     Ready?.Invoke(this, EventArgs.Empty);
                     break;
 
                 case "state":
                     var state = (PlayerState)root.GetProperty("state").GetInt32();
-                    AppLog.Write($"플레이어 상태: {state}"); // 진단 로그 — 상태 전이 추적 (2026-07-18)
+                    AppLog.Write($"[{Tag}] 플레이어 상태: {state}"); // 진단 로그 — 상태 전이 추적 (2026-07-18)
                     StateChanged?.Invoke(this, state);
                     break;
 
@@ -299,7 +327,7 @@ public sealed class PlayerHost : IPlayerHost
 
                 case "diag":
                     // JS 측 진단 보고 (시작 감시 판정 근거 등) — 스킵 미동작류 조사용
-                    AppLog.Write($"플레이어 진단: {root.GetProperty("msg").GetString()}");
+                    AppLog.Write($"[{Tag}] 플레이어 진단: {root.GetProperty("msg").GetString()}");
                     break;
 
                 case "time":
@@ -339,7 +367,7 @@ public sealed class PlayerHost : IPlayerHost
 
         var error = new PlayerError(code);
         // acceptance: 임베드 금지(101/150) 등 오류 수신은 로그로 확인 가능해야 한다 (T6)
-        AppLog.Write($"플레이어 오류 수신: 코드 {code}{(error.IsEmbedForbidden ? " (임베드 금지 영상)" : "")}");
+        AppLog.Write($"[{Tag}] 플레이어 오류 수신: 코드 {code}{(error.IsEmbedForbidden ? " (임베드 금지 영상)" : "")}");
         ErrorOccurred?.Invoke(this, error);
     }
 
@@ -368,7 +396,7 @@ public sealed class PlayerHost : IPlayerHost
             return; // 폐기 후 잔여 이벤트·이전 브라우저의 정상 종료(정지→재시작 직후)는 무시
         }
 
-        AppLog.Write($"WebView2 브라우저 프로세스 소멸 감지 (kind={e.BrowserProcessExitKind}, PID {e.BrowserProcessId}) — 플레이어 재생성 요청");
+        AppLog.Write($"[{Tag}] WebView2 브라우저 프로세스 소멸 감지 (kind={e.BrowserProcessExitKind}, PID {e.BrowserProcessId}) — 플레이어 재생성 요청");
         ErrorOccurred?.Invoke(this, new PlayerError(-2));
     }
 }
