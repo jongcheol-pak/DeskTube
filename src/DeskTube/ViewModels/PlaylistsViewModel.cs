@@ -48,6 +48,7 @@ public partial class PlaylistItemEntry : ObservableObject
         Rank = rank;
         Title = item.Title;
         ChannelName = item.ChannelName;
+        DurationSeconds = item.DurationSeconds;
     }
 
     public Guid Id { get; }
@@ -76,6 +77,29 @@ public partial class PlaylistItemEntry : ObservableObject
     /// <summary>지금 배경 재생 중인 곡 — 순위 자리 스피커 글리프 표시용 (PlaylistEntry.IsNowPlaying 항목판, now-playing item plan T2).</summary>
     [ObservableProperty]
     public partial bool IsNowPlaying { get; set; }
+
+    /// <summary>재생시간(초, FR-18) — 재생 시 수집돼 도착하면 행 표시가 갱신되도록 관찰 가능. 0 = 미수집.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DurationText))]
+    public partial int DurationSeconds { get; set; }
+
+    /// <summary>표시용 재생시간 — 미수집(0 이하)이면 공란 (plan D3·D10).</summary>
+    public string DurationText => FormatDuration(DurationSeconds);
+
+    /// <summary>초를 "m:ss"(1시간 미만) 또는 "h:mm:ss"(1시간 이상)로 포맷한다. 0 이하는 빈 문자열 (미수집 공란).
+    /// 숫자·콜론만이라 지역화 불요 (plan D10·D11). 순수 함수 — 단위 테스트 대상.</summary>
+    public static string FormatDuration(int seconds)
+    {
+        if (seconds <= 0)
+        {
+            return string.Empty;
+        }
+
+        var time = TimeSpan.FromSeconds(seconds);
+        return seconds >= 3600
+            ? $"{(int)time.TotalHours}:{time.Minutes:D2}:{time.Seconds:D2}"
+            : $"{time.Minutes}:{time.Seconds:D2}";
+    }
 }
 
 /// <summary>
@@ -152,6 +176,7 @@ public partial class PlaylistsViewModel : ObservableObject
         {
             _services.Coordinator.StatusChanged -= OnStatusChanged;
             _services.Coordinator.CurrentItemChanged -= OnCurrentItemChanged;
+            _services.Coordinator.ItemDurationCaptured -= OnItemDurationCaptured;
         }
 
         CancelMetadataBackfill(); // 페이지 이탈 — 늦은 응답 반영 방지 (plan D10)
@@ -173,6 +198,8 @@ public partial class PlaylistsViewModel : ObservableObject
         services.Coordinator.StatusChanged += OnStatusChanged;
         services.Coordinator.CurrentItemChanged -= OnCurrentItemChanged;
         services.Coordinator.CurrentItemChanged += OnCurrentItemChanged;
+        services.Coordinator.ItemDurationCaptured -= OnItemDurationCaptured;
+        services.Coordinator.ItemDurationCaptured += OnItemDurationCaptured;
 
         Playlists.Clear();
         foreach (var playlist in services.Library.Playlists)
@@ -206,6 +233,23 @@ public partial class PlaylistsViewModel : ObservableObject
     /// 같은 리스트 내 곡 전환은 StatusChanged가 미발화하므로 항목 표시 갱신은 이 이벤트에 의존한다.</summary>
     private void OnCurrentItemChanged(object? sender, EventArgs e) =>
         _dispatcher?.TryEnqueue(UpdateNowPlayingItem);
+
+    /// <summary>재생시간 수집 알림 — 발생 스레드 비보장이라 UI로 마셜링. 인자 ID로 대상 항목을 특정한다
+    /// (CurrentItemId 읽기 대신 — 마셜링 지연 중 곡 전환 시 오갱신 방지, Coordinator D9와 대응).</summary>
+    private void OnItemDurationCaptured(object? sender, Guid itemId) =>
+        _dispatcher?.TryEnqueue(() => ApplyCapturedDuration(itemId));
+
+    /// <summary>수집된 재생시간을 현재 목록의 해당 항목에 반영 — 값 정본은 라이브러리 모델.
+    /// 다른 리스트를 보는 중이면 항목이 없어 no-op (다음 진입 시 생성자 복사로 반영).</summary>
+    private void ApplyCapturedDuration(Guid itemId)
+    {
+        var entry = Items.FirstOrDefault(e => e.Id == itemId);
+        var model = FindSelected()?.Items.FirstOrDefault(i => i.Id == itemId);
+        if (entry is not null && model is not null)
+        {
+            entry.DurationSeconds = model.DurationSeconds;
+        }
+    }
 
     /// <summary>재생 중 리스트 글리프 갱신 — 정본은 Coordinator.CurrentPlaylistId (정지 시 null → 전부 해제).
     /// 상단 듣기 버튼의 모드별 정지 아이콘 상태도 같은 정본에서 함께 갱신한다 (mode-indicator plan T1).</summary>

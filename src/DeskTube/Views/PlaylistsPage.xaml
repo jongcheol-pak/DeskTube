@@ -315,6 +315,7 @@
                                 <ColumnDefinition Width="64" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <!-- 순위 번호 / 재생 중 스피커 글리프 겹침 (col0) — 재생 중인 곡은 번호 대신 코럴 스피커
                                  (좌측 리스트·홈 칩과 동일 E767, now-playing item plan D3) -->
@@ -366,9 +367,16 @@
                                     Foreground="{ThemeResource AppTextTertiaryBrush}"
                                     TextTrimming="CharacterEllipsis" />
                             </StackPanel>
+                            <!-- 재생시간 (FR-18) — 재생해 본 곡만 표시, 미수집은 공란(Auto 열이라 폭 0). 채널명과 동급 톤 -->
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="{x:Bind DurationText, Mode=OneWay}"
+                                FontSize="12"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource AppTextTertiaryBrush}" />
                             <!-- 행 재생/정지 토글 — 재생 중인 곡의 행만 정지 표시, 접근성 이름도 상태 반영 (stop-toggle plan D2) -->
                             <Button
-                                Grid.Column="3"
+                                Grid.Column="4"
                                 Width="34"
                                 Height="34"
                                 Padding="0"

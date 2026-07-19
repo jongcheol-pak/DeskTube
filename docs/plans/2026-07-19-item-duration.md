@@ -106,7 +106,7 @@
   - **Halt Forecast**: `PlaybackCoordinator` 공개 이벤트 추가 — 계획된 공개 API 변경, **사전 승인 항목 등재**. 파괴적·외부 작업 없음.
   - **Depends on**: T2
 
-- [ ] T4. UI 표시 — Entry 필드·포맷 함수 + 행 우측 열 + VM 이벤트 구독 (FR-18 충족)
+- [x] T4. UI 표시 — Entry 필드·포맷 함수 + 행 우측 열 + VM 이벤트 구독 (FR-18 충족)
   - **Type**: C (2개 파일 + 테스트, 신규 심볼 도입)
   - **Design**:
     - 배치: 표시 상태는 `PlaylistItemEntry`(표시 필드 관례), 포맷은 그 클래스의 정적 순수 함수(`DisplayTitle` 계산 속성 관례와 동일 파일), 표시는 `PlaylistsPage.xaml` 행 템플릿.
