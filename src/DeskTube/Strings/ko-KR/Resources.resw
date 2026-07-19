@@ -378,6 +378,9 @@
   <data name="AboutHeader.Text" xml:space="preserve">
     <value>정보</value>
   </data>
+  <data name="AboutOfficialSiteLink.Content" xml:space="preserve">
+    <value>공식 홈페이지</value>
+  </data>
   <data name="About_InfoLineFormat" xml:space="preserve">
     <value>버전 {0}</value>
   </data>

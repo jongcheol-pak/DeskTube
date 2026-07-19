@@ -20,29 +20,41 @@
                 Foreground="{ThemeResource AppTextStrongBrush}"
                 Margin="0,0,0,14" />
 
-            <!-- 앱 정보 카드 (FR-11 — 시안: 아이콘 52 r12 + 이름 17 w700 + "버전 x" 12.5) -->
+            <!-- 앱 정보 카드 (FR-11 — 시안: 아이콘 52 r12 + 이름 17 w700 + "버전 x" 12.5), 오른쪽 끝 공식 홈페이지 링크 -->
             <Border Style="{StaticResource AppCardBorderStyle}" Padding="24,22">
-                <StackPanel Orientation="Horizontal" Spacing="18">
-                    <Border Width="52" Height="52" CornerRadius="{StaticResource AppLargeIconCornerRadius}" VerticalAlignment="Center">
-                        <Border.Background>
-                            <ImageBrush ImageSource="ms-appx:///Assets/Square44x44Logo.png" Stretch="UniformToFill" />
-                        </Border.Background>
-                    </Border>
-                    <StackPanel Spacing="2" VerticalAlignment="Center">
-                        <!-- 앱명은 언어별 표기(ko 데스크튜브 — appname plan T4) — 생성자에서 AppDisplayName 리소스로 배정 -->
-                        <TextBlock
-                            x:Name="AppNameText"
-                            Style="{StaticResource BodyStrongTextBlockStyle}"
-                            FontSize="17"
-                            FontWeight="Bold"
-                            Foreground="{ThemeResource AppTextStrongBrush}" />
-                        <TextBlock
-                            Text="{x:Bind ViewModel.AppVersion, Mode=OneWay}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            FontSize="12.5"
-                            Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                <Grid ColumnSpacing="18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="18">
+                        <Border Width="52" Height="52" CornerRadius="{StaticResource AppLargeIconCornerRadius}" VerticalAlignment="Center">
+                            <Border.Background>
+                                <ImageBrush ImageSource="ms-appx:///Assets/Square44x44Logo.png" Stretch="UniformToFill" />
+                            </Border.Background>
+                        </Border>
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <!-- 앱명은 언어별 표기(ko 데스크튜브 — appname plan T4) — 생성자에서 AppDisplayName 리소스로 배정 -->
+                            <TextBlock
+                                x:Name="AppNameText"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                FontSize="17"
+                                FontWeight="Bold"
+                                Foreground="{ThemeResource AppTextStrongBrush}" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.AppVersion, Mode=OneWay}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                FontSize="12.5"
+                                Foreground="{ThemeResource AppTextTertiaryBrush}" />
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                    <!-- 공식 홈페이지 — NavigateUri로 기본 브라우저에서 엶 (URL은 정적 상수라 리소스 아님, SponsorUrl과 동일 방침) -->
+                    <HyperlinkButton
+                        Grid.Column="1"
+                        x:Uid="AboutOfficialSiteLink"
+                        NavigateUri="https://jongcheol-pak.github.io/DeskTube/"
+                        VerticalAlignment="Center" />
+                </Grid>
             </Border>
 
             <!-- 개인정보 처리방침 카드 (NFR-6) -->

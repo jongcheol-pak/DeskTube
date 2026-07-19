@@ -378,6 +378,9 @@
   <data name="AboutHeader.Text" xml:space="preserve">
     <value>About</value>
   </data>
+  <data name="AboutOfficialSiteLink.Content" xml:space="preserve">
+    <value>Official website</value>
+  </data>
   <data name="About_InfoLineFormat" xml:space="preserve">
     <value>Version {0}</value>
   </data>
