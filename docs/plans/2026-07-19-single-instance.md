@@ -144,6 +144,11 @@
 - D8. 종료 시 `UnregisterKey` — 트레이 종료에서 키 조기 해제로 "종료 직후 재실행" race 창 축소. 크래시 종료는 OS의 프로세스 소멸 해제가 안전망.
 - D9. 리다이렉트 대기 = 백그라운드 Task 완료 → 이벤트 핸들 + `CoWaitForMultipleObjects` — STA 메인 스레드에서 `AsTask().Wait()` 직접 블로킹은 COM 마셜링 교착 위험(MS 샘플이 이 패턴을 명시). Source: MS Learn 단일 인스턴스 샘플.
 
+## Phase Ledger
+- 전 task(T1~T4) 완료
+- Phase F 통과 (HEAD 42797c6) — 빌드 0·0, 테스트 142/142(F-2), 포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR/MINOR 0)
+- Phase G 통과 (Must 100%) — 커버 대상 FR-22 코드 정합 확인(실동작 5종은 ⏳ HUMAN-VERIFY — MSIX 배포 필요), FR-8·FR-19 동작 보존(경로 무변경·회귀 0), 나머지 active FR은 소규모 연결 범위 외 제외 규정 적용
+
 ## Progress Log
 - T1-T2 완료 (커밋 1887730, 552f035): T1 PRD FR-22 신설(+plan·deferred 대장 이관 파일 포함). T2 진입 게이트 — csproj 상수·Program.cs·ActivationInterop.cs·App 폴백 로그 3줄. 빌드 0·0, 테스트 138/138, spec OK(MINOR 1 — Design 의존 방향 서술 정정 반영)·quality OK.
   - 결정: AppInstance API 실재는 winmd 바이너리 검색으로 확인(FindOrRegisterForKey·RedirectActivationToAsync·UnregisterKey·IsCurrent·ProcessId·Activated·get_Data/get_Kind 전부 존재). Application.Start 람다 매개변수를 discard(_)로 쓰면 안(파라미터 할당 CS0029) — 생성 Main과 동일한 p 사용.
