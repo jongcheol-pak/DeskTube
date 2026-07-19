@@ -1,6 +1,13 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **help.md를 도움말 작성 가이드 기준으로 정비 (문서만, 앱 동작 변화 없음)** — 사용자 요청. 위키(LLM WIKI)에 등록한 범용 "도움말 문서 작성 가이드"([[40_guides/ui-ux/help-doc-writing]] 등 3분할) 기준으로 항목별 대조 후 수정. 코드 변경 없음.
+  - **목차(TOC) 추가** — 가이드 "100줄 이상 목차 필수"(216줄)를 미충족하던 것 보완. 상위 6개 섹션 링크 표(이모지 없는 `##` 헤딩만 대상이라 앵커 안정).
+  - **이모지 헤딩 앵커 안정화** — 취약했던 `#-플레이리스트-화면`·`#️-설정-화면`(이형 선택자 U+FE0F 포함) 내부 링크를, 헤딩 앞 `<a id="플레이리스트-화면">`·`<a id="설정-화면">` 명시 앵커 + 무이모지 링크로 교체(렌더러 의존 제거, 이모지 헤딩 자체는 가이드 권장대로 유지). **실제 앵커 동작은 발행 환경(GitHub/홈페이지) 클릭 테스트 필요.**
+  - **개인정보 삭제 방법 추가** — 가이드 "개인정보 3대 질문(수집/저장/삭제)" 중 삭제 누락 보완. 코드 검증: `settings.json`·`playlists.json`·로그인 세션(WebView2)·로그 모두 `ApplicationData.LocalFolder`(App.xaml.cs·AppServices.cs·JsonStateStore.cs·WebViewEnvironment.cs), 설치=Store/MSIX → 제거 시 LocalState 삭제. "앱 제거 시 함께 삭제" 문구는 추측 아닌 검증 사실.
+  - **동작 용어 통일** — 단일 누름 "클릭" 5곳→"누르기"(오른쪽 클릭·더블클릭은 표준어라 유지). **지원 환경 표** 인터넷 연결(필요)·유튜브 계정(선택) 2행 추가. **FAQ 답변→설정 화면 앵커 링크** 3곳(가이드 §5). **문의하기 섹션** 신설(GitHub Issues `github.com/jongcheol-pak/DeskTube/issues` + GitHub Sponsors `github.com/sponsors/jongcheol-pak` 직접 링크 2행, URL은 AboutPage.xaml.cs `SponsorUrl`에서 확인) + 목차 반영.
+  - **실시간 라이브 방송 지원 명시** — 도움말이 일반 영상 위주로 읽혀 라이브 지원이 안 보이던 것 보완. 코드 검증(`YouTubeUrlParser.cs`가 `/live/{id}` 파싱 + `watch?v=` 라이브 주소도 동일 처리, 플레이어가 `loadVideoById`로 재생)으로 실지원 확인 후, 처음 시작하기 step 2·홈 주소 입력란에 "실시간 라이브 방송도 지원" 문구 추가.
+  - **검증**: 마크다운이라 빌드 대상 아님. grep 재확인 — 취약 이모지 앵커 링크 0·단일누름 클릭 0(오른쪽/더블만 잔존)·TOC 7개 앵커가 실제 헤딩과 일치·새 `<a id>` 앵커 2개와 링크 대응. 실시간 라이브 실지원은 코드(파서·플레이어)로 확인. README는 도움말 구조를 서술하지 않아 변경 불필요.
 - 2026-07-19: **언어 설정 3종 개선 (문구 통일·빠른재생 로컬라이즈·변경 시 앱 재시작)** — 사용자 요청. plan: docs/plans/2026-07-19-language-improvements.md, 브랜치 task/language-improvements (미병합 — 사용자 승인 후 병합). PRD 연결: NFR-4(다국어)·FR-22(단일 인스턴스 상호작용).
   - **T1** 언어 드롭다운 첫 항목 문구 통일: resw `Language_System` ko "시스템 언어 따름"→"시스템 언어", en "Follow system language"→"System language"(사용자 확정으로 ko/en 모두 통일).
   - **T2** 홈 즉시재생 "빠른 재생" 리스트가 언어 전환에도 생성 시점 이름(한글)으로 고정되던 문제: 앱 시작 시(InitializeServicesAsync, 자동재생 이전) `QuickPlaylistId` 리스트 이름을 현재 언어로 동기화. `PlaylistLibrary.SyncQuickPlaylistName(Guid?, string):bool`(순수 결정 로직 — null·부재·일치 시 false, 상이 시 Rename 후 true) + `App.SyncQuickPlaylistName()`(true일 때만 SaveAsync, 예외 안전 fire-and-forget). 표시 3지점(홈 칩·목록·선택 바인딩)이 모두 playlist.Name을 읽어 모델 rename 1곳이 전체 커버. 단위테스트 4건. 개명 정책: 안정 ID로 식별되는 앱관리 리스트라 항상 동기화(수동개명 비지원 — 홈 재생마다 내용 교체).
