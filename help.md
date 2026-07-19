@@ -52,7 +52,7 @@
 
 > 💡 **Windows 시작 시 자동 실행**이 기본으로 켜져 있습니다. PC를 켜면 창 없이 트레이로 조용히 시작해, 마지막으로 재생하던 항목을 이어서 재생합니다. ([설정](#️-설정-화면)에서 끌 수 있습니다.)
 
-<img src="images/desktop-playback.png" alt="바탕화면 배경에서 유튜브 영상이 재생 중인 모습" width="800" />
+<img src="images/desktop-playback.gif" alt="바탕화면 배경에서 유튜브 영상이 재생 중인 모습" width="800" />
 
 ---
 
