@@ -165,6 +165,12 @@
 
 ## Progress Log
 - T1-T2 완료 (커밋 d15e20a, 34c17d1): T1 PRD FR-18 보강(+.gitignore에 .playwright-mcp/ 추가 — 무관 로그 커밋 방지). T2 수집 하부(모델 DurationSeconds·player.html duration REV 6·IPlayerHost.CurrentDuration·PlayerHost 파싱·FakePlayer). 빌드 0·0, 테스트 127/127, spec·quality 리뷰 이슈 0.
+- T3-T5 완료 (커밋 b1ace1e, 6076389, 517a1e3): T3 코디네이터 수집·영속·ItemDurationCaptured 알림 + 회귀 3건(130/130). T4 UI 표시(Entry·FormatDuration·행 열·VM 구독) + 포맷 8케이스(138/138). T5 README. 각 코드 task spec·quality 리뷰 이슈 0.
+
+## Phase Ledger
+- 전 task(T1~T5) 완료
+- Phase F 통과 (HEAD 517a1e3) — 빌드 0·0, 테스트 138/138(F-2), 포맷 0, plan-completion-reviewer OK(BLOCKER/MAJOR 0, MINOR 1[Progress Log 보완 — 반영됨])
+- Phase G 통과 (Must 100%) — 커버 대상 FR-18(재생시간 표시) 코드 정합 확인(시각·동작은 ⏳ HUMAN-VERIFY), 나머지 active FR은 소규모 연결 범위 외 제외 규정 적용
 
 ## Next Steps
 - (구현 완료 후) HUMAN-VERIFY 4항목 확인 → 커밋·병합 여부는 별도 승인

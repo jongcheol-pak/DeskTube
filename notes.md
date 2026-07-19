@@ -1,6 +1,14 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **플레이리스트 항목 재생시간 표시 (FR-18 보강)** — 사용자 요청(첨부 스크린샷). oEmbed에 재생시간이 없어 **곡을 실제 재생할 때 플레이어에서 길이를 받아 항목에 영구 캐시**하는 방식으로 구현(질문 4건 확정: 취득=재생 시 수집 / 표시=행 우측 / 미수집=공란 / 헤더 합계=제외). plan: docs/plans/2026-07-19-item-duration.md.
+  - **T1** PRD FR-18 보강(+`.gitignore`에 `.playwright-mcp/` 추가 — 무관 런타임 로그 커밋 방지).
+  - **T2** 수집 하부: `PlaylistItem.DurationSeconds`(0=미수집, JSON 역호환) + `player.html`의 `time` 메시지에 `duration` 필드(`PLAYER_REV` 5→6, 옛 rev는 `TryGetProperty`로 안전 미갱신) + `IPlayerHost.CurrentDuration` 계약 + `PlayerHost` 파싱 + `FakePlayer` 갱신.
+  - **T3** `PlaybackCoordinator.OnPlayerTime`의 실제 진행 확인 시점(`masterTime≥1.0`)에 `master.CurrentDuration≥1.0`·`_queue.Current.Id==CurrentItemId`이면 저장값과 2초 이상 차이날 때만 수집 → 라이브러리 모델 갱신(동일 객체 참조라 곧 영속) + `SaveAsync` fire-and-forget + `ItemDurationCaptured(Guid)` 발화. 재생 불가(-3, masterTime<1.0)·라이브(duration 0) 오수집 구조적 차단. 회귀 테스트 3건 + `FakeStore` 저장 카운터.
+  - **T4** `PlaylistItemEntry.DurationSeconds`(관찰)·`DurationText`·`FormatDuration`(순수 함수 — `m:ss`/`h:mm:ss`/공란) + VM `ItemDurationCaptured` 구독(UI 마셜링, ID로 대상 특정) + `PlaylistsPage.xaml` 행 우측 재생시간 열(재생버튼 3→4열) + 포맷 경계 8케이스 테스트.
+  - **T5** README 차트형 항목 목록에 재생시간 서술 추가.
+  - **검증**: `dotnet build`/`dotnet test -p:Platform=x64` 경고 0·오류 0, 테스트 138/138(신규 11건), 포맷 위반 0. 각 코드 task spec·quality 리뷰 이슈 0. 화면 표시·실시간 갱신·재시작 유지·1시간 이상 h:mm:ss는 ⏳ HUMAN-VERIFY.
+  - 브랜치 `task/item-duration` (미병합 — 사용자 승인 후 병합). Deferred: 리스트 헤더 총 재생시간 합계(질문에서 이번 제외).
 - 2026-07-19: **정보 화면 개발자 표기 제거 (FR-11 축소)** — 사용자 요청("버전 옆 개발자 삭제"). resw `About_InfoLineFormat` ko/en에서 "· 개발자: DeskTube Dev" 부분 삭제(버전만 표시), AboutViewModel·AboutPage.xaml 주석 동기화, PRD FR-11 문구·변경 이력 갱신(NFR-4의 시작메뉴 게시자명은 무관·유지). README는 개발자 표기 서술이 없어 미변경. **검증**: `dotnet build DeskTube.slnx -p:Platform=x64` 경고 0·오류 0 — 화면 표시는 HUMAN-VERIFY.
 - 2026-07-18: **코드 리뷰(/code-review high) 지적 10건 전수 수정** — 브랜치 `task/playlist-stop-toggle` (8각도 파인더 + 후보별 검증 에이전트, CONFIRMED 9 + PLAUSIBLE 1, 사용자 "수정" 승인)
   - **시작 감시 오탐·회귀 3건 (player.html, rev 4→5)**: ① PLAYING 도달 시 해제 가드 제거로 느린 시작(8초 시점 currentTime<1.0) 정상 곡이 -3 오탐 스킵 → **진행 재확인 유예** 도입(만료 시점에 미진행이라도 직전 대비 늘고 있으면 4초 간격 최대 3회 재확인 후 판정) + 1초 시각 보고 인터벌이 진행(≥1.0s) 확인 즉시 감시 해제(정상 곡은 타이머 발화·diag 로그 자체가 없어짐 — 곡·모니터당 diag 누적 소음 제거) ② `time.toFixed(2)`가 getCurrentTime() undefined에서 TypeError로 콜백을 죽여 -3 미발송(죽은 곡에서 영구 정지) → 타입 가드로 -1 정규화, 못 읽는 상태는 죽은 플레이어 증거로 즉시 -3 ③ 절전(suspend) 레이스로 살아남은 스테일 타이머가 정책 재개 직후 오발화 가능 → 'play' 명령에서 감시 재장전.
