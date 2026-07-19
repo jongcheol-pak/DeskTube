@@ -241,12 +241,21 @@ public partial class App : Application
 
         _ = PersistAsync();
 
+        // 관찰되지 않는 Task의 예외 유실 방지 — SaveAsync가 던지는 예외(직렬화 등)도 로그로 남긴다
+        // (SaveAsync는 IO 예외만 Result.Fail로 변환하므로 그 밖의 throw는 try/catch로 잡아야 무음 소실을 막는다)
         async Task PersistAsync()
         {
-            var result = await services.Library.SaveAsync();
-            if (!result.IsSuccess)
+            try
             {
-                AppLog.Write($"빠른 재생 이름 동기화 저장 실패: {result.Message}");
+                var result = await services.Library.SaveAsync();
+                if (!result.IsSuccess)
+                {
+                    AppLog.Write($"빠른 재생 이름 동기화 저장 실패: {result.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"빠른 재생 이름 동기화 저장 중 오류: {ex.GetType().Name} {ex.Message}");
             }
         }
     }

@@ -128,7 +128,7 @@
 
 ## Deferred / Follow-up
 
-- 없음.
+- [SUGGEST] fire-and-forget "discard + async 로컬함수 + 실패 로그" 패턴이 3곳(PlaybackCoordinator.FireAndForget, SettingsViewModel.Apply, App.SyncQuickPlaylistName)에 유사 중복 — 공용 유틸 승격 검토(현재 계층이 달라 즉시 강제는 아님, T2 quality m1).
 
 ## Out of Scope
 
