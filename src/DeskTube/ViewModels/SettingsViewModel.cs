@@ -362,7 +362,10 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>언어 변경 (plan T7, AGENTS 다국어 규칙 3) — ① 저장 ② 오버라이드 ③~⑤는 App.ApplyLanguageChange.</summary>
+    /// <summary>
+    /// 언어 변경 — 저장 완료 후 앱을 재시작해 전체 UI를 새 언어로 반영한다 (trays·셸만 재생성하면 일부만 바뀜).
+    /// 재시작 앱은 시작 시 저장된 언어를 선적용하므로 여기서 PrimaryLanguageOverride를 세션에 걸 필요가 없다.
+    /// </summary>
     partial void OnLanguageIndexChanged(int value)
     {
         if (_loading || _services is null || value < 0 || value >= LanguageCodes.Length)
@@ -370,15 +373,23 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        var code = LanguageCodes[value];
-        _services.Settings.Language = code;
-        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = code ?? string.Empty;
+        _services.Settings.Language = LanguageCodes[value];
+        _ = SaveAndRestartAsync();
 
-        Apply(() => _services.Store.SaveSettingsAsync(_services.Settings), "언어 설정 저장");
-
-        if (Microsoft.UI.Xaml.Application.Current is App app)
+        // 저장 완료를 보장한 뒤 재시작한다 — 저장 전에 프로세스가 종료되면 재시작 앱이 옛 언어를 읽는다.
+        async Task SaveAndRestartAsync()
         {
-            app.ApplyLanguageChange(); // 트레이·셸 재생성 (이 페이지도 새 창에서 다시 만들어짐)
+            var result = await _services.Store.SaveSettingsAsync(_services.Settings);
+            if (!result.IsSuccess)
+            {
+                AppLog.Write($"언어 설정 저장 실패 — 재시작을 취소합니다: {result.Message}");
+                return; // 저장 실패 시 재시작하지 않음 (옛 언어로 되살아나 혼란을 주지 않도록)
+            }
+
+            if (Microsoft.UI.Xaml.Application.Current is App app)
+            {
+                app.RestartForLanguageChange();
+            }
         }
     }
 

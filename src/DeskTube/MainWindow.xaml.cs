@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
         };
         ToastService.Attach(PresentToast, DispatcherQueue);
 
-        // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 창 재생성(App.ApplyLanguageChange)이 재배정한다.
+        // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 앱 재시작(App.RestartForLanguageChange)이 재배정한다.
         Title = Loc.Get("AppDisplayName");
         AppTitleText.Text = Loc.Get("AppDisplayName");
 

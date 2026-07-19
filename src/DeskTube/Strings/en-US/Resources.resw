@@ -400,7 +400,7 @@
     <value>Language</value>
   </data>
   <data name="LanguageCard.Description" xml:space="preserve">
-    <value>Changing the language reopens the settings window</value>
+    <value>Changing the language restarts the app</value>
   </data>
   <data name="Language_System" xml:space="preserve">
     <value>System language</value>

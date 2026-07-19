@@ -277,25 +277,34 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// 언어 변경 적용 (plan T7, AGENTS 다국어 규칙 3) — 리소스 캐시 초기화 후 트레이 메뉴와
-    /// 설정 셸(창)을 새로 만든다. x:Uid·Loc 문구는 요소 생성 시점에 고정되므로 재생성이 필요하다.
-    /// (테마는 Application 수준 다크 고정이라 창 재생성과 무관하게 유지된다.)
+    /// 언어 변경 적용 — 앱을 즉시 재시작해 전체 UI(트레이·모든 화면)를 새 언어로 반영한다.
+    /// 트레이·셸만 재생성하면 이미 만들어진 리소스·상태가 남아 일부만 바뀌므로, 저장된 언어를
+    /// 재시작 시 ApplySavedStartupOverrides가 선적용하는 경로로 전체를 새로 만든다.
+    /// 재시작 전 배경 복구·인스턴스 키 해제는 ExitApplication과 동일하다 (FR-22 게이트 경합 방지).
     /// </summary>
-    internal void ApplyLanguageChange()
+    internal void RestartForLanguageChange()
     {
-        Loc.Reset();
+        AppLog.Write("=== 언어 변경으로 앱 재시작 ===");
 
-        if (Services is not null && _tray is not null)
+        // 인스턴스 키 조기 해제 — 재시작한 새 프로세스가 소멸 중인 이 프로세스로 리다이렉트하는 것을 막는다 (FR-22 D8).
+        try
         {
-            _tray.Dispose();
-            _tray = new TrayIconService(Services, ShowMainWindow, ExitApplication);
-            _tray.Initialize();
+            AppLifecycleInstance.GetCurrent().UnregisterKey();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"인스턴스 키 해제 실패(무시): {ex.GetType().Name} {ex.Message}");
         }
 
-        var old = _window as MainWindow;
-        _window = new MainWindow();
-        _window.Activate();
-        old?.ForceClose(); // 닫기→숨김 로직 우회 실제 닫기 (교체 완료 후)
+        // 배경 복구·재생 정리 (ExitApplication과 동일) 후 재시작
+        _tray?.Dispose();
+        _tray = null;
+        Services?.Dispose();
+        Services = null;
+
+        // 성공하면 이 프로세스는 종료되어 아래로 오지 않는다. 반환됐다면 재시작 실패다 (드묾 — 로그 후 유지, 사용자 수동 재시작).
+        var failure = AppLifecycleInstance.Restart(string.Empty);
+        AppLog.Write($"앱 재시작 실패(AppRestartFailureReason={failure}) — 수동 재시작이 필요합니다.");
     }
 
     /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>
