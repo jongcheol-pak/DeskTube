@@ -109,7 +109,7 @@
   - **Halt Forecast**: `StartupArgs` 공개 정적 메서드 추가(계획된 공개 API 추가 — 호출부 신규뿐, 기존 시그니처 불변) — **사전 승인 항목 등재**. 파괴적·외부 작업 없음.
   - **Depends on**: T2
 
-- [ ] T4. 문서 갱신 — README·help.md (FR-22 충족)
+- [x] T4. 문서 갱신 — README·help.md (FR-22 충족)
   - **Type**: A
   - **Acceptance**: README 기능 서술에 "중복 실행 방지(단일 인스턴스): 실행 중 재실행 시 기존 앱의 메인창 활성화, 자동실행 중복은 무영향 무시" 추가. help.md의 기본 동작/FAQ에 사용자 관점 서술 1항목 추가("앱이 이미 실행 중일 때 바로가기를 다시 누르면 창이 열립니다" 취지). 역대조 누락·잔존·변형 0.
   - **Files**: 주: `README.md`, `help.md`
@@ -147,6 +147,7 @@
 ## Progress Log
 - T1-T2 완료 (커밋 1887730, 552f035): T1 PRD FR-22 신설(+plan·deferred 대장 이관 파일 포함). T2 진입 게이트 — csproj 상수·Program.cs·ActivationInterop.cs·App 폴백 로그 3줄. 빌드 0·0, 테스트 138/138, spec OK(MINOR 1 — Design 의존 방향 서술 정정 반영)·quality OK.
   - 결정: AppInstance API 실재는 winmd 바이너리 검색으로 확인(FindOrRegisterForKey·RedirectActivationToAsync·UnregisterKey·IsCurrent·ProcessId·Activated·get_Data/get_Kind 전부 존재). Application.Start 람다 매개변수를 discard(_)로 쓰면 안(파라미터 할당 CS0029) — 생성 Main과 동일한 p 사용.
+- T3-T4 완료 (커밋 7b962bd, 이하): T3 수신 처리 — IsQuietActivation·Activated 구독·핸들러(UI 마셜링·전면화)·UnregisterKey + 테스트 4건(142/142). spec·quality 이슈 0. T4 README 핵심 기능 + help.md 기본 동작 각 1항목.
 
 ## Next Steps
 - (구현 완료 후) HUMAN-VERIFY 5항목 확인 → 커밋·병합 여부는 별도 승인
