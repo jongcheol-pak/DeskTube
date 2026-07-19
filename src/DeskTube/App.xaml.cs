@@ -297,14 +297,17 @@ public partial class App : Application
         }
 
         // 배경 복구·재생 정리 (ExitApplication과 동일) 후 재시작
+        IsExiting = true;
         _tray?.Dispose();
         _tray = null;
         Services?.Dispose();
         Services = null;
 
-        // 성공하면 이 프로세스는 종료되어 아래로 오지 않는다. 반환됐다면 재시작 실패다 (드묾 — 로그 후 유지, 사용자 수동 재시작).
+        // 성공하면 이 프로세스는 종료되어 아래로 오지 않는다. 반환됐다면 재시작 실패다 (드묾).
+        // 이미 트레이·서비스를 정리해 앱이 먹통이므로 유지하지 않고 확실히 종료한다 (사용자가 수동으로 다시 실행).
         var failure = AppLifecycleInstance.Restart(string.Empty);
-        AppLog.Write($"앱 재시작 실패(AppRestartFailureReason={failure}) — 수동 재시작이 필요합니다.");
+        AppLog.Write($"앱 재시작 실패(AppRestartFailureReason={failure}) — 앱을 종료합니다.");
+        Exit();
     }
 
     /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>

@@ -129,6 +129,7 @@
 ## Deferred / Follow-up
 
 - [SUGGEST] fire-and-forget "discard + async 로컬함수 + 실패 로그" 패턴이 3곳(PlaybackCoordinator.FireAndForget, SettingsViewModel.Apply, App.SyncQuickPlaylistName)에 유사 중복 — 공용 유틸 승격 검토(현재 계층이 달라 즉시 강제는 아님, T2 quality m1).
+- [SUGGEST] App.RestartForLanguageChange와 App.ExitApplication이 "UnregisterKey → tray/Services Dispose → Exit" 정리 블록을 중복 보유 — 공용 `CleanupForShutdown()` 헬퍼 추출 검토(두 경로 정리 로직 어긋남 방지, T3 quality S1).
 
 ## Out of Scope
 
@@ -148,6 +149,11 @@
 
 - [x] 문구 변경 범위(en 통일 여부) → **ko/en 모두 통일**("시스템 언어"/"System language").
 - [x] 재시작 UX → **즉시 재시작**(확인 다이얼로그·지연 없음).
+
+## Progress Log
+- T1 완료 (e8e4e6e): resw Language_System ko/en 문구 통일. Type A.
+- T2 완료 (ceddaff): PlaylistLibrary.SyncQuickPlaylistName(순수) + App 오케스트레이션, 시작 시 빠른재생 이름 언어 동기화. 테스트 4건. quality M1(fire-and-forget 예외안전) 수정. 147/147.
+  - 결정: 개명은 안정 ID 식별 앱관리 리스트라 항상 동기화(수동개명 비지원). App fire-and-forget SaveAsync는 try/catch로 예외 안전.
 
 ## Phase Ledger
 

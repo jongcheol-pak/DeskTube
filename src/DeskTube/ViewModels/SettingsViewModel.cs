@@ -363,7 +363,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 언어 변경 — 저장 완료 후 앱을 재시작해 전체 UI를 새 언어로 반영한다 (trays·셸만 재생성하면 일부만 바뀜).
+    /// 언어 변경 — 저장 완료 후 앱을 재시작해 전체 UI를 새 언어로 반영한다 (트레이·셸만 재생성하면 일부만 바뀜).
     /// 재시작 앱은 시작 시 저장된 언어를 선적용하므로 여기서 PrimaryLanguageOverride를 세션에 걸 필요가 없다.
     /// </summary>
     partial void OnLanguageIndexChanged(int value)
@@ -377,18 +377,26 @@ public partial class SettingsViewModel : ObservableObject
         _ = SaveAndRestartAsync();
 
         // 저장 완료를 보장한 뒤 재시작한다 — 저장 전에 프로세스가 종료되면 재시작 앱이 옛 언어를 읽는다.
+        // 미관찰 예외 방지 — SaveSettingsAsync throw나 재시작 정리 중 예외도 로그로 남긴다 (Apply 헬퍼 관례).
         async Task SaveAndRestartAsync()
         {
-            var result = await _services.Store.SaveSettingsAsync(_services.Settings);
-            if (!result.IsSuccess)
+            try
             {
-                AppLog.Write($"언어 설정 저장 실패 — 재시작을 취소합니다: {result.Message}");
-                return; // 저장 실패 시 재시작하지 않음 (옛 언어로 되살아나 혼란을 주지 않도록)
-            }
+                var result = await _services.Store.SaveSettingsAsync(_services.Settings);
+                if (!result.IsSuccess)
+                {
+                    AppLog.Write($"언어 설정 저장 실패 — 재시작을 취소합니다: {result.Message}");
+                    return; // 저장 실패 시 재시작하지 않음 (옛 언어로 되살아나 혼란을 주지 않도록)
+                }
 
-            if (Microsoft.UI.Xaml.Application.Current is App app)
+                if (Microsoft.UI.Xaml.Application.Current is App app)
+                {
+                    app.RestartForLanguageChange();
+                }
+            }
+            catch (Exception ex)
             {
-                app.RestartForLanguageChange();
+                AppLog.Write($"언어 변경 처리 중 오류: {ex.GetType().Name} {ex.Message}");
             }
         }
     }
