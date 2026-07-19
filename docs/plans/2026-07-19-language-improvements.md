@@ -159,4 +159,10 @@
 
 ## Phase Ledger
 
-- (implement-task가 갱신)
+- Phase F 통과 (HEAD bbc28ab) — 빌드 0/0, 147/147, plan-completion-reviewer MINOR 2건 수정.
+- Phase G 통과 (Must 100%) — NFR-4·FR-22 코드 경로 정합 확인(F-7 교차대조). 실기 반영은 HUMAN-VERIFY.
+
+## Next Steps
+- 권장 다음 액션: 사용자 승인 시 task/language-improvements → main 병합. 이후 MSIX 배포로 HUMAN-VERIFY 3건(재시작·전체 UI 반영/빠른재생 영문/FR-22 리다이렉트) 확인.
+- Suggested skills: (병합 승인 후) 공식 /code-review, /security-review 선택적.
+- 위키 갱신: vault 미설정 — 해당 없음.
