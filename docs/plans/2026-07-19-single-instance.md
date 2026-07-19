@@ -63,12 +63,12 @@
   - **Halt Forecast**: 없음 — FR-22 신설은 사용자 확정 완료 (사전 승인 항목 등재).
   - **Depends on**: 없음
 
-- [ ] T2. 단일 인스턴스 진입 게이트 — 커스텀 Main + 리다이렉션 (FR-22 충족)
+- [x] T2. 단일 인스턴스 진입 게이트 — 커스텀 Main + 리다이렉션 (FR-22 충족)
   - **Type**: D (앱 진입점 구조 변경 + 빌드 상수 — 크로스커팅)
   - **Design**:
     - 배치: 진입점은 신규 `src/DeskTube/Program.cs`(App.xaml.cs와 책임 분리 — 프로세스 게이트 vs 앱 수명주기), P/Invoke는 신규 `src/DeskTube/Interop/ActivationInterop.cs`(도메인별 파일 관례), 빌드 상수는 `DeskTube.csproj`.
     - 신규 심볼: `Program`(static class — `Main`, `TryRedirectToExistingInstance`), `ActivationInterop`(internal static — `AllowSetForegroundWindow`, `SetForegroundWindow`, `CreateEvent`/`SetEvent`/`CoWaitForMultipleObjects` 리다이렉트 대기용).
-    - 의존 방향: Program → AppLifecycle AppInstance + ActivationInterop + App(Start만). 역참조 없음. App은 Program을 모른다.
+    - 의존 방향: Program → AppLifecycle AppInstance + ActivationInterop + App(Start만). 역참조는 App→`Program.SingleInstanceFallbackReason` 읽기 1건만(D4 지연 로그 — 수정 내용 4와 정합, spec 리뷰 M1 정정).
     - 비추상화: SingleInstanceService 같은 서비스·인터페이스 신설 안 함(프로세스 게이트는 DI 그래프 밖·App 생성 전 실행 — 정적 진입점 지역성 유지), 키 상수 설정화 안 함(고정 "main" — D6).
   - **수정 내용**:
     1. `DeskTube.csproj` — `<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>` 추가 (한글 주석: 단일 인스턴스 리다이렉션을 위해 생성 Main을 Program.cs로 대체 — FR-22).
@@ -76,7 +76,7 @@
     3. `TryRedirectToExistingInstance()`: try { `GetCurrent().GetActivatedEventArgs()` + `FindOrRegisterForKey("main")` } — `IsCurrent`면 false(최초 인스턴스, 계속 진행). 아니면 `ActivationInterop.AllowSetForegroundWindow(keyInstance.ProcessId)`(기존 인스턴스에 전면화 권한 위양, 실패 무시) 후 `RedirectActivationToAsync(args)`를 STA 안전 대기(백그라운드 Task에서 완료 → 이벤트 핸들 SetEvent, 메인은 `CoWaitForMultipleObjects` — MS 공식 단일 인스턴스 샘플 패턴)로 완료시키고 true 반환.
     4. 예외 폴백(D4): AppInstance 조회·등록 예외 → false 반환(일반 시작 계속 — 오늘과 동일한 최악으로 저하, 무반응·크래시 방지). 리다이렉트 자체 실패(기존 인스턴스 소멸 직후 race) → false 반환(일반 시작 계속). 폴백 시 로그 — 단 `AppLog.Initialize` 전이므로 `Debug.WriteLine` + 폴백 사유를 필드에 보관해 OnLaunched에서 AppLog 기록(간단 정적 필드 1개).
   - **Acceptance**: 빌드 경고 0·오류 0 + 기존 테스트 전체 통과 + 빌드 산출물에서 생성 Main 미포함(커스텀 Main 단일 진입점 — `App.g.i.cs`의 `#if` 가드로 컴파일 제외 확인). 실제 2중 실행 방지는 ⏳ HUMAN-VERIFY (T3까지 완료 후 시나리오 검증).
-  - **Files**: 주: `src/DeskTube/Program.cs`(신규), `src/DeskTube/Interop/ActivationInterop.cs`(신규), `src/DeskTube/DeskTube.csproj`
+  - **Files**: 주: `src/DeskTube/Program.cs`(신규), `src/DeskTube/Interop/ActivationInterop.cs`(신규), `src/DeskTube/DeskTube.csproj`, `src/DeskTube/App.xaml.cs`(D4 폴백 사유 지연 기록 3줄 — 구현 중 Files 추가)
   - **Edge Cases**:
     - 부팅 초기 COM/WinRT 미준비로 AppInstance 조회 실패 → false 폴백(D4) — StartupService의 기존 실패 폴백 관례와 동일 방향(기능 저하 > 크래시).
     - 기존 인스턴스가 트레이 '종료' 진행 중일 때 재실행 race — 리다이렉트 실패 시 일반 시작 폴백으로 새 primary가 됨(무반응 방지). 극단 race로 순간 2프로세스 공존 가능 — 오늘의 상시 2중 실행보다 좁은 창, 수용.

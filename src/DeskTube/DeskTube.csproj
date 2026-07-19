@@ -20,6 +20,8 @@
          WinRT 배포 초기화가 실행돼 0x80040154로 죽는 문제 방지.
          동일 동작은 App.OnLaunched의 InitializeWindowsAppRuntime()이 명시 수행한다. -->
     <WindowsAppSdkAutoInitialize>false</WindowsAppSdkAutoInitialize>
+    <!-- 단일 인스턴스 리다이렉션(FR-22) — 생성 Main 대신 Program.cs 커스텀 진입점 사용 -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

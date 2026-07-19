@@ -103,6 +103,12 @@ public partial class App : Application
         AppDomain.CurrentDomain.ProcessExit += static (_, _) => AppLog.Write("=== 앱 종료 (프로세스 종료) ===");
         AppLog.Write("=== 앱 시작 ===");
 
+        // 단일 인스턴스 게이트(Program)의 폴백 사유 지연 기록 — 게이트 시점엔 AppLog 미초기화 (FR-22 D4)
+        if (Program.SingleInstanceFallbackReason is { } gateFallback)
+        {
+            AppLog.Write(gateFallback);
+        }
+
         // 자동 시작(부팅) 판별 — 활성화 종류 우선, 조회 실패 시 명령줄 인자 폴백 (plan T4·D3)
         var quietStart = StartupService.WasActivatedByStartupTask()
             || StartupArgs.HasStartupFlag(Environment.GetCommandLineArgs());
