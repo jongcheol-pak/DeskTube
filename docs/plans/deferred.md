@@ -11,7 +11,6 @@
 - [2026-07-16] AboutViewModel 라이선스 로드 LoadAsync 전환 — 파일 수 늘어나면 (출처: part2 T6 quality MINOR)
 - [2026-07-16] 정보 화면 개인정보처리방침 안내를 호스팅 URL로 교체 — Store 제출 시 (출처: part2 T6 quality MINOR, D7)
 - [2026-07-16] "마지막 재생 리스트→StartAsync" 로직 3회째 등장 시 공통 헬퍼 추출 (현재 App·TrayIconService 2곳) (출처: part2 T4 quality SUGGEST)
-- [2026-07-16] 단일 인스턴스 보장 (Named Mutex + 창 전면화 — 위키 single-instance 패턴): 트레이 상주 + 재실행으로 2인스턴스 공존 관찰 (출처: 2026-07-16-wallpaper-win32-host, debug 부수 관찰)
 - [2026-07-16] 전역 예외 훅(UnhandledException 로깅) 상시 탑재 검토 — 위키 global-exception-handling 패턴, AV 조사에서 진단 유효성 확인 (출처: 2026-07-16-wallpaper-win32-host)
 - [2026-07-16] 홈 화면 현재 재생 정보에 제목·썸네일 표시 — FR-18 메타 인프라(VideoMetadataService·PlaylistItem 캐시) 재사용 (출처: 2026-07-16-melon-playlist-style Deferred)
 - [2026-07-17] AccountPanelViewModel Detach 부재 — 내부 이벤트 구독 0이라 무해, 외부 이벤트 구독 도입 시 MonitorPanel처럼 대칭 추가 (출처: 2026-07-17-home-defaults-tray T5 spec MINOR)
@@ -31,6 +30,7 @@
 - [2026-07-19] 리스트 헤더 총 재생시간 합계 표시 — 수집 방식 특성상 초기 합계가 실제보다 적게 보이는 오해 소지로 이번 제외, 요청 시 확보 곡 합계로 후속 가능 (출처: 2026-07-19-item-duration Q4 Deferred)
 
 ## 종결
+- [2026-07-16 → 2026-07-19] 단일 인스턴스 보장 (Named Mutex + 창 전면화) — 반영 (2026-07-19-single-instance T1~T4: FR-22 신설, 방식은 Mutex 대신 AppInstance 리다이렉션 — 자동실행 중복 무시에 활성화 종류 전달 필요)
 - [2026-07-16 → 2026-07-18] AGENTS.md Test 명령에 `-p:Platform=x64` 추가 · Stack net8.0→net10.0 실물 갱신 · Build & Test에 MSIX 패키징 명령 기록 — 반영 (record-project-fact, 사용자 "모두 수정" 승인. csproj TargetFramework·README/verification 문서로 값 검증). **주의**: AGENTS.md는 `~/.gitignore_global`로 전역 제외되어 커밋 안 됨 — 이 반영은 이 PC 로컬 전용(자동 로드는 정상, PC 간 공유 X, 사용자 "로컬 전용 유지" 결정)
 - [2026-07-17 → 2026-07-17] 트레이 메뉴 "재생"도 마지막 항목부터 재개하도록 통일 — 반영 (2026-07-17-home-defaults-tray T7: StartAsync(id, LastItemId) 전달, D8)
 - [2026-07-17 → 2026-07-17] "앱 시작 후 자동 재생" 설정 토글 + 동작 (PRD FR 신설 합의 필요) — 반영 (2026-07-17-autoplay-on-launch T1~T5: FR-19 신설, 항목 단위 재개 + 부팅 경로 통일)
