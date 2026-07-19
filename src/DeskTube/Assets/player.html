@@ -30,7 +30,7 @@
 
 // 스크립트 리비전 — C# 로그로 "실행 중인 player.html이 어느 버전인지" 확인용
 // (WebView2가 가상 호스트 응답을 캐시해 옛 파일이 실행될 수 있음 — 수정 시 반드시 +1)
-const PLAYER_REV = 8;
+const PLAYER_REV = 9;
 
 let player = null;
 let playerReady = false;
@@ -145,7 +145,9 @@ function execute(cmd) {
   switch (cmd.Type) {
     case 'load':
       showBridge(cmd.VideoId); // 로드 공백 동안 다음 곡 썸네일 표시 (PLAYING 진입 시 해제)
-      player.loadVideoById(cmd.VideoId);
+      // startSeconds를 로드에 실어 확정한다 — load 직후 별도 seekTo는 신선한 플레이어에서 로드 전이 중
+      // 유실될 수 있어(재생 중 합류 모니터가 처음부터 재생되던 문제), 시작 위치를 로드 인자로 넘긴다.
+      player.loadVideoById({ videoId: cmd.VideoId, startSeconds: cmd.Seconds || 0 });
       applyCaptions(); // 곡 전환 시 자막 모듈 상태가 리셋될 수 있어 재적용 (FR-20)
       armAutoplayWatchdog();
       armStartWatchdog(); // 재생 불가 감지 시작 — 곡 로드 시점부터 PLAYING 도달을 감시

@@ -71,7 +71,9 @@ public sealed class PlaybackCoordinatorTests
         public event EventHandler<double>? TimeUpdated;
 
         public Task<Result> InitializeAsync() => Task.FromResult(Result.Ok());
-        public void Load(string videoId) => Commands.Add($"load:{videoId}");
+        // startSeconds > 0(합류·재생성 이어재생)이면 시작 위치를 태그해 실제 로드 인자를 검증 가능하게 한다.
+        public void Load(string videoId, double startSeconds = 0) =>
+            Commands.Add(startSeconds > 0 ? $"load:{videoId}@{startSeconds:F1}" : $"load:{videoId}");
         public void Play() => Commands.Add("play");
         public void Pause() => Commands.Add("pause");
         public void SetVolume(int volume) => Commands.Add($"volume:{volume}");
@@ -682,8 +684,7 @@ public sealed class PlaybackCoordinatorTests
         Assert.Contains("dispose", oldSlave.Commands);
         var newSlave = h.Players["MON-1"];
         Assert.NotSame(oldSlave, newSlave);
-        Assert.Contains("load:video00000a", newSlave.Commands); // 현재 곡 이어서
-        Assert.Contains("seek:42.0", newSlave.Commands); // 마스터 시각으로 동기
+        Assert.Contains("load:video00000a@42.0", newSlave.Commands); // 현재 곡을 마스터 시각부터 이어서 (seek는 load에 통합)
     }
 
     [Fact]

@@ -1,6 +1,9 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **재생 중 합류한 모니터가 처음부터 재생되던 문제 수정 (동일 시각 이어재생)** — 사용자 신고(1번 모니터 재생 중 2번 모니터를 추가하면 2번이 0초부터 재생). `PlaybackCoordinator.ResumeCurrentTrack`은 원래 새 플레이어에 `Load(videoId)` 후 별도 `Seek(masterTime)`로 마스터 시각 동기를 의도했으나, **신선한 플레이어에서 loadVideoById 직후의 seekTo가 로드 전이(unstarted→buffering) 중 유실되는 IFrame API 레이스**로 0초부터 재생됨.
+  - **수정**: 시작 위치를 별도 seek가 아니라 로드 인자로 확정. `IPlayerHost.Load(string, double startSeconds=0)` 선택 인자 추가(공개 인터페이스 — 기존 호출부 무영향), `PlayerHost.Load`가 `startSeconds>0`만 `PlayerCommand.Seconds`에 실어 전송, `player.html`(`PLAYER_REV` 8→9)이 `loadVideoById({videoId, startSeconds: cmd.Seconds||0})`로 로드. `ResumeCurrentTrack`은 `Load(videoId, masterTime>0 ? masterTime : 0)` 한 줄로 통합(seek 제거). 신규 곡 로드(`LoadAll`)·정상 재생은 startSeconds 0이라 종전과 동일, 드리프트 보정(`OnPlayerTime`→`Seek`)은 재생 중 플레이어 대상이라 그대로 유지.
+  - **검증**: `dotnet build`/`dotnet test -p:Platform=x64` 0경고·0오류, 142/142(재생성 이어재생 테스트를 `seek:42.0` 별도 검증 → `load:video00000a@42.0` 통합 검증으로 갱신). 실제 합류 모니터의 동일 시각 재생 여부는 **사용자 수동 확인 필요**(빌드·단위테스트로는 IFrame 실동작 미검증).
 - 2026-07-19: **멀티모니터 일부만 재생 / 재생 중 모니터 변경 시 미재생 수정** — 사용자 버그 신고(2모니터 선택해도 처음부터 1개만 재생 / 재생 중 모니터 체크 추가·해제 시 미재생). pjc-systematic-debugging으로 조사 — 실행 로그(`desktube-*.log`) + 임시 진단 로그(WorkerW 토폴로지·배치 rect, 플레이어별 `[Pxxxx]` 태그, player.html exec/onReady diag)로 근본 원인 확정.
   - **오진 배제**: WorkerW 클리핑 가설은 로그로 **기각**(선택 WorkerW=전체 가상 데스크톱 5120×1600, 두 배경창 모두 요청=실제 화면 좌표 일치). 배경창 배치는 정상이었고 문제는 그 위 WebView2 렌더/재생.
   - **근본 원인**: `PlayerHost.InitializeAsync`가 컨트롤러 생성(`CreateCoreWebView2ControllerAsync`+`Navigate`)까지만 대기하고 player.html의 message 리스너 준비를 안 기다려, 초기화 직후 코디네이터가 보낸 `load` 등이 페이지 로딩 공백 중 WebView2에 폐기됨. 멀티모니터 동시/연속 시작 시 네비 타이밍 경쟁으로 일부 플레이어가 load 유실→미재생(비결정적 레이스 — "대개 1개, 가끔 2개"). 증거: 침묵 플레이어의 `onReady queued`에 C#이 분명히 보낸 load가 없음.
