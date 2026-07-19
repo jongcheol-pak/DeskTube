@@ -20,3 +20,6 @@ TestResults/
 
 # 로컬 환경
 .env
+
+# Playwright MCP 런타임 로그 (세션별 임시 산출물)
+.playwright-mcp/
