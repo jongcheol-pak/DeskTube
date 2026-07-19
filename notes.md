@@ -1,6 +1,7 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **일반 사용자용 도움말 help.md 작성** — 사용자 요청. `D:\Personal Project\Windows\rest\help.md`(쉼냥) 구조를 참고해 루트에 `help.md` 신규 작성(상단 앱 아이콘 + 이런 분께 좋아요 / 지원 환경 / 처음 시작하기 / 기본 동작 / 화면별 안내(홈·플레이리스트·설정·정보·트레이) / FAQ / 개인정보). 문구는 ko-KR `Resources.resw`·README 기준으로 실제 UI 문구와 일치시킴. 상단 아이콘용으로 `src/DeskTube/Assets/Square44x44Logo.targetsize-256.png`를 루트 `AppIcon.png`로 복사. 화면 캡처 6장(`images/desktop-playback.png`·`home.png`·`playlists.png`·`settings.png`·`about.png`·`tray-menu.png`)은 사용자 승인 후 자동 캡처로 확보 — Orca computer-use CLI(`orca computer get-app-state/click/scroll`)로 앱 화면 4장, PowerShell 전체 화면 캡처(모든 창 최소화)로 바탕화면 재생 1장, UIA 스크립트(숨겨진 아이콘 플라이아웃에서 트레이 아이콘 우클릭 → 팝업 창 영역 캡처)로 트레이 메뉴 1장. 주의: desktop-playback.png에 사용자 바탕화면 아이콘·파일명 노출(배포 전 교체 검토), 캡처 당시 DeskTube 인스턴스 2개 동시 실행 확인(자동 시작분 + 세션 중 추가 실행분). **검증**: 코드 변경 없음(문서만) — resw·SettingsPage.xaml 대조로 화면 구성·문구 역대조 완료, 캡처 6장 전부 이미지 판독으로 내용 확인.
 - 2026-07-19: **플레이리스트 항목 재생시간 표시 (FR-18 보강)** — 사용자 요청(첨부 스크린샷). oEmbed에 재생시간이 없어 **곡을 실제 재생할 때 플레이어에서 길이를 받아 항목에 영구 캐시**하는 방식으로 구현(질문 4건 확정: 취득=재생 시 수집 / 표시=행 우측 / 미수집=공란 / 헤더 합계=제외). plan: docs/plans/2026-07-19-item-duration.md.
   - **T1** PRD FR-18 보강(+`.gitignore`에 `.playwright-mcp/` 추가 — 무관 런타임 로그 커밋 방지).
   - **T2** 수집 하부: `PlaylistItem.DurationSeconds`(0=미수집, JSON 역호환) + `player.html`의 `time` 메시지에 `duration` 필드(`PLAYER_REV` 5→6, 옛 rev는 `TryGetProperty`로 안전 미갱신) + `IPlayerHost.CurrentDuration` 계약 + `PlayerHost` 파싱 + `FakePlayer` 갱신.
