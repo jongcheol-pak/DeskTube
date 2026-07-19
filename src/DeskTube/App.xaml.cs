@@ -153,6 +153,9 @@ public partial class App : Application
         // 코디네이터는 표시 수단을 모른다 (이벤트만 발화 — 발생 스레드 비보장이라 UI로 마셜링).
         Services.Coordinator.AllItemsFailed += OnAllItemsFailed;
 
+        // 빠른 재생 리스트 이름을 현재 언어로 동기화 (언어 전환은 앱을 재시작하므로 다음 기동의 이 시점에 반영)
+        SyncQuickPlaylistName();
+
         // FR-19 토글은 일반 실행에만 의미가 있고, 부팅 자동 시작(autoPlay)은 FR-8로 항상 재생한다
         if (autoPlay || Services.Settings.AutoPlayOnLaunch)
         {
@@ -215,6 +218,36 @@ public partial class App : Application
             AppLog.Write(result.Code == ErrorCode.NotFound
                 ? "자동 시작: 재생할 마지막 플레이리스트가 없어 재생을 생략합니다."
                 : $"자동 시작 재생 실패: {result.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 빠른 재생("빠른 재생"/"Quick play") 리스트 이름을 현재 언어에 맞춘다.
+    /// 이름은 생성 시점 언어로 영속되므로, 언어 전환(앱 재시작) 후 다음 기동의 이 시점에 동기화한다.
+    /// 이름을 실제로 바꿨을 때만 저장한다 (자동재생 시작을 막지 않게 fire-and-forget — 실패는 로그, 다음 기동 재동기화).
+    /// </summary>
+    private void SyncQuickPlaylistName()
+    {
+        var services = Services;
+        if (services is null)
+        {
+            return;
+        }
+
+        if (!services.Library.SyncQuickPlaylistName(services.Settings.QuickPlaylistId, Loc.Get("Home_QuickPlaylistName")))
+        {
+            return; // 이미 현재 언어 이름 — 저장 불필요
+        }
+
+        _ = PersistAsync();
+
+        async Task PersistAsync()
+        {
+            var result = await services.Library.SaveAsync();
+            if (!result.IsSuccess)
+            {
+                AppLog.Write($"빠른 재생 이름 동기화 저장 실패: {result.Message}");
+            }
         }
     }
 

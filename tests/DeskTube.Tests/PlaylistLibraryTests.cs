@@ -140,6 +140,52 @@ public sealed class PlaylistLibraryTests
     }
 
     [Fact]
+    public void 빠른재생_이름이_다르면_현재_언어_이름으로_동기화하고_true를_반환한다()
+    {
+        var library = CreateLibrary();
+        var quick = library.Create("빠른 재생").Value!;
+
+        var changed = library.SyncQuickPlaylistName(quick.Id, "Quick play");
+
+        Assert.True(changed);
+        Assert.Equal("Quick play", library.Playlists[0].Name);
+    }
+
+    [Fact]
+    public void 빠른재생_ID가_null이면_변경없이_false를_반환한다()
+    {
+        var library = CreateLibrary();
+        library.Create("빠른 재생");
+
+        var changed = library.SyncQuickPlaylistName(null, "Quick play");
+
+        Assert.False(changed);
+        Assert.Equal("빠른 재생", library.Playlists[0].Name);
+    }
+
+    [Fact]
+    public void 빠른재생_ID가_가리키는_리스트가_없으면_false를_반환한다()
+    {
+        var library = CreateLibrary();
+
+        var changed = library.SyncQuickPlaylistName(Guid.NewGuid(), "Quick play");
+
+        Assert.False(changed);
+    }
+
+    [Fact]
+    public void 빠른재생_이름이_이미_같으면_변경없이_false를_반환한다()
+    {
+        var library = CreateLibrary();
+        var quick = library.Create("Quick play").Value!;
+
+        var changed = library.SyncQuickPlaylistName(quick.Id, "Quick play");
+
+        Assert.False(changed);
+        Assert.Equal("Quick play", library.Playlists[0].Name);
+    }
+
+    [Fact]
     public async Task 라이브러리를_저장하고_다시_로드하면_동일_목록이_복원된다()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "DeskTubeTests", Guid.NewGuid().ToString("N"));
