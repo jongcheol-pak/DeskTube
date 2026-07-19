@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
         };
         ToastService.Attach(PresentToast, DispatcherQueue);
 
-        // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 창 재생성(App.ApplyLanguageChange)이 재배정한다.
+        // 앱 이름 — 언어별 표기(ko 데스크튜브). 언어 전환은 앱 재시작(App.RestartForLanguageChange)이 재배정한다.
         Title = Loc.Get("AppDisplayName");
         AppTitleText.Text = Loc.Get("AppDisplayName");
 
@@ -135,20 +135,10 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    /// <summary>닫기→숨김 우회 플래그 (언어 전환 시 창 교체 — plan T7).</summary>
-    private bool _allowRealClose;
-
-    /// <summary>닫기→숨김 로직을 우회하고 실제로 닫는다 (언어 전환 창 교체 전용).</summary>
-    internal void ForceClose()
-    {
-        _allowRealClose = true;
-        Close();
-    }
-
     /// <summary>트레이 상주 중이면 닫기를 취소하고 숨긴다. 트레이가 없으면(초기화 실패·종료 중) 실제 닫기.</summary>
     private void OnAppWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        if (_allowRealClose || App.IsExiting || !App.IsTrayActive)
+        if (App.IsExiting || !App.IsTrayActive)
         {
             return;
         }

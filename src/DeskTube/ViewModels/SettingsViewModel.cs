@@ -362,7 +362,10 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    /// <summary>언어 변경 (plan T7, AGENTS 다국어 규칙 3) — ① 저장 ② 오버라이드 ③~⑤는 App.ApplyLanguageChange.</summary>
+    /// <summary>
+    /// 언어 변경 — 저장 완료 후 앱을 재시작해 전체 UI를 새 언어로 반영한다 (트레이·셸만 재생성하면 일부만 바뀜).
+    /// 재시작 앱은 시작 시 저장된 언어를 선적용하므로 여기서 PrimaryLanguageOverride를 세션에 걸 필요가 없다.
+    /// </summary>
     partial void OnLanguageIndexChanged(int value)
     {
         if (_loading || _services is null || value < 0 || value >= LanguageCodes.Length)
@@ -370,15 +373,35 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        var code = LanguageCodes[value];
-        _services.Settings.Language = code;
-        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = code ?? string.Empty;
+        var previousLanguage = _services.Settings.Language;
+        _services.Settings.Language = LanguageCodes[value];
+        _ = SaveAndRestartAsync();
 
-        Apply(() => _services.Store.SaveSettingsAsync(_services.Settings), "언어 설정 저장");
-
-        if (Microsoft.UI.Xaml.Application.Current is App app)
+        // 저장 완료를 보장한 뒤 재시작한다 — 저장 전에 프로세스가 종료되면 재시작 앱이 옛 언어를 읽는다.
+        // 미관찰 예외 방지 — SaveSettingsAsync throw나 재시작 정리 중 예외도 로그로 남긴다 (Apply 헬퍼 관례).
+        async Task SaveAndRestartAsync()
         {
-            app.ApplyLanguageChange(); // 트레이·셸 재생성 (이 페이지도 새 창에서 다시 만들어짐)
+            try
+            {
+                var result = await _services.Store.SaveSettingsAsync(_services.Settings);
+                if (!result.IsSuccess)
+                {
+                    // 저장 실패 시 재시작하지 않고 메모리 값도 되돌린다 — 안 되돌리면 새 언어가
+                    // 이후 다른 설정 저장에 편승해 디스크·UI와 어긋난 채 슬쩍 영속될 수 있다.
+                    _services.Settings.Language = previousLanguage;
+                    AppLog.Write($"언어 설정 저장 실패 — 재시작을 취소합니다: {result.Message}");
+                    return;
+                }
+
+                if (Microsoft.UI.Xaml.Application.Current is App app)
+                {
+                    app.RestartForLanguageChange();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"언어 변경 처리 중 오류: {ex.GetType().Name} {ex.Message}");
+            }
         }
     }
 

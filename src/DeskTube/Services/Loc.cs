@@ -10,9 +10,6 @@ public static class Loc
 {
     private static ResourceLoader? _loader;
 
-    /// <summary>언어 전환 후 캐시 무효화 — 다음 조회부터 새 언어 컨텍스트의 로더 사용 (plan T7).</summary>
-    public static void Reset() => _loader = null;
-
     public static string Get(string key)
     {
         try

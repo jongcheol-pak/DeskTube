@@ -153,6 +153,9 @@ public partial class App : Application
         // 코디네이터는 표시 수단을 모른다 (이벤트만 발화 — 발생 스레드 비보장이라 UI로 마셜링).
         Services.Coordinator.AllItemsFailed += OnAllItemsFailed;
 
+        // 빠른 재생 리스트 이름을 현재 언어로 동기화 (언어 전환은 앱을 재시작하므로 다음 기동의 이 시점에 반영)
+        SyncQuickPlaylistName();
+
         // FR-19 토글은 일반 실행에만 의미가 있고, 부팅 자동 시작(autoPlay)은 FR-8로 항상 재생한다
         if (autoPlay || Services.Settings.AutoPlayOnLaunch)
         {
@@ -218,6 +221,45 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// 빠른 재생("빠른 재생"/"Quick play") 리스트 이름을 현재 언어에 맞춘다.
+    /// 이름은 생성 시점 언어로 영속되므로, 언어 전환(앱 재시작) 후 다음 기동의 이 시점에 동기화한다.
+    /// 이름을 실제로 바꿨을 때만 저장한다 (자동재생 시작을 막지 않게 fire-and-forget — 실패는 로그, 다음 기동 재동기화).
+    /// </summary>
+    private void SyncQuickPlaylistName()
+    {
+        var services = Services;
+        if (services is null)
+        {
+            return;
+        }
+
+        if (!services.Library.SyncQuickPlaylistName(services.Settings.QuickPlaylistId, Loc.Get("Home_QuickPlaylistName")))
+        {
+            return; // 이미 현재 언어 이름 — 저장 불필요
+        }
+
+        _ = PersistAsync();
+
+        // 관찰되지 않는 Task의 예외 유실 방지 — SaveAsync가 던지는 예외(직렬화 등)도 로그로 남긴다
+        // (SaveAsync는 IO 예외만 Result.Fail로 변환하므로 그 밖의 throw는 try/catch로 잡아야 무음 소실을 막는다)
+        async Task PersistAsync()
+        {
+            try
+            {
+                var result = await services.Library.SaveAsync();
+                if (!result.IsSuccess)
+                {
+                    AppLog.Write($"빠른 재생 이름 동기화 저장 실패: {result.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"빠른 재생 이름 동기화 저장 중 오류: {ex.GetType().Name} {ex.Message}");
+            }
+        }
+    }
+
     /// <summary>설정 창 표시 — 트레이 메뉴·더블클릭 진입점 (notice가 있으면 토스트로 안내 — toast plan T1).</summary>
     internal void ShowMainWindow(string? notice)
     {
@@ -235,25 +277,37 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// 언어 변경 적용 (plan T7, AGENTS 다국어 규칙 3) — 리소스 캐시 초기화 후 트레이 메뉴와
-    /// 설정 셸(창)을 새로 만든다. x:Uid·Loc 문구는 요소 생성 시점에 고정되므로 재생성이 필요하다.
-    /// (테마는 Application 수준 다크 고정이라 창 재생성과 무관하게 유지된다.)
+    /// 언어 변경 적용 — 앱을 즉시 재시작해 전체 UI(트레이·모든 화면)를 새 언어로 반영한다.
+    /// 트레이·셸만 재생성하면 이미 만들어진 리소스·상태가 남아 일부만 바뀌므로, 저장된 언어를
+    /// 재시작 시 ApplySavedStartupOverrides가 선적용하는 경로로 전체를 새로 만든다.
+    /// 재시작 전 배경 복구·인스턴스 키 해제는 ExitApplication과 동일하다 (FR-22 게이트 경합 방지).
     /// </summary>
-    internal void ApplyLanguageChange()
+    internal void RestartForLanguageChange()
     {
-        Loc.Reset();
+        AppLog.Write("=== 언어 변경으로 앱 재시작 ===");
 
-        if (Services is not null && _tray is not null)
+        // 인스턴스 키 조기 해제 — 재시작한 새 프로세스가 소멸 중인 이 프로세스로 리다이렉트하는 것을 막는다 (FR-22 D8).
+        try
         {
-            _tray.Dispose();
-            _tray = new TrayIconService(Services, ShowMainWindow, ExitApplication);
-            _tray.Initialize();
+            AppLifecycleInstance.GetCurrent().UnregisterKey();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write($"인스턴스 키 해제 실패(무시): {ex.GetType().Name} {ex.Message}");
         }
 
-        var old = _window as MainWindow;
-        _window = new MainWindow();
-        _window.Activate();
-        old?.ForceClose(); // 닫기→숨김 로직 우회 실제 닫기 (교체 완료 후)
+        // 배경 복구·재생 정리 (ExitApplication과 동일) 후 재시작
+        IsExiting = true;
+        _tray?.Dispose();
+        _tray = null;
+        Services?.Dispose();
+        Services = null;
+
+        // 성공하면 이 프로세스는 종료되어 아래로 오지 않는다. 반환됐다면 재시작 실패다 (드묾).
+        // 이미 트레이·서비스를 정리해 앱이 먹통이므로 유지하지 않고 확실히 종료한다 (사용자가 수동으로 다시 실행).
+        var failure = AppLifecycleInstance.Restart(string.Empty);
+        AppLog.Write($"앱 재시작 실패(AppRestartFailureReason={failure}) — 앱을 종료합니다.");
+        Exit();
     }
 
     /// <summary>트레이 '종료' — 재생 정리·배경 복구(Services.Dispose) 후 앱 종료 (plan T1 Edge).</summary>

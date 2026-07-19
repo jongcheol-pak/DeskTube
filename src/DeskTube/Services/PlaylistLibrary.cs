@@ -65,6 +65,29 @@ public sealed class PlaylistLibrary
         return Result.Ok();
     }
 
+    /// <summary>
+    /// 홈 즉시재생("빠른 재생") 리스트의 이름을 현재 언어 이름으로 맞춘다 (안정 ID로 식별).
+    /// 생성 시점 이름이 영속돼 언어 전환에도 고정되던 것을 앱 시작 시 동기화한다.
+    /// quickId가 null이거나 리스트가 없거나 이름이 이미 같으면 변경 없이 false,
+    /// 다르면 개명 후 true를 반환한다 (호출자는 true일 때만 SaveAsync — 영속은 호출자 책임).
+    /// </summary>
+    public bool SyncQuickPlaylistName(Guid? quickId, string desiredName)
+    {
+        if (quickId is not { } id || string.IsNullOrWhiteSpace(desiredName))
+        {
+            return false;
+        }
+
+        var playlist = Find(id);
+        if (playlist is null || playlist.Name == desiredName.Trim())
+        {
+            return false;
+        }
+
+        Rename(id, desiredName);
+        return true;
+    }
+
     public Result Delete(Guid id)
     {
         var playlist = Find(id);

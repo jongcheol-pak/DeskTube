@@ -400,10 +400,10 @@
     <value>Language</value>
   </data>
   <data name="LanguageCard.Description" xml:space="preserve">
-    <value>Changing the language reopens the settings window</value>
+    <value>Changing the language restarts the app</value>
   </data>
   <data name="Language_System" xml:space="preserve">
-    <value>Follow system language</value>
+    <value>System language</value>
   </data>
   <data name="Language_Korean" xml:space="preserve">
     <value>한국어</value>
