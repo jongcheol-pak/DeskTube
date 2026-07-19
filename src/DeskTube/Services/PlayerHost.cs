@@ -144,7 +144,7 @@ public sealed class PlayerHost : IPlayerHost
     public void Load(string videoId, double startSeconds = 0)
     {
         // 진단 로그 — 어떤 영상이 로드되는지 로그로 추적 (2026-07-18 "안 됨" 조사: 영상 식별 불가 문제)
-        AppLog.Write($"[{Tag}] 플레이어 명령: load {videoId}{(startSeconds > 0 ? $" @{startSeconds:F1}s" : "")}");
+        AppLog.Write($"[{Tag}] 플레이어 명령: load {videoId}{(startSeconds > 0 ? $" @{startSeconds.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}s" : "")}");
         // startSeconds > 0만 실어 보낸다 — 0은 Seconds 미포함(WhenWritingNull)으로 직렬화돼 JS가 0으로 처리.
         PostCommand(new PlayerCommand("load", VideoId: videoId, Seconds: startSeconds > 0 ? startSeconds : null));
     }

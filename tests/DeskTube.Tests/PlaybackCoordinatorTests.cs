@@ -1,3 +1,4 @@
+using System.Globalization;
 using DeskTube.Models;
 using DeskTube.Services;
 using Xunit;
@@ -72,8 +73,11 @@ public sealed class PlaybackCoordinatorTests
 
         public Task<Result> InitializeAsync() => Task.FromResult(Result.Ok());
         // startSeconds > 0(합류·재생성 이어재생)이면 시작 위치를 태그해 실제 로드 인자를 검증 가능하게 한다.
+        // 소수점 구분자가 ','인 로케일에서도 리터럴 '@42.0' 대조가 맞도록 InvariantCulture로 포맷한다.
         public void Load(string videoId, double startSeconds = 0) =>
-            Commands.Add(startSeconds > 0 ? $"load:{videoId}@{startSeconds:F1}" : $"load:{videoId}");
+            Commands.Add(startSeconds > 0
+                ? $"load:{videoId}@{startSeconds.ToString("F1", CultureInfo.InvariantCulture)}"
+                : $"load:{videoId}");
         public void Play() => Commands.Add("play");
         public void Pause() => Commands.Add("pause");
         public void SetVolume(int volume) => Commands.Add($"volume:{volume}");
@@ -685,6 +689,26 @@ public sealed class PlaybackCoordinatorTests
         var newSlave = h.Players["MON-1"];
         Assert.NotSame(oldSlave, newSlave);
         Assert.Contains("load:video00000a@42.0", newSlave.Commands); // 현재 곡을 마스터 시각부터 이어서 (seek는 load에 통합)
+    }
+
+    [Fact]
+    public async Task 일시정지_중_재생성된_플레이어는_재생하지_않고_일시정지_상태를_따른다()
+    {
+        // loadVideoById는 즉시 재생을 시작하므로, 일시정지 중 합류·재생성한 플레이어를 그대로 두면
+        // 그 모니터만 재생된다(오디오 대상이면 소리까지) — ResumeCurrentTrack이 Paused를 따라야 한다 (리뷰 지적).
+        var h = new Harness();
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        h.Master.CurrentTime = 42.0;
+        h.Coordinator.Pause();
+        var oldSlave = h.Players["MON-1"];
+
+        oldSlave.RaiseError(-2);
+        await Task.Delay(50); // fire-and-forget 재생성 대기
+
+        var newSlave = h.Players["MON-1"];
+        Assert.NotSame(oldSlave, newSlave);
+        Assert.Contains("load:video00000a@42.0", newSlave.Commands); // 마스터 시각으로 이어서
+        Assert.Contains("pause", newSlave.Commands); // 재생하지 않고 일시정지 상태를 따름
     }
 
     [Fact]

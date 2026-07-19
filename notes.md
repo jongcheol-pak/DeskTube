@@ -1,6 +1,10 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-19: **코드 리뷰 후속 수정 (동일 시각 이어재생 리뷰 지적 2건)** — `/code-review` high로 직전 커밋 리뷰.
+  - **발견 1(높음, 일시정지 중 재생)**: `ResumeCurrentTrack`은 `loadVideoById`(즉시 재생)로 로드하는데 `Status == Paused`를 가드하지 않아, 일시정지(사용자·정책) 중 모니터 합류·플레이어 재생성 시 그 모니터만 재생됨(오디오 대상이면 소리까지, 정책 일시정지=절전을 깸). 이 결함은 이번 수정 이전부터 있었으나 touched 함수라 리뷰 범위. **수정**: Load 후 `Status == Paused`면 `player.Pause()` 호출로 다른 플레이어와 상태 일치. 회귀 테스트 `일시정지_중_재생성된_플레이어는_재생하지_않고_일시정지_상태를_따른다` 추가.
+  - **발견 2(중, 로케일 의존 테스트)**: `FakePlayer.Load`의 `$"...@{startSeconds:F1}"`와 `PlayerHost.Load` 로그가 CurrentCulture 포맷이라 소수점이 ','인 로케일(de-DE 등)에서 리터럴 `@42.0` 대조 실패 가능. **수정**: 둘 다 `ToString("F1", CultureInfo.InvariantCulture)`로 고정(테스트에 `using System.Globalization` 추가).
+  - **검증**: `dotnet build`/`dotnet test -p:Platform=x64` 0경고·0오류, **143/143**(신규 테스트 +1).
 - 2026-07-19: **재생 중 합류한 모니터가 처음부터 재생되던 문제 수정 (동일 시각 이어재생)** — 사용자 신고(1번 모니터 재생 중 2번 모니터를 추가하면 2번이 0초부터 재생). `PlaybackCoordinator.ResumeCurrentTrack`은 원래 새 플레이어에 `Load(videoId)` 후 별도 `Seek(masterTime)`로 마스터 시각 동기를 의도했으나, **신선한 플레이어에서 loadVideoById 직후의 seekTo가 로드 전이(unstarted→buffering) 중 유실되는 IFrame API 레이스**로 0초부터 재생됨.
   - **수정**: 시작 위치를 별도 seek가 아니라 로드 인자로 확정. `IPlayerHost.Load(string, double startSeconds=0)` 선택 인자 추가(공개 인터페이스 — 기존 호출부 무영향), `PlayerHost.Load`가 `startSeconds>0`만 `PlayerCommand.Seconds`에 실어 전송, `player.html`(`PLAYER_REV` 8→9)이 `loadVideoById({videoId, startSeconds: cmd.Seconds||0})`로 로드. `ResumeCurrentTrack`은 `Load(videoId, masterTime>0 ? masterTime : 0)` 한 줄로 통합(seek 제거). 신규 곡 로드(`LoadAll`)·정상 재생은 startSeconds 0이라 종전과 동일, 드리프트 보정(`OnPlayerTime`→`Seek`)은 재생 중 플레이어 대상이라 그대로 유지.
   - **검증**: `dotnet build`/`dotnet test -p:Platform=x64` 0경고·0오류, 142/142(재생성 이어재생 테스트를 `seek:42.0` 별도 검증 → `load:video00000a@42.0` 통합 검증으로 갱신). 실제 합류 모니터의 동일 시각 재생 여부는 **사용자 수동 확인 필요**(빌드·단위테스트로는 IFrame 실동작 미검증).

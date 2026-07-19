@@ -933,6 +933,14 @@ public sealed class PlaybackCoordinator : IDisposable
 
         var masterTime = MasterTime();
         player.Load(current.VideoId, masterTime > 0 ? masterTime : 0);
+
+        // loadVideoById는 즉시 재생을 시작하므로, 일시정지(사용자·정책) 중 합류·재생성한 플레이어는
+        // 다른 플레이어와 상태를 맞춰 즉시 일시정지한다. 그러지 않으면 이 모니터만 재생되고, 오디오
+        // 대상이면 소리까지 나며, 정책 일시정지(절전)를 깬다 (2026-07-19 리뷰 지적).
+        if (Status == PlaybackStatus.Paused)
+        {
+            player.Pause();
+        }
     }
 
     /// <summary>
