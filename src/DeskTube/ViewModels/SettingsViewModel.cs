@@ -373,6 +373,7 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
+        var previousLanguage = _services.Settings.Language;
         _services.Settings.Language = LanguageCodes[value];
         _ = SaveAndRestartAsync();
 
@@ -385,8 +386,11 @@ public partial class SettingsViewModel : ObservableObject
                 var result = await _services.Store.SaveSettingsAsync(_services.Settings);
                 if (!result.IsSuccess)
                 {
+                    // 저장 실패 시 재시작하지 않고 메모리 값도 되돌린다 — 안 되돌리면 새 언어가
+                    // 이후 다른 설정 저장에 편승해 디스크·UI와 어긋난 채 슬쩍 영속될 수 있다.
+                    _services.Settings.Language = previousLanguage;
                     AppLog.Write($"언어 설정 저장 실패 — 재시작을 취소합니다: {result.Message}");
-                    return; // 저장 실패 시 재시작하지 않음 (옛 언어로 되살아나 혼란을 주지 않도록)
+                    return;
                 }
 
                 if (Microsoft.UI.Xaml.Application.Current is App app)
