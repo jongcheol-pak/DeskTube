@@ -106,6 +106,9 @@ public sealed class PlaybackCoordinatorTests
         /// <summary>설정 저장 호출 기록 — 볼륨 디바운스 검증용 (perf plan T2).</summary>
         public int SettingsSaveCount { get; private set; }
 
+        /// <summary>플레이리스트 저장 호출 기록 — 재생시간 수집 "저장 1회" 검증용 (item-duration plan T3).</summary>
+        public int PlaylistSaveCount { get; private set; }
+
         public int LastSavedVolume { get; private set; }
 
         public Task<AppSettings> LoadSettingsAsync() => Task.FromResult(new AppSettings());
@@ -118,7 +121,12 @@ public sealed class PlaybackCoordinatorTests
         }
 
         public Task<List<Playlist>> LoadPlaylistsAsync() => Task.FromResult(new List<Playlist>());
-        public Task<Result> SavePlaylistsAsync(List<Playlist> playlists) => Task.FromResult(Result.Ok());
+
+        public Task<Result> SavePlaylistsAsync(List<Playlist> playlists)
+        {
+            PlaylistSaveCount++;
+            return Task.FromResult(Result.Ok());
+        }
     }
 
     // ---- 테스트 하니스 ----
@@ -129,7 +137,9 @@ public sealed class PlaybackCoordinatorTests
         public FakeWallpaperHost Wallpaper { get; } = new();
         public Dictionary<string, FakePlayer> Players { get; } = [];
         public HashSet<string> FailPlayerMonitorIds { get; } = [];
-        public PlaylistLibrary Library { get; } = new(new FakeStore());
+        /// <summary>Library 내부 store — 재생시간 수집이 여기로 저장하므로 카운터 검증에 노출 (T3).</summary>
+        public FakeStore LibraryStore { get; } = new();
+        public PlaylistLibrary Library { get; }
         public FakeStore Store { get; } = new();
         public AppSettings Settings { get; } = new();
         public PlaybackCoordinator Coordinator { get; }
@@ -137,6 +147,8 @@ public sealed class PlaybackCoordinatorTests
 
         public Harness(int monitorCount = 2, int itemCount = 3)
         {
+            Library = new PlaylistLibrary(LibraryStore);
+
             for (var i = 0; i < monitorCount; i++)
             {
                 Monitors.Monitors.Add(new MonitorInfo($"MON-{i}", $@"\\.\DISPLAY{i + 1}", i * 1920, 0, 1920, 1080, IsPrimary: i == 0));
@@ -829,5 +841,55 @@ public sealed class PlaybackCoordinatorTests
         // FR-19: 자동 시작·트레이 재생 공용 재개 경로 — 마지막 항목부터 시작
         Assert.True(result.IsSuccess);
         Assert.Contains("load:video00001a", h.Master.Commands);
+    }
+
+    [Fact]
+    public async Task 재생_진행_확인_시_재생시간이_수집되어_모델_갱신_이벤트_저장된다()
+    {
+        var h = new Harness(itemCount: 2);
+        Guid? capturedId = null;
+        h.Coordinator.ItemDurationCaptured += (_, id) => capturedId = id;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        var savesBefore = h.LibraryStore.PlaylistSaveCount;
+
+        // FR-18: 실제 진행(≥1s) 시점에 duration이 함께 보고되면 현재 곡에 캐시
+        h.Master.RaiseTime(5.0, duration: 204);
+
+        Assert.Equal(204, h.Playlist.Items[0].DurationSeconds); // 모델(영속 대상) 갱신
+        Assert.Equal(h.Playlist.Items[0].Id, capturedId);       // 수집 항목 ID로 이벤트 발화
+        Assert.Equal(savesBefore + 1, h.LibraryStore.PlaylistSaveCount); // 저장 1회
+    }
+
+    [Fact]
+    public async Task 재생시간이_0이면_수집하지_않는다()
+    {
+        var h = new Harness(itemCount: 2);
+        var raised = 0;
+        h.Coordinator.ItemDurationCaptured += (_, _) => raised++;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+        var savesBefore = h.LibraryStore.PlaylistSaveCount;
+
+        // 라이브·미로드는 getDuration()이 0 — CurrentDuration 0 유지, 수집 차단 (FR-18)
+        h.Master.RaiseTime(5.0);
+
+        Assert.Equal(0, h.Playlist.Items[0].DurationSeconds); // 미수집
+        Assert.Equal(0, raised);
+        Assert.Equal(savesBefore, h.LibraryStore.PlaylistSaveCount); // 저장 없음
+    }
+
+    [Fact]
+    public async Task 동일한_재생시간_재보고는_재저장_재발화하지_않는다()
+    {
+        var h = new Harness(itemCount: 2);
+        var raised = 0;
+        h.Coordinator.ItemDurationCaptured += (_, _) => raised++;
+        await h.Coordinator.StartAsync(h.Playlist.Id);
+
+        h.Master.RaiseTime(5.0, duration: 204); // 최초 수집
+        var savesAfterFirst = h.LibraryStore.PlaylistSaveCount;
+        h.Master.RaiseTime(6.0, duration: 204); // 같은 값(반올림 차 <2s) 재보고 — 억제 (D8)
+
+        Assert.Equal(1, raised);
+        Assert.Equal(savesAfterFirst, h.LibraryStore.PlaylistSaveCount); // 추가 저장 없음
     }
 }

@@ -84,7 +84,7 @@
   - **Halt Forecast**: `IPlayerHost` 공개 인터페이스 멤버 추가 — 계획된 공개 API 변경, **사전 승인 항목 등재** (구현체 2곳이 같은 diff에서 갱신). 파괴적·외부 작업 없음.
   - **Depends on**: 없음
 
-- [ ] T3. 코디네이터 수집·영속·알림 + 회귀 테스트 (FR-18 충족)
+- [x] T3. 코디네이터 수집·영속·알림 + 회귀 테스트 (FR-18 충족)
   - **Type**: D (재생 수명주기 크로스커팅 + 공개 이벤트 추가)
   - **Design**:
     - 배치: 수집 판단·영속은 `PlaybackCoordinator.OnPlayerTime`(마스터 판정·큐·라이브러리를 모두 보유한 유일 지점 — 실제 진행 확인 로직과 결합).
@@ -162,6 +162,9 @@
 - D9. 알림 = `ItemDurationCaptured`는 `EventHandler<Guid>`(항목 ID 전달) — "정본 읽기" 이벤트 관례(CurrentItemChanged)의 예외: 마셜링 지연 중 곡이 전환되면 `CurrentItemId`가 다른 곡을 가리켜 오갱신·미갱신하므로 수집된 항목 ID를 인자로 고정한다(예외 사유를 문서주석에 명시).
 - D10. 포맷 = 1시간 미만 `m:ss`, 이상 `h:mm:ss`, 0 이하 빈 문자열 — 유튜브 표기 관례. 지역화 불요(숫자·콜론만 — resw 무변경).
 - D11. 포맷 함수 위치 = `PlaylistItemEntry` 정적 순수 함수 — 표시 관심사의 지역성(DisplayTitle 관례) + 테스트 가능. 테스트 참조 문제 시 Services 이동 폴백(T4 Edge).
+
+## Progress Log
+- T1-T2 완료 (커밋 d15e20a, 34c17d1): T1 PRD FR-18 보강(+.gitignore에 .playwright-mcp/ 추가 — 무관 로그 커밋 방지). T2 수집 하부(모델 DurationSeconds·player.html duration REV 6·IPlayerHost.CurrentDuration·PlayerHost 파싱·FakePlayer). 빌드 0·0, 테스트 127/127, spec·quality 리뷰 이슈 0.
 
 ## Next Steps
 - (구현 완료 후) HUMAN-VERIFY 4항목 확인 → 커밋·병합 여부는 별도 승인

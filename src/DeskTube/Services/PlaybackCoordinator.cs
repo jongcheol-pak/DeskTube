@@ -122,6 +122,11 @@ public sealed class PlaybackCoordinator : IDisposable
     /// (창이 숨겨진 트레이 전용 상태에서도 안내가 보여야 하므로 코디네이터는 표시 수단에 의존하지 않는다).</summary>
     public event EventHandler? AllItemsFailed;
 
+    /// <summary>재생시간(총 길이)이 수집돼 항목에 캐시됐음 — 인자는 수집된 항목 ID (FR-18, 우측 목록 표시 갱신용).
+    /// CurrentItemChanged 등 "정본(CurrentItemId) 읽기" 이벤트와 달리 ID를 인자로 전달한다: 마셜링 지연 중 곡이
+    /// 전환되면 CurrentItemId가 다른 곡을 가리켜 구독자가 오갱신하므로, 수집 시점의 항목 ID를 고정해 넘긴다 (plan D9).</summary>
+    public event EventHandler<Guid>? ItemDurationCaptured;
+
     public AppSettings Settings => _settings;
 
     /// <summary>
@@ -617,6 +622,25 @@ public sealed class PlaybackCoordinator : IDisposable
         if (masterTime >= PlaybackProgressMinSeconds && _failedItemIds.Count > 0)
         {
             _failedItemIds.Clear(); // 실제 재생 진행 확인 — 재생 불가 항목 집합 초기화 (FR-1)
+        }
+
+        // 재생시간 수집 (FR-18) — 실제 진행 확인 시점에 현재 곡의 총 길이를 항목에 캐시한다.
+        // duration >= 1.0 가드로 라이브(0)·미보고 오수집을 막고(재생 불가 영상은 masterTime<1.0이라 애초에 미도달),
+        // _queue.Current는 라이브러리 모델과 동일 객체 참조라 값 갱신이 곧 영속 대상 갱신이다.
+        if (masterTime >= PlaybackProgressMinSeconds
+            && sender is IPlayerHost master
+            && master.CurrentDuration >= PlaybackProgressMinSeconds
+            && _queue?.Current is { } current
+            && current.Id == CurrentItemId)
+        {
+            var seconds = (int)Math.Round(master.CurrentDuration);
+            // 저장값과 2초 이상 차이날 때만 갱신 — 곡당 저장·발화를 1회로 억제(미세 오차 반복 저장 방지, D8)
+            if (Math.Abs(seconds - current.DurationSeconds) >= 2)
+            {
+                current.DurationSeconds = seconds;
+                FireAndForget(() => _library.SaveAsync(), "재생시간 저장");
+                ItemDurationCaptured?.Invoke(this, current.Id);
+            }
         }
 
         _timeTicks++;
