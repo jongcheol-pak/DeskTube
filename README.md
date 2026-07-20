@@ -1,3 +1,5 @@
+<img src="AppIcon.png" alt="DeskTube 앱 아이콘" width="112" />
+
 # DeskTube
 
 유튜브 동영상을 **바탕화면 배경**으로 재생하는 Windows 11 앱 (WinUI 3, MSIX 패키지형).
