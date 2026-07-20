@@ -42,6 +42,8 @@ public partial class SettingsViewModel : ObservableObject
         LanguageIndex = -1;
         FitModeIndex = -1;
 
+        // 아래 세 목록은 순서가 곧 계약이다 — 항목 추가·삭제·재배열 시 대응 배열도 같이 고친다.
+        // QualityOptions ↔ QualityHeights, LanguageOptions ↔ LanguageCodes, FitModeOptions ↔ FitMode enum 값.
         QualityOptions =
         [
             Loc.Get("Quality_Original"),
