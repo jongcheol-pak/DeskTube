@@ -128,10 +128,10 @@ public partial class App : Application
         AppLifecycleInstance.GetCurrent().Activated += OnRedirectedActivated;
 
         // async void 회피 — 실패는 로그로 남기고 앱은 뜬다 (UI가 Services null로 미준비 안내)
-        _ = InitializeServicesAsync(quietStart);
+        _ = InitializeServicesAsync();
     }
 
-    private async Task InitializeServicesAsync(bool autoPlay)
+    private async Task InitializeServicesAsync()
     {
         try
         {
@@ -156,8 +156,10 @@ public partial class App : Application
         // 빠른 재생 리스트 이름을 현재 언어로 동기화 (언어 전환은 앱을 재시작하므로 다음 기동의 이 시점에 반영)
         SyncQuickPlaylistName();
 
-        // FR-19 토글은 일반 실행에만 의미가 있고, 부팅 자동 시작(autoPlay)은 FR-8로 항상 재생한다
-        if (autoPlay || Services.Settings.AutoPlayOnLaunch)
+        // FR-19 토글은 실행 경로와 무관하게 적용된다 — 부팅 자동 시작도 이 토글을 따른다
+        // (2026-07-20 변경: 이전에는 부팅 경로가 토글을 무시하고 항상 재생했다 — 설정을 껐는데
+        //  부팅 시 재생되는 문제. 토글이 꺼진 부팅 시작은 재생 없이 트레이만 상주한다)
+        if (Services.Settings.AutoPlayOnLaunch)
         {
             await TryAutoPlayLastAsync();
         }
