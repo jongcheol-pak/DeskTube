@@ -18,6 +18,9 @@ TestResults/
 *.pfx
 *.cer
 
+# Store 연결 정보 (파트너 센터 계정의 다른 앱 identity 포함 — 공개 저장소 커밋 금지)
+Package.StoreAssociation.xml
+
 # 로컬 환경
 .env
 

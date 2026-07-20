@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- 임시 identity(DeskTube.Dev) — Store 제출 시 Store 발급 identity로 교체 (plan Known Workarounds) -->
+<!-- identity는 파트너 센터 발급값 — 임의 수정 금지 (Store 연결 마법사가 Package.StoreAssociation.xml과 함께 관리) -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
@@ -8,13 +8,13 @@
   IgnorableNamespaces="uap uap5 rescap">
 
   <Identity
-    Name="DeskTube.Dev"
-    Publisher="CN=DeskTubeDev"
+    Name="JongCheol.DeskTube"
+    Publisher="CN=C4E87E75-D777-4282-B3A5-57BFD2309B52"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>ms-resource:///Resources/AppDisplayName</DisplayName>
-    <PublisherDisplayName>DeskTube Dev</PublisherDisplayName>
+    <PublisherDisplayName>JongCheol</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

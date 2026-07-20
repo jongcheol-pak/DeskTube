@@ -1,6 +1,12 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-20: **Store 연결 후 MSIX 매니페스트 스키마 오류(C00CE020) 해소 + Store 연결 파일 gitignore** — 사용자 신고: 패키징 시 "App manifest validation error … Line 45 … 'PhonePublisherId' 특성이 없습니다".
+  - **원인**: Visual Studio "앱을 Store에 연결" 마법사가 `Package.appxmanifest`에 `<mp:PhoneIdentity PhoneProductId="…"/>`를 추가했는데, 이 요소는 스키마상 `PhonePublisherId`도 **필수 특성**이라 검증 실패. 마법사가 한쪽만 채워 넣은 것.
+  - **수정**: 더미 GUID를 채우는 대신 `mp:PhoneIdentity` 요소와 `xmlns:mp` 네임스페이스 선언을 제거. 이 요소는 Windows Phone 시대 유산이고, 이 앱은 `TargetDeviceFamily`가 `Windows.Desktop` 전용이라 불필요하다. 최상단 주석도 갱신(임시 identity `DeskTube.Dev` → 파트너 센터 발급값이며 마법사가 관리하므로 임의 수정 금지).
+  - **`.gitignore`**: `Package.StoreAssociation.xml` 추가. 이 파일의 `AccountPackageIdentityNames`에 **같은 파트너 센터 계정의 다른 앱 identity 4개**가 들어 있어 공개 저장소에 커밋하면 안 된다. 파일은 마법사가 언제든 재생성 가능 — 다른 PC에서 Store 패키징하려면 "앱을 Store에 연결"을 다시 실행해야 한다.
+  - **`DeskTube.csproj`**: 마법사가 추가한 패키징 속성(`AppxBundle=Never`, `GenerateTemporaryStoreCertificate` 등)은 정상 흐름이라 그대로 유지.
+  - **검증**: `dotnet build DeskTube.slnx -c Debug -p:Platform=x64` 경고 0·오류 0. **MSIX 사이드로드 패키징 성공**(`MSBuild … -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=SideloadOnly` → `DeskTube_1.0.0.0_x64.msix` 생성) — C00CE020 재현 안 됨으로 해소 확인. `git check-ignore -v`로 무시 규칙 적용 확인. **HUMAN-VERIFY 필요**: 파트너 센터 실제 제출(업로드) 통과 여부.
 - 2026-07-20: **MIT 라이선스 명시 + README 상단에 사용법 요약 추가 (문서 전용)** — 사용자 요청.
   - **LICENSE 신규**: 루트에 MIT 전문(`Copyright (c) 2026 jongcheol-pak`) 추가. 파일 생성 여부는 질문으로 승인받음(문서 표시만 vs 전문 파일 동반 → 전문 파일 생성 선택).
   - **README.md**: ① 개요 바로 아래 "빠른 사용법 (요약)" 섹션 신설 — `help.md` 링크 + 4단계 시작 절차 + 기본 동작 6줄(다중 모니터/소리 1대, 재생 불가 영상 건너뜀, 프리미엄 로그인, 자동 일시정지, 자동 실행·자동 재생 기본 켬, 로컬 저장). 내용은 help.md의 "처음 시작하기"·"기본 동작 한눈에 보기"를 요약한 것으로 새 기능 서술 없음. ② 문서 목록에 `help.md` 한 줄 추가. ③ 맨 아래 "라이선스" 섹션 추가(LICENSE 링크 + 오픈소스 라이브러리 라이선스는 별도임을 구분).
