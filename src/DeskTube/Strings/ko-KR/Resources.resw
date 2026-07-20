@@ -204,6 +204,9 @@
   <data name="Quality_Original" xml:space="preserve">
     <value>원본</value>
   </data>
+  <data name="Quality_1440" xml:space="preserve">
+    <value>1440p</value>
+  </data>
   <data name="Quality_1080" xml:space="preserve">
     <value>1080p</value>
   </data>

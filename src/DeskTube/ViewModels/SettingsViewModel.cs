@@ -26,7 +26,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly List<string?> _audioIds = [];
 
     /// <summary>화질 콤보 인덱스 ↔ 렌더 세로 해상도 (0 = 원본, part1 FR-13).</summary>
-    private static readonly int[] QualityHeights = [0, 1080, 720, 480];
+    private static readonly int[] QualityHeights = [0, 1440, 1080, 720, 480];
 
     /// <summary>언어 콤보 인덱스 ↔ 언어 코드 (null = 시스템 추종 — plan T7, AGENTS 다국어 규칙 3).</summary>
     private static readonly string?[] LanguageCodes = [null, "ko-KR", "en-US"];
@@ -45,6 +45,7 @@ public partial class SettingsViewModel : ObservableObject
         QualityOptions =
         [
             Loc.Get("Quality_Original"),
+            Loc.Get("Quality_1440"),
             Loc.Get("Quality_1080"),
             Loc.Get("Quality_720"),
             Loc.Get("Quality_480"),

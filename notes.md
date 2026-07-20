@@ -1,6 +1,11 @@
 # DeskTube 작업 내역
 
 ## 최근 변경
+- 2026-07-20: **화질 설정에 1440p 옵션 추가** — 사용자 요청: 설정 화면 화질에 2160p(4K)·1440p 추가 검토.
+  - **판단**: 이 앱의 "화질"은 스트리밍 화질이 아니라 WebView2 렌더 세로 해상도 다운스케일이다(`setPlaybackQuality` no-op — `docs/prd.md:78` Q3). `player.html`의 `applyLayout()`은 `scaleHeight < 레이아웃 높이`일 때만 스케일을 적용하므로, **2160p는 4K 모니터에서 "원본"과 결과가 같고 그 이하 모니터에선 무시**되어 옵션만 늘고 동작은 동일하다. 따라서 2160p는 제외하고 **1440p만 추가** — 4K 모니터 사용자에게 원본과 1080p 사이의 중간 부하 단계를 제공한다.
+  - **수정**: `SettingsViewModel.cs`의 `QualityHeights`에 `1440` 삽입(`[0, 1440, 1080, 720, 480]`), `QualityOptions`에 `Quality_1440` 추가, ko-KR·en-US `Resources.resw`에 `Quality_1440`(1440p) 문자열 추가.
+  - **기존 설정 호환**: 인덱스가 한 칸씩 밀리지만 `settings.json`에 저장되는 값은 인덱스가 아니라 높이값(`QualityScaleHeight`)이고 로드 시 `Array.IndexOf(QualityHeights, …)`로 복원하므로(`SettingsViewModel.cs:205`) 마이그레이션 불필요.
+  - **검증**: `dotnet build DeskTube.slnx -c Debug -p:Platform=x64` 경고 0·오류 0, `dotnet test` 147개 전부 통과. 설정 화면의 콤보 표시는 사용자 확인 필요.
 - 2026-07-20: **Store 연결 후 MSIX 매니페스트 스키마 오류(C00CE020) 해소 + Store 연결 파일 gitignore** — 사용자 신고: 패키징 시 "App manifest validation error … Line 45 … 'PhonePublisherId' 특성이 없습니다".
   - **원인**: Visual Studio "앱을 Store에 연결" 마법사가 `Package.appxmanifest`에 `<mp:PhoneIdentity PhoneProductId="…"/>`를 추가했는데, 이 요소는 스키마상 `PhonePublisherId`도 **필수 특성**이라 검증 실패. 마법사가 한쪽만 채워 넣은 것.
   - **수정**: 더미 GUID를 채우는 대신 `mp:PhoneIdentity` 요소와 `xmlns:mp` 네임스페이스 선언을 제거. 이 요소는 Windows Phone 시대 유산이고, 이 앱은 `TargetDeviceFamily`가 `Windows.Desktop` 전용이라 불필요하다. 최상단 주석도 갱신(임시 identity `DeskTube.Dev` → 파트너 센터 발급값이며 마법사가 관리하므로 임의 수정 금지).

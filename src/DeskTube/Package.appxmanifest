@@ -10,7 +10,7 @@
   <Identity
     Name="JongCheol.DeskTube"
     Publisher="CN=C4E87E75-D777-4282-B3A5-57BFD2309B52"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
 
   <Properties>
     <DisplayName>ms-resource:///Resources/AppDisplayName</DisplayName>
