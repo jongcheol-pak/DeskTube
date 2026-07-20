@@ -34,6 +34,7 @@
 | [자주 묻는 질문](#자주-묻는-질문) | FAQ |
 | [개인정보 및 데이터](#개인정보-및-데이터) | 데이터 처리 |
 | [문의하기](#문의하기) | 지원 채널 |
+| [라이선스](#라이선스) | MIT License |
 
 ---
 
@@ -244,3 +245,11 @@
 |---|---|
 | [GitHub Issues](https://github.com/jongcheol-pak/DeskTube/issues) | 버그 신고 · 기능 제안 |
 | [GitHub Sponsors](https://github.com/sponsors/jongcheol-pak) | 개발 지원 (후원) |
+
+---
+
+## 라이선스
+
+데스크튜브는 [MIT License](LICENSE)로 배포되는 오픈소스 앱입니다. © 2026 jongcheol-pak
+
+앱이 사용하는 오픈소스 라이브러리의 라이선스는 앱의 **정보** 화면에서 확인할 수 있습니다.
