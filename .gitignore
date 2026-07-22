@@ -26,3 +26,6 @@ Package.StoreAssociation.xml
 
 # Playwright MCP 런타임 로그 (세션별 임시 산출물)
 .playwright-mcp/
+
+# 에이전트 작업 가이드 (로컬 전용 — 공개 저장소 미게시)
+AGENTS.md
